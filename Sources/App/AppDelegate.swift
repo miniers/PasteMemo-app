@@ -37,7 +37,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             BuiltInRules.seedIfNeeded(context: PasteMemoApp.sharedModelContainer.mainContext)
         }
         ClipboardManager.shared.startMonitoring()
-        showAnalyticsConsentIfNeeded()
         UsageTracker.pingIfNeeded()
 
         // Hide SwiftUI auto-created windows
@@ -116,16 +115,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func showAnalyticsConsentIfNeeded() {
-        guard !UsageTracker.hasAskedConsent else { return }
-        let alert = NSAlert()
-        alert.messageText = L10n.tr("analytics.consent.title")
-        alert.informativeText = L10n.tr("analytics.consent.message")
-        alert.alertStyle = .informational
-        alert.addButton(withTitle: L10n.tr("analytics.consent.allow"))
-        alert.addButton(withTitle: L10n.tr("analytics.consent.deny"))
-        let response = alert.runModal()
-        UsageTracker.isEnabled = (response == .alertFirstButtonReturn)
-        UsageTracker.markConsentAsked()
-    }
 }

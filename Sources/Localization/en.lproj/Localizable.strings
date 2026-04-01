@@ -630,3 +630,8 @@
 "analytics.consent.message" = "Would you like to send anonymous usage statistics to help improve PasteMemo? This includes app version, system language, and macOS version. No personal data is collected. You can change this anytime in Settings → Privacy.";
 "analytics.consent.allow" = "Allow";
 "analytics.consent.deny" = "Don't Allow";
+
+/* Onboarding - Analytics */
+"onboarding.analytics.title" = "Usage Statistics";
+"onboarding.analytics.desc" = "Help improve PasteMemo by sending anonymous usage data including app version, system language, and macOS version. No personal data is collected.";
+"onboarding.analytics.hint" = "You can change this anytime in Settings → Privacy.";

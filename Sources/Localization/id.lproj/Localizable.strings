@@ -651,3 +651,8 @@ Gunakan %@ untuk menempel satu per satu.";
 "analytics.consent.message" = "Apakah Anda ingin mengirim statistik anonim untuk membantu meningkatkan PasteMemo? Termasuk versi aplikasi, bahasa sistem, dan versi macOS. Tidak ada data pribadi yang dikumpulkan. Anda dapat mengubahnya di Pengaturan → Privasi.";
 "analytics.consent.allow" = "Izinkan";
 "analytics.consent.deny" = "Jangan Izinkan";
+
+/* Onboarding - Analytics */
+"onboarding.analytics.title" = "Statistik Penggunaan";
+"onboarding.analytics.desc" = "Bantu tingkatkan PasteMemo dengan mengirim data anonim (versi aplikasi, bahasa sistem, versi macOS). Tidak ada data pribadi yang dikumpulkan.";
+"onboarding.analytics.hint" = "Anda dapat mengubahnya di Pengaturan → Privasi.";

@@ -641,3 +641,8 @@ Usa %@ per incollare uno per uno.";
 "analytics.consent.message" = "Vuoi inviare statistiche anonime per migliorare PasteMemo? Include versione app, lingua e versione macOS. Nessun dato personale viene raccolto. Puoi modificarlo in Impostazioni → Privacy.";
 "analytics.consent.allow" = "Consenti";
 "analytics.consent.deny" = "Non consentire";
+
+/* Onboarding - Analytics */
+"onboarding.analytics.title" = "Statistiche d'uso";
+"onboarding.analytics.desc" = "Aiuta a migliorare PasteMemo inviando dati anonimi (versione app, lingua, versione macOS). Nessun dato personale viene raccolto.";
+"onboarding.analytics.hint" = "Puoi modificarlo in Impostazioni → Privacy.";

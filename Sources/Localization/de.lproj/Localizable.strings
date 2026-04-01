@@ -663,3 +663,8 @@ Verwenden Sie %@ zum Einfügen.";
 "analytics.consent.message" = "Möchtest du anonyme Nutzungsstatistiken senden, um PasteMemo zu verbessern? Dies umfasst App-Version, Systemsprache und macOS-Version. Es werden keine persönlichen Daten erfasst. Du kannst dies jederzeit unter Einstellungen → Datenschutz ändern.";
 "analytics.consent.allow" = "Erlauben";
 "analytics.consent.deny" = "Nicht erlauben";
+
+/* Onboarding - Analytics */
+"onboarding.analytics.title" = "Nutzungsstatistiken";
+"onboarding.analytics.desc" = "Hilf PasteMemo zu verbessern, indem du anonyme Nutzungsdaten sendest (App-Version, Systemsprache, macOS-Version). Es werden keine persönlichen Daten erfasst.";
+"onboarding.analytics.hint" = "Du kannst dies jederzeit unter Einstellungen → Datenschutz ändern.";

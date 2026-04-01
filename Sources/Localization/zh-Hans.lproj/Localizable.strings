@@ -630,3 +630,8 @@
 "analytics.consent.message" = "是否发送匿名使用统计以帮助改进 PasteMemo？包括应用版本、系统语言和 macOS 版本，不采集任何个人信息。你可以随时在 设置 → 隐私 中更改。";
 "analytics.consent.allow" = "允许";
 "analytics.consent.deny" = "不允许";
+
+/* Onboarding - Analytics */
+"onboarding.analytics.title" = "使用统计";
+"onboarding.analytics.desc" = "发送匿名使用数据（应用版本、系统语言、macOS 版本）帮助改进 PasteMemo。不采集任何个人信息。";
+"onboarding.analytics.hint" = "你可以随时在 设置 → 隐私 中更改。";
