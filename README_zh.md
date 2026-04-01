@@ -12,14 +12,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lifedever/PasteMemo-site/releases/latest"><img src="https://img.shields.io/github/v/release/lifedever/PasteMemo?style=flat-square&color=F97316&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC" alt="Latest Release"></a>
-  <a href="https://github.com/lifedever/PasteMemo-site/releases"><img src="https://img.shields.io/github/downloads/lifedever/PasteMemo/total?style=flat-square&color=7C3AED&label=%E4%B8%8B%E8%BD%BD%E6%AC%A1%E6%95%B0" alt="Downloads"></a>
+  <a href="https://github.com/lifedever/PasteMemo/releases/latest"><img src="https://img.shields.io/github/v/release/lifedever/PasteMemo?style=flat-square&color=F97316&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC" alt="Latest Release"></a>
+  <a href="https://github.com/lifedever/PasteMemo/releases"><img src="https://img.shields.io/github/downloads/lifedever/PasteMemo/total?style=flat-square&color=7C3AED&label=%E4%B8%8B%E8%BD%BD%E6%AC%A1%E6%95%B0" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/platform-macOS%2014%2B-blue?style=flat-square" alt="Platform">
   <img src="https://img.shields.io/badge/license-GPL--3.0-green?style=flat-square" alt="License">
 </p>
 
 <p align="center">
-  <a href="https://github.com/lifedever/PasteMemo-site/releases/latest">⬇️ 下载</a> | <a href="https://www.lifedever.com/PasteMemo/">🌐 官网</a> | <a href="https://www.lifedever.com">❤️ 捐助</a>
+  <a href="https://github.com/lifedever/PasteMemo/releases/latest">⬇️ 下载</a> | <a href="https://www.lifedever.com/PasteMemo/">🌐 官网</a> | <a href="https://www.lifedever.com">❤️ 捐助</a>
 </p>
 
 <p align="center">
@@ -133,7 +133,7 @@ brew upgrade --cask pastememo
 
 ### 下载
 
-从 [Releases](https://github.com/lifedever/PasteMemo-site/releases) 下载最新 `.dmg`：
+从 [Releases](https://github.com/lifedever/PasteMemo/releases) 下载最新 `.dmg`：
 
 | 文件 | 架构 |
 |------|------|

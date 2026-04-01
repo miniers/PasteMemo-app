@@ -12,14 +12,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lifedever/PasteMemo-site/releases/latest"><img src="https://img.shields.io/github/v/release/lifedever/PasteMemo?style=flat-square&color=F97316&label=Latest" alt="Latest Release"></a>
-  <a href="https://github.com/lifedever/PasteMemo-site/releases"><img src="https://img.shields.io/github/downloads/lifedever/PasteMemo/total?style=flat-square&color=7C3AED&label=Downloads" alt="Downloads"></a>
+  <a href="https://github.com/lifedever/PasteMemo/releases/latest"><img src="https://img.shields.io/github/v/release/lifedever/PasteMemo?style=flat-square&color=F97316&label=Latest" alt="Latest Release"></a>
+  <a href="https://github.com/lifedever/PasteMemo/releases"><img src="https://img.shields.io/github/downloads/lifedever/PasteMemo/total?style=flat-square&color=7C3AED&label=Downloads" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/platform-macOS%2014%2B-blue?style=flat-square" alt="Platform">
   <img src="https://img.shields.io/badge/license-GPL--3.0-green?style=flat-square" alt="License">
 </p>
 
 <p align="center">
-  <a href="https://github.com/lifedever/PasteMemo-site/releases/latest">⬇️ Download</a> | <a href="https://www.lifedever.com/PasteMemo/">🌐 Website</a> | <a href="https://www.lifedever.com">❤️ Sponsor</a>
+  <a href="https://github.com/lifedever/PasteMemo/releases/latest">⬇️ Download</a> | <a href="https://www.lifedever.com/PasteMemo/">🌐 Website</a> | <a href="https://www.lifedever.com">❤️ Sponsor</a>
 </p>
 
 <p align="center">
@@ -133,7 +133,7 @@ brew upgrade --cask pastememo
 
 ### Download
 
-Grab the latest `.dmg` from [Releases](https://github.com/lifedever/PasteMemo-site/releases):
+Grab the latest `.dmg` from [Releases](https://github.com/lifedever/PasteMemo/releases):
 
 | File | Architecture |
 |------|-------------|
