@@ -25,7 +25,6 @@ final class AutomationEngine {
         context: ModelContext
     ) -> AutomationResult {
         guard ProManager.AUTOMATION_ENABLED else { return .unchanged }
-        guard ProManager.shared.canUseAutomation else { return .unchanged }
         guard UserDefaults.standard.bool(forKey: "automationEnabled") else { return .unchanged }
 
         let rules = fetchEnabledRules(triggerMode: .automatic, context: context)

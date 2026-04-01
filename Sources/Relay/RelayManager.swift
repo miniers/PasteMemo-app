@@ -168,10 +168,6 @@ final class RelayManager {
 
     func activate() {
         guard !isActive else { return }
-        guard ProManager.shared.isPro else {
-            NotificationCenter.default.post(name: Notification.Name("showProUpgrade"), object: nil)
-            return
-        }
         isActive = true
         clipboardController?.pauseMonitoring()
         hotkeyController?.disableHotkey()

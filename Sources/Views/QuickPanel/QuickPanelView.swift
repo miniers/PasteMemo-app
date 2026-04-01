@@ -624,8 +624,7 @@ struct QuickPanelView: View {
                                                 selectItem(itemID)
                                             }
                                             if item.contentType.isMergeable,
-                                               ProManager.AUTOMATION_ENABLED,
-                                               ProManager.shared.canUseAutomation {
+                                               ProManager.AUTOMATION_ENABLED {
                                                 let manualRules = fetchEnabledRules()
                                                 if !manualRules.isEmpty {
                                                     Divider()

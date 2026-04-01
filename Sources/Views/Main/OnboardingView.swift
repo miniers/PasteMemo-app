@@ -16,16 +16,11 @@ struct OnboardingView: View {
     @State private var selectedManagerIDs: Set<String> = []
 
     private let totalSteps = 6
-    @ObservedObject private var proManager = ProManager.shared
     private let allRetentionOptions = [1, 3, 7, 14, 30, 60, 90, 180, 365]
 
-    private var availableOptions: [Int] {
-        proManager.isPro
-            ? allRetentionOptions
-            : allRetentionOptions.filter { $0 <= ProManager.FREE_HISTORY_DAYS }
-    }
+    private var availableOptions: [Int] { allRetentionOptions }
 
-    private var showForever: Bool { proManager.isPro }
+    private var showForever: Bool { true }
     private var isReturningUser: Bool { UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") }
 
     var body: some View {

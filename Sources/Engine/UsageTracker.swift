@@ -23,6 +23,21 @@ enum UsageTracker {
     private static let PING_URL = "https://stats.pastememo.lifedever.com/ping"
     private static let LAST_PING_KEY = "usageTracker.lastPingDate"
     private static let DEVICE_ID_KEY = "usageTracker.deviceId"
+    static let ANALYTICS_ENABLED_KEY = "analyticsEnabled"
+    static let ANALYTICS_ASKED_KEY = "analyticsAsked"
+
+    static var isEnabled: Bool {
+        get { UserDefaults.standard.object(forKey: ANALYTICS_ENABLED_KEY) as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: ANALYTICS_ENABLED_KEY) }
+    }
+
+    static var hasAskedConsent: Bool {
+        UserDefaults.standard.bool(forKey: ANALYTICS_ASKED_KEY)
+    }
+
+    static func markConsentAsked() {
+        UserDefaults.standard.set(true, forKey: ANALYTICS_ASKED_KEY)
+    }
 
     private static var deviceId: String {
         if let existing = UserDefaults.standard.string(forKey: DEVICE_ID_KEY) {
@@ -34,6 +49,8 @@ enum UsageTracker {
     }
 
     static func pingIfNeeded(source: PingSource = .launch) {
+        guard isEnabled else { return }
+
         let today = Calendar.current.startOfDay(for: Date())
         let lastPing = UserDefaults.standard.object(forKey: LAST_PING_KEY) as? Date ?? .distantPast
         guard Calendar.current.startOfDay(for: lastPing) < today else { return }
@@ -43,7 +60,7 @@ enum UsageTracker {
         let osVersion = ProcessInfo.processInfo.operatingSystemVersion
         let os = "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
         let arch = ProcessInfo.processInfo.machineArchitecture
-        let pro = ProManager.shared.isPro ? "1" : "0"
+        let pro = "1"
 
         var components = URLComponents(string: PING_URL)
         components?.queryItems = [

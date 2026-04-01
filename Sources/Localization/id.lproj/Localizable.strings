@@ -630,3 +630,24 @@ Gunakan %@ untuk menempel satu per satu.";
 "automation.condition.containsText.placeholder" = "Masukkan konten teks";
 "automation.action.empty" = "Tidak ada tindakan";
 "quick.pasteToApp" = "Tempel ke %@";
+
+/* Sponsor Tab */
+"settings.sponsor" = "Dukung";
+"sponsor.title" = "Dukung PasteMemo";
+"sponsor.desc" = "PasteMemo gratis dan open source. Jika bermanfaat, pertimbangkan untuk mendukung proyek ini.";
+"sponsor.donate" = "Traktir Kopi";
+"sponsor.star" = "Star di GitHub";
+"sponsor.feedback" = "Kirim Masukan";
+
+/* About - Open Source */
+"about.license" = "Lisensi";
+"about.sourceCode" = "Kode Sumber";
+
+/* Analytics */
+"settings.privacy.analytics" = "Statistik Penggunaan";
+"settings.privacy.analyticsToggle" = "Kirim statistik penggunaan anonim";
+"settings.privacy.analyticsHint" = "Bantu tingkatkan PasteMemo dengan mengirim data anonim (versi aplikasi, bahasa sistem, versi macOS). Tidak ada data pribadi yang dikumpulkan.";
+"analytics.consent.title" = "Statistik Penggunaan";
+"analytics.consent.message" = "Apakah Anda ingin mengirim statistik anonim untuk membantu meningkatkan PasteMemo? Termasuk versi aplikasi, bahasa sistem, dan versi macOS. Tidak ada data pribadi yang dikumpulkan. Anda dapat mengubahnya di Pengaturan → Privasi.";
+"analytics.consent.allow" = "Izinkan";
+"analytics.consent.deny" = "Jangan Izinkan";

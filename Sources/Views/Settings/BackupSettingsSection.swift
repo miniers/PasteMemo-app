@@ -2,7 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct BackupSettingsSection: View {
-    @ObservedObject private var proManager = ProManager.shared
     @AppStorage("backupEnabled") private var backupEnabled = false
     @AppStorage("backupFrequency") private var backupFrequency = "1d"
     @AppStorage("backupMaxSlots") private var maxSlots = 3
@@ -37,12 +36,7 @@ struct BackupSettingsSection: View {
                 actionButtons
             }
         } header: {
-            HStack {
-                Text(L10n.tr("backup.section"))
-                if !proManager.isPro {
-                    ProBadge()
-                }
-            }
+            Text(L10n.tr("backup.section"))
         }
         .onAppear {}
         .alert(alertMessage, isPresented: $isAlertPresented) {
@@ -76,7 +70,6 @@ struct BackupSettingsSection: View {
 
     private var backupToggle: some View {
         Toggle(L10n.tr("backup.enable"), isOn: $backupEnabled)
-            .disabled(!proManager.isPro)
             .onChange(of: backupEnabled) {
                 BackupScheduler.shared.reschedule()
             }

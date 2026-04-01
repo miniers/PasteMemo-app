@@ -25,7 +25,6 @@ enum SidebarFilter: Equatable {
 
 struct MainWindowView: View {
     @EnvironmentObject var clipboardManager: ClipboardManager
-    @EnvironmentObject var proManager: ProManager
     @Environment(\.modelContext) private var modelContext
     @State private var store = ClipItemStore()
     @State private var searchText = ""
@@ -335,9 +334,8 @@ struct MainWindowView: View {
 
             Section(L10n.tr("filter.types")) {
                 ForEach(typeOrder, id: \.self) { type in
-                    if proManager.canUseContentType(type) {
-                        let count = store.sidebarCounts.byType[type] ?? 0
-                        if count > 0 {
+                    let count = store.sidebarCounts.byType[type] ?? 0
+                    if count > 0 {
                         sidebarRow(type.label, icon: type.icon, badge: count, isActive: selectedFilter == .type(type)) {
                             selectedFilter = .type(type)
                         }
@@ -350,7 +348,6 @@ struct MainWindowView: View {
                             dragging: $draggingType,
                             types: $typeOrder
                         ))
-                        }
                     }
                 }
             }
@@ -397,15 +394,13 @@ struct MainWindowView: View {
                 }
             }
 
-            if proManager.canUseAppFilter {
-                Section(L10n.tr("filter.apps")) {
-                    ForEach(sourceApps, id: \.self) { appName in
-                        let isUnknown = appName.isEmpty
-                        let count = store.sidebarCounts.byApp[isUnknown ? nil : appName] ?? 0
-                        let displayName = isUnknown ? L10n.tr("filter.other") : appName
-                        appSidebarRow(displayName, badge: count, isActive: selectedFilter == .app(appName)) {
-                            selectedFilter = .app(appName)
-                        }
+            Section(L10n.tr("filter.apps")) {
+                ForEach(sourceApps, id: \.self) { appName in
+                    let isUnknown = appName.isEmpty
+                    let count = store.sidebarCounts.byApp[isUnknown ? nil : appName] ?? 0
+                    let displayName = isUnknown ? L10n.tr("filter.other") : appName
+                    appSidebarRow(displayName, badge: count, isActive: selectedFilter == .app(appName)) {
+                        selectedFilter = .app(appName)
                     }
                 }
             }
@@ -606,8 +601,7 @@ struct MainWindowView: View {
                     Button(L10n.tr("action.merge")) { mergeSelectedItems() }
                 }
                 if item.contentType.isMergeable,
-                   ProManager.AUTOMATION_ENABLED,
-                   ProManager.shared.canUseAutomation {
+                   ProManager.AUTOMATION_ENABLED {
                     let rules = fetchEnabledAutomationRules()
                     if !rules.isEmpty {
                         Divider()

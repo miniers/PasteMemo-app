@@ -12,7 +12,6 @@ struct PasteMemoApp: App {
         Window(L10n.tr("app.name"), id: "main") {
             MainWindowView()
                 .environmentObject(ClipboardManager.shared)
-                .environmentObject(ProManager.shared)
                 .modelContainer(Self.sharedModelContainer)
         }
         .defaultSize(width: 900, height: 560)
@@ -66,7 +65,7 @@ struct PasteMemoApp: App {
                     showHelpWindow()
                 }
                 Divider()
-                Link(L10n.tr("menu.reportIssue"), destination: URL(string: "https://github.com/lifedever/PasteMemo/issues")!)
+                Link(L10n.tr("menu.reportIssue"), destination: URL(string: "https://github.com/lifedever/PasteMemo-app/issues")!)
             }
         }
 
@@ -79,7 +78,6 @@ struct PasteMemoApp: App {
         Settings {
             SettingsView()
                 .environmentObject(ClipboardManager.shared)
-                .environmentObject(ProManager.shared)
                 .modelContainer(Self.sharedModelContainer)
         }
 

@@ -658,3 +658,24 @@
 /* Backup - Additional */
 "backup.nextBackup" = "다음 백업";
 "detail.openInFinder" = "Finder에서 보기";
+
+/* Sponsor Tab */
+"settings.sponsor" = "후원";
+"sponsor.title" = "PasteMemo 후원하기";
+"sponsor.desc" = "PasteMemo는 무료 오픈소스입니다. 도움이 되셨다면 프로젝트를 후원해 주세요.";
+"sponsor.donate" = "커피 한 잔 사주기";
+"sponsor.star" = "GitHub Star 주기";
+"sponsor.feedback" = "피드백 보내기";
+
+/* About - Open Source */
+"about.license" = "라이선스";
+"about.sourceCode" = "소스 코드";
+
+/* Analytics */
+"settings.privacy.analytics" = "사용 통계";
+"settings.privacy.analyticsToggle" = "익명 사용 통계 전송";
+"settings.privacy.analyticsHint" = "익명 사용 데이터(앱 버전, 시스템 언어, macOS 버전)를 전송하여 PasteMemo 개선에 도움을 주세요. 개인 정보는 수집하지 않습니다.";
+"analytics.consent.title" = "사용 통계";
+"analytics.consent.message" = "PasteMemo 개선을 위해 익명 사용 통계를 전송하시겠습니까? 앱 버전, 시스템 언어, macOS 버전이 포함됩니다. 개인 정보는 수집하지 않습니다. 설정 → 개인 정보에서 언제든 변경할 수 있습니다.";
+"analytics.consent.allow" = "허용";
+"analytics.consent.deny" = "허용 안 함";

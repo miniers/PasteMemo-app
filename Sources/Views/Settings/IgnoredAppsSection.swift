@@ -4,33 +4,17 @@ import AppKit
 struct IgnoredAppsSection: View {
     @State private var ignoredAppsManager = IgnoredAppsManager.shared
     @State private var isShowingAppPicker = false
-    private var isLocked: Bool { !ProManager.shared.isPro }
 
     var body: some View {
         Section {
-            if isLocked {
-                lockedContent
-            } else {
-                unlockedContent
-            }
+            sectionContent
         } header: {
-            HStack {
-                Text(L10n.tr("settings.ignoredApps"))
-                if isLocked {
-                    ProBadge()
-                }
-            }
+            Text(L10n.tr("settings.ignoredApps"))
         }
     }
 
-    private var lockedContent: some View {
-        Text(L10n.tr("settings.ignoredApps.empty"))
-            .foregroundStyle(.tertiary)
-            .font(.callout)
-    }
-
     @ViewBuilder
-    private var unlockedContent: some View {
+    private var sectionContent: some View {
         if ignoredAppsManager.ignoredApps.isEmpty {
             Text(L10n.tr("settings.ignoredApps.empty"))
                 .foregroundStyle(.tertiary)
@@ -211,15 +195,3 @@ private struct AppPickerSheet: View {
     }
 }
 
-// MARK: - Pro Badge
-
-struct ProBadge: View {
-    var body: some View {
-        Text("Pro")
-            .font(.caption2.bold())
-            .foregroundStyle(.white)
-            .padding(.horizontal, 5)
-            .padding(.vertical, 1)
-            .background(.orange, in: Capsule())
-    }
-}

@@ -3,7 +3,6 @@ import SwiftUI
 struct MenuBarContent: View {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
-    @ObservedObject private var proManager = ProManager.shared
     @ObservedObject private var hotkeyManager = HotkeyManager.shared
     @ObservedObject private var clipboardManager = ClipboardManager.shared
 
@@ -52,13 +51,6 @@ struct MenuBarContent: View {
         }
 
         Divider()
-
-        if !proManager.isPro {
-            Button(L10n.tr("menu.upgrade")) {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                NSApp.activate(ignoringOtherApps: true)
-            }
-        }
 
         Button(L10n.tr("settings.automation.manage")) {
             AppAction.shared.openAutomationManager?()

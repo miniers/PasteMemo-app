@@ -22,7 +22,7 @@ final class UpdateChecker: ObservableObject {
 
     private let latestJsonURL = "https://www.lifedever.com/PasteMemo/latest.json"
     private let repoOwner = "lifedever"
-    private let repoName = "PasteMemo"
+    private let repoName = "PasteMemo-app"
     private let giteeRepo = "lifedever/pastememo"
 
     private var downloadTask: URLSessionDownloadTask?
@@ -66,9 +66,6 @@ final class UpdateChecker: ObservableObject {
                 totalBytes = Int64(fileSize)
             }
 
-            if let proEncrypted = info.pro {
-                ProManager.shared.applyRemoteConfig(encryptedBase64: proEncrypted)
-            }
         }
 
         // Fallback: Gitee / GitHub API (for old releases or if JSON unavailable)
@@ -347,7 +344,7 @@ final class UpdateChecker: ObservableObject {
         let response = alert.runModal()
         switch response {
         case .alertFirstButtonReturn:
-            NSWorkspace.shared.open(URL(string: "https://github.com/lifedever/PasteMemo/releases")!)
+            NSWorkspace.shared.open(URL(string: "https://github.com/lifedever/PasteMemo-app/releases")!)
         case .alertSecondButtonReturn:
             NSWorkspace.shared.open(URL(string: "https://gitee.com/lifedever/pastememo/releases")!)
         default:

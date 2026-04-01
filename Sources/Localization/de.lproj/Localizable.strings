@@ -642,3 +642,24 @@ Verwenden Sie %@ zum Einfügen.";
 /* Backup (additional) */
 "backup.nextBackup" = "Nächstes Backup";
 "detail.openInFinder" = "Im Finder anzeigen";
+
+/* Sponsor Tab */
+"settings.sponsor" = "Unterstützen";
+"sponsor.title" = "PasteMemo unterstützen";
+"sponsor.desc" = "PasteMemo ist kostenlos und Open Source. Wenn es dir hilft, unterstütze das Projekt.";
+"sponsor.donate" = "Kaffee spendieren";
+"sponsor.star" = "Star auf GitHub";
+"sponsor.feedback" = "Feedback senden";
+
+/* About - Open Source */
+"about.license" = "Lizenz";
+"about.sourceCode" = "Quellcode";
+
+/* Analytics */
+"settings.privacy.analytics" = "Nutzungsstatistiken";
+"settings.privacy.analyticsToggle" = "Anonyme Nutzungsstatistiken senden";
+"settings.privacy.analyticsHint" = "Hilf PasteMemo zu verbessern, indem du anonyme Nutzungsdaten sendest (App-Version, Systemsprache, macOS-Version). Es werden keine persönlichen Daten erfasst.";
+"analytics.consent.title" = "Nutzungsstatistiken";
+"analytics.consent.message" = "Möchtest du anonyme Nutzungsstatistiken senden, um PasteMemo zu verbessern? Dies umfasst App-Version, Systemsprache und macOS-Version. Es werden keine persönlichen Daten erfasst. Du kannst dies jederzeit unter Einstellungen → Datenschutz ändern.";
+"analytics.consent.allow" = "Erlauben";
+"analytics.consent.deny" = "Nicht erlauben";

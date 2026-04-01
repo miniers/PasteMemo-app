@@ -609,3 +609,24 @@
 "relay.delimiter.chineseComma" = "Chinese Comma (\U3001)";
 "relay.delimiter.custom" = "Custom";
 "quick.pasteToApp" = "Paste to %@";
+
+/* Sponsor Tab */
+"settings.sponsor" = "Sponsor";
+"sponsor.title" = "Support PasteMemo";
+"sponsor.desc" = "PasteMemo is free and open source. If it helps you, consider supporting the project.";
+"sponsor.donate" = "Buy Me a Coffee";
+"sponsor.star" = "Star on GitHub";
+"sponsor.feedback" = "Submit Feedback";
+
+/* About - Open Source */
+"about.license" = "License";
+"about.sourceCode" = "Source Code";
+
+/* Analytics */
+"settings.privacy.analytics" = "Usage Statistics";
+"settings.privacy.analyticsToggle" = "Send anonymous usage statistics";
+"settings.privacy.analyticsHint" = "Help improve PasteMemo by sending anonymous usage data (app version, system language, macOS version). No personal data is collected.";
+"analytics.consent.title" = "Usage Statistics";
+"analytics.consent.message" = "Would you like to send anonymous usage statistics to help improve PasteMemo? This includes app version, system language, and macOS version. No personal data is collected. You can change this anytime in Settings → Privacy.";
+"analytics.consent.allow" = "Allow";
+"analytics.consent.deny" = "Don't Allow";

@@ -618,3 +618,24 @@
 "automation.condition.containsText.placeholder" = "請輸入文字內容";
 "automation.action.empty" = "暫無動作";
 "quick.pasteToApp" = "貼上到 %@";
+
+/* Sponsor Tab */
+"settings.sponsor" = "支持";
+"sponsor.title" = "支持 PasteMemo";
+"sponsor.desc" = "PasteMemo 是免費開源的。如果對你有幫助，歡迎支持這個專案。";
+"sponsor.donate" = "請我喝杯咖啡";
+"sponsor.star" = "GitHub 點個 Star";
+"sponsor.feedback" = "提交回饋";
+
+/* About - Open Source */
+"about.license" = "開源授權";
+"about.sourceCode" = "原始碼";
+
+/* Analytics */
+"settings.privacy.analytics" = "使用統計";
+"settings.privacy.analyticsToggle" = "傳送匿名使用統計";
+"settings.privacy.analyticsHint" = "幫助改進 PasteMemo，傳送匿名使用資料（應用版本、系統語言、macOS 版本）。不採集任何個人資訊。";
+"analytics.consent.title" = "使用統計";
+"analytics.consent.message" = "是否傳送匿名使用統計以幫助改進 PasteMemo？包括應用版本、系統語言和 macOS 版本，不採集任何個人資訊。你可以隨時在 設定 → 隱私 中更改。";
+"analytics.consent.allow" = "允許";
+"analytics.consent.deny" = "不允許";

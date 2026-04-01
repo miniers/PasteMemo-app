@@ -609,3 +609,24 @@
 "relay.delimiter.comma" = "逗号 (,)";
 "relay.delimiter.chineseComma" = "顿号 (\U3001)";
 "relay.delimiter.custom" = "自定义";
+
+/* Sponsor Tab */
+"settings.sponsor" = "支持";
+"sponsor.title" = "支持 PasteMemo";
+"sponsor.desc" = "PasteMemo 是免费开源的。如果对你有帮助，欢迎支持这个项目。";
+"sponsor.donate" = "请我喝杯咖啡";
+"sponsor.star" = "GitHub 点个 Star";
+"sponsor.feedback" = "提交反馈";
+
+/* About - Open Source */
+"about.license" = "开源协议";
+"about.sourceCode" = "源代码";
+
+/* Analytics */
+"settings.privacy.analytics" = "使用统计";
+"settings.privacy.analyticsToggle" = "发送匿名使用统计";
+"settings.privacy.analyticsHint" = "帮助改进 PasteMemo，发送匿名使用数据（应用版本、系统语言、macOS 版本）。不采集任何个人信息。";
+"analytics.consent.title" = "使用统计";
+"analytics.consent.message" = "是否发送匿名使用统计以帮助改进 PasteMemo？包括应用版本、系统语言和 macOS 版本，不采集任何个人信息。你可以随时在 设置 → 隐私 中更改。";
+"analytics.consent.allow" = "允许";
+"analytics.consent.deny" = "不允许";

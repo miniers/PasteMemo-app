@@ -630,3 +630,24 @@
 "automation.condition.containsText.placeholder" = "Введите текстовое содержимое";
 "automation.action.empty" = "Нет действий";
 "quick.pasteToApp" = "Вставить в %@";
+
+/* Sponsor Tab */
+"settings.sponsor" = "Поддержать";
+"sponsor.title" = "Поддержите PasteMemo";
+"sponsor.desc" = "PasteMemo — бесплатное приложение с открытым исходным кодом. Если оно вам полезно, поддержите проект.";
+"sponsor.donate" = "Угостить кофе";
+"sponsor.star" = "Star на GitHub";
+"sponsor.feedback" = "Отправить отзыв";
+
+/* About - Open Source */
+"about.license" = "Лицензия";
+"about.sourceCode" = "Исходный код";
+
+/* Analytics */
+"settings.privacy.analytics" = "Статистика использования";
+"settings.privacy.analyticsToggle" = "Отправлять анонимную статистику";
+"settings.privacy.analyticsHint" = "Помогите улучшить PasteMemo, отправляя анонимные данные (версия приложения, язык системы, версия macOS). Личные данные не собираются.";
+"analytics.consent.title" = "Статистика использования";
+"analytics.consent.message" = "Хотите отправлять анонимную статистику для улучшения PasteMemo? Включает версию приложения, язык системы и версию macOS. Личные данные не собираются. Вы можете изменить это в Настройки → Конфиденциальность.";
+"analytics.consent.allow" = "Разрешить";
+"analytics.consent.deny" = "Не разрешать";

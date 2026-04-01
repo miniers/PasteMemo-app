@@ -4,8 +4,6 @@ import ServiceManagement
 import Carbon
 
 struct SettingsView: View {
-    @EnvironmentObject var proManager: ProManager
-
     var body: some View {
         TabView {
             GeneralTab()
@@ -22,9 +20,8 @@ struct SettingsView: View {
             }
             DataTab()
                 .tabItem { Label(L10n.tr("dataPorter.section"), systemImage: "externaldrive") }
-            ProTab()
-                .environmentObject(proManager)
-                .tabItem { Label("Pro", systemImage: "star") }
+            SponsorTab()
+                .tabItem { Label(L10n.tr("settings.sponsor"), systemImage: "heart") }
             AboutTab()
                 .tabItem { Label(L10n.tr("settings.about"), systemImage: "info.circle") }
         }
@@ -173,17 +170,11 @@ struct PreferencesTab: View {
     @AppStorage("addNewLineAfterPaste") private var addNewLineAfterPaste = false
     @AppStorage("showLinkURL") private var showLinkURL = false
     @AppStorage("webPreviewEnabled") private var webPreviewEnabled = true
-    @ObservedObject private var proManager = ProManager.shared
-
     private let allRetentionOptions = [1, 3, 7, 14, 30, 60, 90, 180, 365]
 
-    private var availableOptions: [Int] {
-        proManager.isPro
-            ? allRetentionOptions
-            : allRetentionOptions.filter { $0 <= ProManager.FREE_HISTORY_DAYS }
-    }
+    private var availableOptions: [Int] { allRetentionOptions }
 
-    private var showForever: Bool { proManager.isPro }
+    private var showForever: Bool { true }
 
     var body: some View {
         Form {
@@ -339,6 +330,7 @@ struct RelayTab: View {
 
 struct PrivacyTab: View {
     @AppStorage("sensitiveDetectionEnabled") private var isSensitiveDetectionEnabled = true
+    @AppStorage(UsageTracker.ANALYTICS_ENABLED_KEY) private var analyticsEnabled = true
 
     var body: some View {
         Form {
@@ -350,6 +342,13 @@ struct PrivacyTab: View {
             }
 
             IgnoredAppsSection()
+
+            Section(L10n.tr("settings.privacy.analytics")) {
+                Toggle(L10n.tr("settings.privacy.analyticsToggle"), isOn: $analyticsEnabled)
+                Text(L10n.tr("settings.privacy.analyticsHint"))
+                    .font(.callout)
+                    .foregroundStyle(.tertiary)
+            }
         }
         .formStyle(.grouped)
         .scrollDisabled(true)
@@ -362,17 +361,11 @@ struct AutomationTab: View {
     @AppStorage("automationEnabled") private var automationEnabled = true
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \AutomationRule.sortOrder) private var rules: [AutomationRule]
-    @ObservedObject private var proManager = ProManager.shared
-
     private var enabledCount: Int { rules.filter(\.enabled).count }
 
     var body: some View {
         Form {
-            if proManager.isPro {
-                automationContent
-            } else {
-                proLockedSection
-            }
+            automationContent
         }
         .formStyle(.grouped)
         .scrollDisabled(true)
@@ -416,37 +409,23 @@ struct AutomationTab: View {
         }
     }
 
-    private var proLockedSection: some View {
-        Section {
-            VStack(spacing: 8) {
-                Image(systemName: "lock.fill")
-                    .font(.title2)
-                    .foregroundStyle(.secondary)
-                Text(L10n.tr("settings.automation.proRequired"))
-                    .foregroundStyle(.secondary)
-                    .font(.callout)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-        }
-    }
 }
 
 // MARK: - Pro Tab
 
-struct ProTab: View {
+struct SponsorTab: View {
     var body: some View {
         Form {
             Section {
                 VStack(spacing: 12) {
-                    Image(systemName: "star.circle.fill")
+                    Image(systemName: "heart.circle.fill")
                         .font(.system(size: 40))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(.pink)
 
-                    Text("PasteMemo Pro")
+                    Text(L10n.tr("sponsor.title"))
                         .font(.headline)
 
-                    Text(L10n.tr("pro.beta.desc"))
+                    Text(L10n.tr("sponsor.desc"))
                         .foregroundStyle(.secondary)
                         .font(.callout)
                         .multilineTextAlignment(.center)
@@ -455,12 +434,16 @@ struct ProTab: View {
                 .padding(.vertical, 8)
             }
 
-            Section(L10n.tr("pro.features")) {
-                Label(L10n.tr("pro.feature.unlimited"), systemImage: "infinity")
-                Label(L10n.tr("pro.feature.automation"), systemImage: "gearshape.2")
-                Label(L10n.tr("pro.feature.customCategory"), systemImage: "folder")
-                Label(L10n.tr("pro.feature.smartGroup"), systemImage: "gearshape.arrow.triangle.2.circlepath")
-                Label(L10n.tr("pro.feature.icloud"), systemImage: "icloud")
+            Section {
+                Link(destination: URL(string: "https://www.lifedever.com")!) {
+                    Label(L10n.tr("sponsor.donate"), systemImage: "cup.and.saucer")
+                }
+                Link(destination: URL(string: "https://github.com/lifedever/PasteMemo-app")!) {
+                    Label(L10n.tr("sponsor.star"), systemImage: "star")
+                }
+                Link(destination: URL(string: "https://github.com/lifedever/PasteMemo-app/issues")!) {
+                    Label(L10n.tr("sponsor.feedback"), systemImage: "bubble.left")
+                }
             }
         }
         .formStyle(.grouped)
@@ -508,12 +491,21 @@ struct AboutTab: View {
             Section {
                 Link(L10n.tr("about.website"), destination: URL(string: "https://www.lifedever.com/PasteMemo/")!)
                 Link(L10n.tr("about.help"), destination: URL(string: "https://www.lifedever.com/PasteMemo/help/")!)
-                Link(L10n.tr("menu.reportIssue"), destination: URL(string: "https://github.com/lifedever/PasteMemo/issues")!)
-                Link(L10n.tr("about.sponsor"), destination: URL(string: "https://www.lifedever.com/")!)
+                Link(L10n.tr("menu.reportIssue"), destination: URL(string: "https://github.com/lifedever/PasteMemo-app/issues")!)
             }
 
             Section {
-                Text("© 2026 lifedever. All rights reserved.")
+                HStack {
+                    Text(L10n.tr("about.license"))
+                    Spacer()
+                    Text("GPL-3.0")
+                        .foregroundStyle(.secondary)
+                }
+                Link(L10n.tr("about.sourceCode"), destination: URL(string: "https://github.com/lifedever/PasteMemo-app")!)
+            }
+
+            Section {
+                Text("© 2026 lifedever.")
                     .foregroundStyle(.tertiary)
                     .font(.caption)
                     .frame(maxWidth: .infinity, alignment: .center)

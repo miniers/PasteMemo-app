@@ -660,3 +660,24 @@ Usa %@ para pegar uno por uno.";
 /* Backup - Additional */
 "backup.nextBackup" = "Próxima copia";
 "detail.openInFinder" = "Mostrar en Finder";
+
+/* Sponsor Tab */
+"settings.sponsor" = "Apoyar";
+"sponsor.title" = "Apoya PasteMemo";
+"sponsor.desc" = "PasteMemo es gratuito y de código abierto. Si te resulta útil, considera apoyar el proyecto.";
+"sponsor.donate" = "Invítame un café";
+"sponsor.star" = "Star en GitHub";
+"sponsor.feedback" = "Enviar comentarios";
+
+/* About - Open Source */
+"about.license" = "Licencia";
+"about.sourceCode" = "Código fuente";
+
+/* Analytics */
+"settings.privacy.analytics" = "Estadísticas de uso";
+"settings.privacy.analyticsToggle" = "Enviar estadísticas anónimas";
+"settings.privacy.analyticsHint" = "Ayuda a mejorar PasteMemo enviando datos anónimos (versión de la app, idioma, versión de macOS). No se recopilan datos personales.";
+"analytics.consent.title" = "Estadísticas de uso";
+"analytics.consent.message" = "¿Deseas enviar estadísticas anónimas para mejorar PasteMemo? Incluye versión de la app, idioma y versión de macOS. No se recopilan datos personales. Puedes cambiar esto en Ajustes → Privacidad.";
+"analytics.consent.allow" = "Permitir";
+"analytics.consent.deny" = "No permitir";
