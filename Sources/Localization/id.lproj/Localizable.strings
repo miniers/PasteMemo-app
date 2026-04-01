@@ -84,6 +84,11 @@
 "settings.language.restart_now" = "Mulai Ulang Sekarang";
 "settings.language.restart_later" = "Nanti";
 "settings.launchAtLogin" = "Jalankan saat Login";
+"settings.hideDockIcon" = "Sembunyikan Ikon Dock";
+"settings.hideDockIcon.hint" = "Jika diaktifkan, aplikasi hanya dapat diakses dari ikon bilah menu.";
+"settings.hideDockIcon.confirm.title" = "Sembunyikan Ikon Dock?";
+"settings.hideDockIcon.confirm.message" = "Semua jendela akan ditutup. Anda dapat membukanya kembali dari ikon bilah menu.";
+"settings.hideDockIcon.confirm.ok" = "Sembunyikan & Tutup Jendela";
 "settings.currentVersion" = "Versi Saat Ini";
 "settings.features" = "Fitur";
 "settings.shortcuts" = "Pintasan";

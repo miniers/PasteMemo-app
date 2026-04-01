@@ -57,6 +57,11 @@
 "settings.language.restart_now" = "今すぐ再起動";
 "settings.language.restart_later" = "後で";
 "settings.launchAtLogin" = "ログイン時に起動";
+"settings.hideDockIcon" = "Dockアイコンを非表示";
+"settings.hideDockIcon.hint" = "有効にすると、メニューバーのアイコンからのみアプリにアクセスできます。";
+"settings.hideDockIcon.confirm.title" = "Dockアイコンを非表示にしますか？";
+"settings.hideDockIcon.confirm.message" = "すべてのウィンドウが閉じられます。メニューバーのアイコンから再度開くことができます。";
+"settings.hideDockIcon.confirm.ok" = "非表示にしてウィンドウを閉じる";
 "settings.currentVersion" = "現在のバージョン";
 
 /* Pro */

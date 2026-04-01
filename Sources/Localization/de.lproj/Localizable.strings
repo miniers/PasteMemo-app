@@ -57,6 +57,11 @@
 "settings.language.restart_now" = "Jetzt neu starten";
 "settings.language.restart_later" = "Später";
 "settings.launchAtLogin" = "Bei Anmeldung starten";
+"settings.hideDockIcon" = "Dock-Symbol ausblenden";
+"settings.hideDockIcon.hint" = "Wenn aktiviert, ist die App nur über das Menüleisten-Symbol erreichbar.";
+"settings.hideDockIcon.confirm.title" = "Dock-Symbol ausblenden?";
+"settings.hideDockIcon.confirm.message" = "Alle Fenster werden geschlossen. Sie können sie über das Menüleisten-Symbol erneut öffnen.";
+"settings.hideDockIcon.confirm.ok" = "Ausblenden & Fenster schließen";
 "settings.currentVersion" = "Aktuelle Version";
 
 /* Pro */

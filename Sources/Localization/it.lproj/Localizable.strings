@@ -84,6 +84,11 @@
 "settings.language.restart_now" = "Riavvia ora";
 "settings.language.restart_later" = "Più tardi";
 "settings.launchAtLogin" = "Avvia al login";
+"settings.hideDockIcon" = "Nascondi icona Dock";
+"settings.hideDockIcon.hint" = "Se attivato, l'app è accessibile solo dall'icona nella barra dei menu.";
+"settings.hideDockIcon.confirm.title" = "Nascondere l'icona del Dock?";
+"settings.hideDockIcon.confirm.message" = "Tutte le finestre verranno chiuse. Puoi riaprirle dall'icona nella barra dei menu.";
+"settings.hideDockIcon.confirm.ok" = "Nascondi e chiudi finestre";
 "settings.currentVersion" = "Versione attuale";
 "settings.features" = "Funzionalità";
 "settings.shortcuts" = "Scorciatoie";

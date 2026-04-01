@@ -38,6 +38,8 @@ struct GeneralTab: View {
     @AppStorage("appearanceMode") private var appearanceMode = "system"
     @ObservedObject private var languageManager = LanguageManager.shared
     @AppStorage("launchAtLogin") private var launchAtLogin = false
+    @AppStorage("hideDockIcon") private var hideDockIcon = false
+    @State private var showHideDockConfirm = false
     @AppStorage("soundEnabled") private var soundEnabled = true
     @AppStorage("copySoundName") private var copySoundName = "custom:sound2"
     @AppStorage("pasteSoundName") private var pasteSoundName = "custom:sound1"
@@ -54,6 +56,33 @@ struct GeneralTab: View {
                             try? SMAppService.mainApp.unregister()
                         }
                     }
+                Toggle(L10n.tr("settings.hideDockIcon"), isOn: Binding(
+                    get: { hideDockIcon },
+                    set: { newValue in
+                        if newValue {
+                            showHideDockConfirm = true
+                        } else {
+                            hideDockIcon = false
+                            NSApp.setActivationPolicy(.regular)
+                            NSApp.activate(ignoringOtherApps: true)
+                        }
+                    }
+                ))
+                .alert(L10n.tr("settings.hideDockIcon.confirm.title"), isPresented: $showHideDockConfirm) {
+                    Button(L10n.tr("settings.hideDockIcon.confirm.ok")) {
+                        hideDockIcon = true
+                        for window in NSApp.windows where window.isVisible && window.canBecomeMain {
+                            window.close()
+                        }
+                        NSApp.setActivationPolicy(.accessory)
+                    }
+                    Button(L10n.tr("action.cancel"), role: .cancel) {}
+                } message: {
+                    Text(L10n.tr("settings.hideDockIcon.confirm.message"))
+                }
+                Text(L10n.tr("settings.hideDockIcon.hint"))
+                    .font(.callout)
+                    .foregroundStyle(.tertiary)
             }
 
             Section(L10n.tr("settings.appearance")) {

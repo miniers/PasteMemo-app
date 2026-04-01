@@ -85,6 +85,11 @@
 "settings.language.restart_now" = "立即重新啟動";
 "settings.language.restart_later" = "稍後";
 "settings.launchAtLogin" = "開機啟動";
+"settings.hideDockIcon" = "隱藏 Dock 圖示";
+"settings.hideDockIcon.hint" = "開啟後，只能透過狀態列圖示存取應用程式。";
+"settings.hideDockIcon.confirm.title" = "隱藏 Dock 圖示？";
+"settings.hideDockIcon.confirm.message" = "所有視窗將被關閉，您可以透過狀態列圖示重新開啟。";
+"settings.hideDockIcon.confirm.ok" = "隱藏並關閉視窗";
 "settings.currentVersion" = "目前版本";
 "settings.features" = "功能";
 "settings.shortcuts" = "快捷鍵";

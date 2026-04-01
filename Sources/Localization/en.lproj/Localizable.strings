@@ -91,6 +91,11 @@
 "settings.language.restart_now" = "Restart Now";
 "settings.language.restart_later" = "Later";
 "settings.launchAtLogin" = "Launch at Login";
+"settings.hideDockIcon" = "Hide Dock Icon";
+"settings.hideDockIcon.hint" = "When enabled, the app can only be accessed from the menu bar icon.";
+"settings.hideDockIcon.confirm.title" = "Hide Dock Icon?";
+"settings.hideDockIcon.confirm.message" = "All windows will be closed. You can reopen them from the menu bar icon.";
+"settings.hideDockIcon.confirm.ok" = "Hide & Close Windows";
 "settings.currentVersion" = "Current Version";
 "settings.features" = "Features";
 "settings.shortcuts" = "Shortcuts";

@@ -149,10 +149,15 @@ final class RelayManager {
         alert.showsSuppressionButton = true
         alert.suppressionButton?.title = L10n.tr("relay.alert.dontShowAgain")
         // Temporarily become regular app so alert gets proper focus and centering
-        NSApp.setActivationPolicy(.regular)
+        let hideDock = UserDefaults.standard.bool(forKey: "hideDockIcon")
+        if !hideDock {
+            NSApp.setActivationPolicy(.regular)
+        }
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
-        NSApp.setActivationPolicy(.accessory)
+        if !hideDock {
+            NSApp.setActivationPolicy(.accessory)
+        }
         if alert.suppressionButton?.state == .on {
             UserDefaults.standard.set(true, forKey: "relayAlertDismissed")
         }

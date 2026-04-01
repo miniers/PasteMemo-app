@@ -47,6 +47,7 @@ struct MainWindowView: View {
     @State private var scrollTarget: ClipItem.ID?
     @State private var relaySplitText: String?
     @State private var showCommandPalette = false
+    @AppStorage("hideDockIcon") private var hideDockIcon = false
 
     private var sourceApps: [String] { store.sourceApps }
 
@@ -271,7 +272,9 @@ struct MainWindowView: View {
         .onAppear {
             AppAction.shared.openMainWindow = { [openWindow] in
                 openWindow(id: "main")
-                NSApp.setActivationPolicy(.regular)
+                if !UserDefaults.standard.bool(forKey: "hideDockIcon") {
+                    NSApp.setActivationPolicy(.regular)
+                }
                 NSApp.activate(ignoringOtherApps: true)
                 UsageTracker.pingIfNeeded(source: .main)
             }

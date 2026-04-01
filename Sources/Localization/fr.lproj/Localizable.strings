@@ -57,6 +57,11 @@
 "settings.language.restart_now" = "Redémarrer maintenant";
 "settings.language.restart_later" = "Plus tard";
 "settings.launchAtLogin" = "Lancer au démarrage";
+"settings.hideDockIcon" = "Masquer l'icône du Dock";
+"settings.hideDockIcon.hint" = "Lorsque activé, l'application n'est accessible que depuis l'icône de la barre des menus.";
+"settings.hideDockIcon.confirm.title" = "Masquer l'icône du Dock ?";
+"settings.hideDockIcon.confirm.message" = "Toutes les fenêtres seront fermées. Vous pourrez les rouvrir depuis l'icône de la barre des menus.";
+"settings.hideDockIcon.confirm.ok" = "Masquer et fermer les fenêtres";
 "settings.currentVersion" = "Version actuelle";
 
 /* Pro */

@@ -5,6 +5,7 @@ struct MenuBarContent: View {
     @Environment(\.openSettings) private var openSettings
     @ObservedObject private var hotkeyManager = HotkeyManager.shared
     @ObservedObject private var clipboardManager = ClipboardManager.shared
+    @AppStorage("hideDockIcon") private var hideDockIcon = false
 
     var body: some View {
         let _ = storeOpenWindowAction()
@@ -57,7 +58,9 @@ struct MenuBarContent: View {
         }
 
         Button(L10n.tr("menu.settings")) {
-            NSApp.setActivationPolicy(.regular)
+            if !hideDockIcon {
+                NSApp.setActivationPolicy(.regular)
+            }
             NSApp.activate(ignoringOtherApps: true)
             openSettings()
         }
@@ -72,18 +75,25 @@ struct MenuBarContent: View {
     }
 
     private func storeOpenWindowAction() {
+        let hideDock = hideDockIcon
         AppAction.shared.openMainWindow = { [openWindow] in
             openWindow(id: "main")
-            NSApp.setActivationPolicy(.regular)
+            if !hideDock {
+                NSApp.setActivationPolicy(.regular)
+            }
             NSApp.activate(ignoringOtherApps: true)
         }
         AppAction.shared.openSettings = { [openSettings] in
-            NSApp.setActivationPolicy(.regular)
+            if !hideDock {
+                NSApp.setActivationPolicy(.regular)
+            }
             NSApp.activate(ignoringOtherApps: true)
             openSettings()
         }
         AppAction.shared.openAutomationManager = { [openWindow] in
-            NSApp.setActivationPolicy(.regular)
+            if !hideDock {
+                NSApp.setActivationPolicy(.regular)
+            }
             openWindow(id: "automationManager")
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -91,7 +101,9 @@ struct MenuBarContent: View {
 
     private func handleOpenMainWindow() {
         openWindow(id: "main")
-        NSApp.setActivationPolicy(.regular)
+        if !hideDockIcon {
+            NSApp.setActivationPolicy(.regular)
+        }
         NSApp.activate(ignoringOtherApps: true)
     }
 

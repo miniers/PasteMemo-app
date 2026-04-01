@@ -57,6 +57,11 @@
 "settings.language.restart_now" = "Reiniciar ahora";
 "settings.language.restart_later" = "Más tarde";
 "settings.launchAtLogin" = "Iniciar al arrancar";
+"settings.hideDockIcon" = "Ocultar icono del Dock";
+"settings.hideDockIcon.hint" = "Cuando está activado, solo se puede acceder a la app desde el icono de la barra de menús.";
+"settings.hideDockIcon.confirm.title" = "¿Ocultar icono del Dock?";
+"settings.hideDockIcon.confirm.message" = "Se cerrarán todas las ventanas. Puedes reabrirlas desde el icono de la barra de menús.";
+"settings.hideDockIcon.confirm.ok" = "Ocultar y cerrar ventanas";
 "settings.currentVersion" = "Versión actual";
 
 /* Pro */

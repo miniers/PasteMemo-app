@@ -57,6 +57,11 @@
 "settings.language.restart_now" = "지금 재시작";
 "settings.language.restart_later" = "나중에";
 "settings.launchAtLogin" = "로그인 시 실행";
+"settings.hideDockIcon" = "Dock 아이콘 숨기기";
+"settings.hideDockIcon.hint" = "활성화하면 메뉴 막대 아이콘에서만 앱에 접근할 수 있습니다.";
+"settings.hideDockIcon.confirm.title" = "Dock 아이콘을 숨기시겠습니까?";
+"settings.hideDockIcon.confirm.message" = "모든 창이 닫힙니다. 메뉴 막대 아이콘에서 다시 열 수 있습니다.";
+"settings.hideDockIcon.confirm.ok" = "숨기고 창 닫기";
 "settings.currentVersion" = "현재 버전";
 
 /* Pro */

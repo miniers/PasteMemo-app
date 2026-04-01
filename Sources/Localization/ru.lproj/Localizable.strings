@@ -84,6 +84,11 @@
 "settings.language.restart_now" = "Перезапустить сейчас";
 "settings.language.restart_later" = "Позже";
 "settings.launchAtLogin" = "Запускать при входе";
+"settings.hideDockIcon" = "Скрыть значок Dock";
+"settings.hideDockIcon.hint" = "При включении приложение доступно только через значок в строке меню.";
+"settings.hideDockIcon.confirm.title" = "Скрыть значок Dock?";
+"settings.hideDockIcon.confirm.message" = "Все окна будут закрыты. Вы сможете открыть их снова через значок в строке меню.";
+"settings.hideDockIcon.confirm.ok" = "Скрыть и закрыть окна";
 "settings.currentVersion" = "Текущая версия";
 "settings.features" = "Функции";
 "settings.shortcuts" = "Горячие клавиши";

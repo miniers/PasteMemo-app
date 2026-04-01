@@ -53,7 +53,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         RelayManager.shared.hotkeyController = HotkeyManager.shared
 
         if !hasCompletedOnboarding || needsAccessibility {
-            NSApp.setActivationPolicy(.regular)
+            let hideDock = UserDefaults.standard.bool(forKey: "hideDockIcon")
+            if !hideDock {
+                NSApp.setActivationPolicy(.regular)
+            }
             showOnboardingWindow()
         }
 
