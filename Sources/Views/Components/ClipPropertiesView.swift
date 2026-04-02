@@ -126,9 +126,9 @@ struct ClipPropertiesView: View {
 
     @ViewBuilder
     private var imageProperties: some View {
-        if let data = item.imageData, let img = NSImage(data: data) {
+        if let data = item.imageData, let dimensions = ImageCache.shared.imageDimensions(for: data) {
             propDivider
-            propRow(L10n.tr("detail.dimensions"), "\(Int(img.size.width))×\(Int(img.size.height))")
+            propRow(L10n.tr("detail.dimensions"), "\(Int(dimensions.width))×\(Int(dimensions.height))")
             propDivider
             propRow(L10n.tr("detail.size"), formatFileSize(data.count))
             propDivider

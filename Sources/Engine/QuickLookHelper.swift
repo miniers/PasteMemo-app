@@ -37,6 +37,31 @@ final class QuickLookHelper: NSObject, QLPreviewPanelDataSource, QLPreviewPanelD
         }
     }
 
+    func canOpenInPreview(item: ClipItem) -> Bool {
+        if item.contentType == .image {
+            return item.imageData != nil || item.content != "[Image]"
+        }
+
+        switch item.contentType {
+        case .file, .document, .video, .audio:
+            return !item.content.contains("\n")
+        default:
+            return false
+        }
+    }
+
+    func openInPreviewApp(item: ClipItem) {
+        guard canOpenInPreview(item: item), let url = prepareURL(for: item) else { return }
+        previewURL = url
+
+        if let previewAppURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Preview") {
+            let configuration = NSWorkspace.OpenConfiguration()
+            NSWorkspace.shared.open([url], withApplicationAt: previewAppURL, configuration: configuration) { _, _ in }
+        } else {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
     private func prepareURL(for item: ClipItem) -> URL? {
         switch item.contentType {
         case .file, .video, .audio, .document, .archive, .application:

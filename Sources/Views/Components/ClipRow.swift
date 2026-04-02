@@ -8,6 +8,7 @@ struct ClipRow: View {
     var showThumbnail: Bool = true
     var groupIcon: String?
     var showGroupLabel: Bool = true
+    var searchText: String = ""
 
     var body: some View {
         if item.isDeleted {
@@ -31,6 +32,11 @@ struct ClipRow: View {
                         Text(displayTitle)
                             .font(.system(size: 13))
                             .lineLimit(1)
+
+                        if item.matchesOCROnly(searchText: searchText) {
+                            ocrBadge
+                        }
+
                         Spacer()
 
                         fileCountBadge
@@ -245,6 +251,15 @@ struct ClipRow: View {
                     .offset(x: 3, y: 3)
             }
         }
+    }
+
+    private var ocrBadge: some View {
+        Text("OCR")
+            .font(.system(size: 9, weight: .semibold, design: .rounded))
+            .foregroundStyle(.orange)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 1)
+            .background(Color.orange.opacity(0.12), in: Capsule())
     }
 
     private var thumbnailIcon: FileIconInfo {

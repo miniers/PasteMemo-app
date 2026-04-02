@@ -5,6 +5,8 @@ enum CommandAction: Hashable {
     case paste
     case cmdEnter(label: String)
     case copyColorFormat(format: String, label: String)
+    case retryOCR
+    case openInPreview
     case showInFinder
     case copy
     case transform(RuleAction)
@@ -19,6 +21,8 @@ enum CommandAction: Hashable {
         case .paste: "doc.on.clipboard"
         case .cmdEnter: "textformat"
         case .copyColorFormat: "paintpalette"
+        case .retryOCR: "text.viewfinder"
+        case .openInPreview: "photo.on.rectangle.angled"
         case .showInFinder: "folder"
         case .copy: "doc.on.doc"
         case .transform: "wand.and.stars"
@@ -35,6 +39,8 @@ enum CommandAction: Hashable {
         case .paste: L10n.tr("cmd.paste")
         case .cmdEnter(let label): label
         case .copyColorFormat(_, let label): label
+        case .retryOCR: L10n.tr("cmd.retryOCR")
+        case .openInPreview: L10n.tr("cmd.openInPreview")
         case .showInFinder: L10n.tr("cmd.showInFinder")
         case .copy: L10n.tr("cmd.copy")
         case .transform(let action): action.displayLabel
@@ -51,6 +57,8 @@ enum CommandAction: Hashable {
         case .paste: "V"
         case .cmdEnter: "P"
         case .copyColorFormat: "P"
+        case .retryOCR: "Y"
+        case .openInPreview: "L"
         case .showInFinder: "O"
         case .copy: "C"
         case .transform: nil
@@ -67,6 +75,8 @@ enum CommandAction: Hashable {
         case .paste: 9       // V
         case .cmdEnter: 35   // P
         case .copyColorFormat: 35 // P
+        case .retryOCR: 16   // Y
+        case .openInPreview: 37 // L
         case .showInFinder: 31 // O
         case .copy: 8        // C
         case .transform: nil
@@ -109,6 +119,16 @@ struct CommandPaletteContent: View {
         } else if let item, item.contentType != .color {
             list.append(.cmdEnter(label: cmdEnterLabel(for: item)))
         }
+        if !isMultiSelected,
+           let item,
+           OCRTaskCoordinator.shared.canRetry(item: item) {
+            list.append(.retryOCR)
+        }
+        if !isMultiSelected,
+           let item,
+           canOpenInPreview(item) {
+            list.append(.openInPreview)
+        }
         if let item, item.contentType.isFileBased {
             list.append(.showInFinder)
         }
@@ -131,6 +151,10 @@ struct CommandPaletteContent: View {
         case .link: L10n.tr("cmd.openLink")
         case .image, .file, .document, .archive, .application, .video, .audio: L10n.tr("cmd.pastePath")
         }
+    }
+
+    private func canOpenInPreview(_ item: ClipItem) -> Bool {
+        QuickLookHelper.shared.canOpenInPreview(item: item)
     }
 
     var body: some View {

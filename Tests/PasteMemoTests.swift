@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import Testing
 @testable import PasteMemo
 
@@ -33,6 +34,131 @@ struct PasteMemoTests {
         let result = ClipboardManager.shared.detectContentType(code)
         #expect(result.type == .code)
     }
+
+    @Test("Reuse existing duplicate moves item to top without inserting a new row")
+    @MainActor func reuseExistingDuplicateMovesToTop() throws {
+        let container = try ModelContainer(
+            for: ClipItem.self, SmartGroup.self, AutomationRule.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+
+        let originalDate = Date(timeIntervalSince1970: 100)
+        let existing = ClipItem(
+            content: "hello",
+            contentType: .text,
+            sourceApp: "Old App",
+            createdAt: originalDate,
+            lastUsedAt: originalDate
+        )
+        context.insert(existing)
+        try context.save()
+
+        let incoming = ClipItem(
+            content: "hello",
+            contentType: .text,
+            sourceApp: "New App",
+            createdAt: Date(timeIntervalSince1970: 200),
+            lastUsedAt: Date(timeIntervalSince1970: 200)
+        )
+
+        let matched = ClipboardManager.shared.findExistingDuplicate(for: incoming, in: context)
+        #expect(matched?.persistentModelID == existing.persistentModelID)
+
+        ClipboardManager.shared.reuseExistingDuplicate(existing, with: incoming, in: context)
+        try context.save()
+
+        let items = try context.fetch(FetchDescriptor<ClipItem>(sortBy: [SortDescriptor(\.lastUsedAt, order: .reverse)]))
+        #expect(items.count == 1)
+        #expect(items[0].persistentModelID == existing.persistentModelID)
+        #expect(items[0].sourceApp == "New App")
+        #expect(items[0].lastUsedAt > originalDate)
+        #expect(items[0].createdAt == originalDate)
+    }
+
+    @Test("Retry OCR respects global OCR setting")
+    @MainActor func retryOCRRespectsGlobalSetting() {
+        let defaults = UserDefaults.standard
+        let key = OCRTaskCoordinator.enableOCRKey
+        let original = defaults.object(forKey: key)
+        defaults.set(false, forKey: key)
+        defer {
+            if let original {
+                defaults.set(original, forKey: key)
+            } else {
+                defaults.removeObject(forKey: key)
+            }
+        }
+
+        let item = ClipItem(content: "[Image]", contentType: .image, imageData: Data([1]))
+        #expect(!OCRTaskCoordinator.shared.canRetry(item: item))
+    }
+
+    @Test("Image clip defaults to pending OCR status")
+    @MainActor func imageClipDefaultsToPendingOCR() {
+        let data = Data([0x89, 0x50, 0x4E, 0x47])
+        let item = ClipItem(content: "[Image]", contentType: .image, imageData: data)
+        #expect(item.resolvedOCRStatus == .pending)
+    }
+
+    @Test("DataPorter preserves OCR metadata")
+    @MainActor func dataPorterPreservesOCRMetadata() throws {
+        let clip = ClipItem(content: "[Image]", contentType: .image, imageData: Data([1, 2, 3]))
+        clip.ocrText = "hello from image"
+        clip.ocrStatus = OCRStatus.done.rawValue
+        clip.ocrErrorMessage = nil
+        clip.ocrUpdatedAt = Date(timeIntervalSince1970: 100)
+        clip.ocrVersion = 2
+
+        let exported = DataPorter.buildSingleExportItem(clip)
+        #expect(exported.ocrText == "hello from image")
+        #expect(exported.ocrStatus == OCRStatus.done.rawValue)
+        #expect(exported.ocrVersion == 2)
+    }
+
+    @Test("OCR-only match ignores title/content hits")
+    @MainActor func ocrOnlyMatchDetection() {
+        let item = ClipItem(content: "[Image]", contentType: .image, imageData: Data([1]))
+        item.displayTitle = "Image (100x100)"
+        item.ocrText = "build failed on line 42"
+
+        #expect(item.matchesOCROnly(searchText: "line 42"))
+        #expect(!item.matchesOCROnly(searchText: "Image"))
+        #expect(!item.matchesOCROnly(searchText: ""))
+    }
+
+    @Test("Quick preview OCR snippet includes match context")
+    @MainActor func quickPreviewOCRSnippet() {
+        let attributed = QuickPreviewPane.buildOCRSnippet(
+            text: "first line of text\nerror happened on line 42 near the prompt\nlast line",
+            query: "line 42"
+        )
+        let snippet = String(attributed.characters)
+        #expect(snippet.contains("line 42"))
+        #expect(snippet.contains("error happened"))
+    }
+
+    @Test("OCR language list prioritizes Chinese when app language is Chinese")
+    func ocrLanguagePriorityForChinese() {
+        let languages = ImageOCRService.preferredRecognitionLanguages(appLanguage: "zh-Hans")
+        #expect(languages.first == "zh-Hans")
+        #expect(languages.contains("zh-Hant"))
+        #expect(languages.contains("en-US"))
+    }
+
+    @Test("Open in Preview excludes archive and application items")
+    @MainActor func openInPreviewSupportedTypes() {
+        let archive = ClipItem(content: "/tmp/test.zip", contentType: .archive)
+        let application = ClipItem(content: "/Applications/Test.app", contentType: .application)
+        let document = ClipItem(content: "/tmp/test.pdf", contentType: .document)
+        let image = ClipItem(content: "[Image]", contentType: .image, imageData: Data([1]))
+
+        #expect(!QuickLookHelper.shared.canOpenInPreview(item: archive))
+        #expect(!QuickLookHelper.shared.canOpenInPreview(item: application))
+        #expect(QuickLookHelper.shared.canOpenInPreview(item: document))
+        #expect(QuickLookHelper.shared.canOpenInPreview(item: image))
+    }
+
 }
 
 @Suite("RelayItem Tests")

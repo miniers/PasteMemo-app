@@ -233,8 +233,9 @@ final class ClipItemStore {
         guard !trimmed.isEmpty else { return }
         let pattern = "%\(trimmed)%"
         conditions.append(
-            "ZITEMID IN (SELECT itemID FROM clip_fts WHERE content LIKE ? OR displayTitle LIKE ? OR linkTitle LIKE ?)"
+            "ZITEMID IN (SELECT itemID FROM clip_fts WHERE content LIKE ? OR displayTitle LIKE ? OR linkTitle LIKE ? OR ocrText LIKE ?)"
         )
+        params.append(pattern)
         params.append(pattern)
         params.append(pattern)
         params.append(pattern)

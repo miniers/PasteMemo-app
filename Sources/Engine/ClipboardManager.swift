@@ -128,7 +128,17 @@ final class ClipboardManager: ObservableObject {
             }
         }
 
-        if isDuplicate(newItem, in: context) { return }
+        if isLatestDuplicate(newItem, in: context) { return }
+
+        if let existingItem = findExistingDuplicate(for: newItem, in: context) {
+            reuseExistingDuplicate(existingItem, with: newItem, in: context)
+            cleanExpiredItems(in: context)
+            try? context.save()
+            SoundManager.playCopy()
+            refreshLinkMetadataIfNeeded(for: existingItem, in: context)
+            enqueueOCRIfNeeded(for: existingItem)
+            return
+        }
 
         context.insert(newItem)
         cleanExpiredItems(in: context)
@@ -136,17 +146,8 @@ final class ClipboardManager: ObservableObject {
 
         SoundManager.playCopy()
 
-        if newItem.contentType == .link {
-            let item = newItem
-            Task {
-                let metadata = await LinkMetadataFetcher.shared.fetchMetadata(urlString: item.content)
-                await MainActor.run {
-                    if let title = metadata.title { item.linkTitle = title }
-                    if let favicon = metadata.faviconData { item.faviconData = favicon }
-                    try? context.save()
-                }
-            }
-        }
+        refreshLinkMetadataIfNeeded(for: newItem, in: context)
+        enqueueOCRIfNeeded(for: newItem)
     }
 
     func captureCurrentClipboard(sourceApp: String? = nil) -> ClipItem? {
@@ -259,14 +260,85 @@ final class ClipboardManager: ObservableObject {
         return .file
     }
 
-    private func isDuplicate(_ newItem: ClipItem, in context: ModelContext) -> Bool {
+    func findExistingDuplicate(for newItem: ClipItem, in context: ModelContext) -> ClipItem? {
+        let content = newItem.content
+        let descriptor = FetchDescriptor<ClipItem>(
+            predicate: #Predicate<ClipItem> { item in
+                item.content == content
+            },
+            sortBy: [
+                SortDescriptor(\.lastUsedAt, order: .reverse),
+                SortDescriptor(\.createdAt, order: .reverse),
+            ]
+        )
+
+        guard let matches = try? context.fetch(descriptor) else { return nil }
+        return matches.first(where: { self.matchesDuplicateCandidate($0, with: newItem) })
+    }
+
+    func reuseExistingDuplicate(_ existingItem: ClipItem, with newItem: ClipItem, in context: ModelContext) {
+        let now = Date()
+        existingItem.lastUsedAt = now
+        existingItem.sourceApp = newItem.sourceApp
+        existingItem.sourceAppBundleID = newItem.sourceAppBundleID
+        existingItem.displayTitle = newItem.displayTitle
+
+        if existingItem.imageData == nil {
+            existingItem.imageData = newItem.imageData
+        }
+        if existingItem.richTextData == nil {
+            existingItem.richTextData = newItem.richTextData
+            existingItem.richTextType = newItem.richTextType
+        }
+        if existingItem.codeLanguage == nil {
+            existingItem.codeLanguage = newItem.codeLanguage
+        }
+        if newItem.isSensitive {
+            existingItem.isSensitive = true
+        }
+        if newItem.isPinned {
+            existingItem.isPinned = true
+        }
+        if existingItem.groupName == nil, let groupName = newItem.groupName, !groupName.isEmpty {
+            existingItem.groupName = groupName
+            upsertSmartGroup(name: groupName, context: context)
+        }
+    }
+
+    private func isLatestDuplicate(_ newItem: ClipItem, in context: ModelContext) -> Bool {
         let descriptor = FetchDescriptor<ClipItem>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
         guard let latest = try? context.fetch(descriptor).first else { return false }
-        guard latest.content == newItem.content, latest.contentType == newItem.contentType else { return false }
+        return matchesDuplicateCandidate(latest, with: newItem)
+    }
+
+    private func matchesDuplicateCandidate(_ existingItem: ClipItem, with newItem: ClipItem) -> Bool {
+        guard existingItem.content == newItem.content, existingItem.contentType == newItem.contentType else {
+            return false
+        }
         // Different image data means edited image, not a duplicate
-        if latest.contentType == .image, latest.imageData != newItem.imageData { return false }
+        if existingItem.contentType == .image, existingItem.imageData != newItem.imageData { return false }
         // Different rich text data means different format, not a duplicate
-        return latest.richTextData == newItem.richTextData
+        return existingItem.richTextData == newItem.richTextData
+    }
+
+    private func refreshLinkMetadataIfNeeded(for item: ClipItem, in context: ModelContext) {
+        guard item.contentType == .link else { return }
+        guard item.linkTitle == nil || item.faviconData == nil else { return }
+
+        let targetItem = item
+        Task {
+            let metadata = await LinkMetadataFetcher.shared.fetchMetadata(urlString: targetItem.content)
+            await MainActor.run {
+                if let title = metadata.title { targetItem.linkTitle = title }
+                if let favicon = metadata.faviconData { targetItem.faviconData = favicon }
+                try? context.save()
+            }
+        }
+    }
+
+    private func enqueueOCRIfNeeded(for item: ClipItem) {
+        guard item.contentType == .image, item.imageData != nil else { return }
+        OCRTaskCoordinator.shared.enqueue(itemID: item.itemID)
     }
 
     private func cleanExpiredItems(in context: ModelContext) {

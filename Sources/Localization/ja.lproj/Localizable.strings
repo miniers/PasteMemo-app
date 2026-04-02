@@ -99,6 +99,14 @@
 "detail.aiPreview" = "AI用プレビュー";
 "detail.language" = "言語";
 "detail.preview_failed" = "プレビューを読み込めません";
+"detail.ocr" = "認識テキスト";
+"detail.ocr.copy" = "テキストをコピー";
+"detail.ocr.retry" = "OCRを再試行";
+"detail.ocr.pending" = "画像テキストのスキャン待機中です。";
+"detail.ocr.processing" = "画像から文字を認識中…";
+"detail.ocr.ready" = "認識テキストを検索できます。";
+"detail.ocr.empty" = "この画像ではまだ文字が見つかっていません。";
+"detail.ocr.failed" = "この画像の OCR に失敗しました。";
 
 /* Filter */
 "filter.types" = "種類";
@@ -134,6 +142,12 @@
 "settings.display" = "表示";
 "settings.behavior" = "動作";
 "settings.preferences" = "環境設定";
+"settings.ocr" = "画像OCR";
+"settings.ocr.enable" = "画像OCRを有効にする";
+"settings.ocr.auto" = "新しい画像を自動処理する";
+"settings.ocr.scanExisting" = "既存の画像をスキャン";
+"settings.ocr.scanStarted" = "既存の画像に対するOCRをバックグラウンドで開始しました。";
+"settings.ocr.hint" = "OCR はデバイス上で実行され、画像内の文字を検索可能にします。";
 "settings.showLinkURL" = "リンクをページタイトルではなくURLで表示";
 "settings.webPreview" = "Webプレビュー";
 "settings.showGuide" = "ウェルカムガイドを表示";
@@ -374,6 +388,8 @@
 "cmd.openLink" = "リンクを開く";
 "cmd.pasteAsFile" = "ファイルとしてペースト";
 "cmd.pastePath" = "パスをペースト";
+"cmd.retryOCR" = "OCRを再試行";
+"cmd.openInPreview" = ""プレビュー"で開く";
 "cmd.andNewLine" = "＋改行";
 "cmd.transform" = "変換";
 
@@ -508,6 +524,7 @@
 "quick.commandPalette" = "アクション";
 "quick.delete" = "削除";
 "quick.navigate" = "移動";
+"quick.ocrMatch" = "認識テキストに一致";
 "quick.openLink" = "開く";
 "quick.pasteAction" = "ペースト";
 "quick.pasteImage" = "画像をペースト";

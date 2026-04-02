@@ -664,3 +664,22 @@ Gunakan %@ untuk menempel satu per satu.";
 "onboarding.analytics.title" = "Statistik Penggunaan";
 "onboarding.analytics.desc" = "Bantu tingkatkan PasteMemo dengan mengirim data anonim (versi aplikasi, bahasa sistem, versi macOS). Tidak ada data pribadi yang dikumpulkan.";
 "onboarding.analytics.hint" = "Anda dapat mengubahnya di Pengaturan → Privasi.";
+
+/* OCR */
+"settings.ocr" = "OCR gambar";
+"settings.ocr.enable" = "Aktifkan OCR gambar";
+"settings.ocr.auto" = "Proses gambar baru secara otomatis";
+"settings.ocr.scanExisting" = "Pindai gambar yang sudah ada";
+"settings.ocr.scanStarted" = "OCR latar belakang untuk gambar yang sudah ada telah dimulai.";
+"settings.ocr.hint" = "OCR berjalan di perangkat dan membuat teks di dalam gambar dapat dicari.";
+"detail.ocr" = "Teks terdeteksi";
+"detail.ocr.copy" = "Salin teks";
+"detail.ocr.retry" = "Coba lagi OCR";
+"detail.ocr.pending" = "Menunggu untuk memindai teks gambar.";
+"detail.ocr.processing" = "Memindai teks dari gambar…";
+"detail.ocr.ready" = "Teks hasil OCR tersedia untuk pencarian.";
+"detail.ocr.empty" = "Belum ada teks yang ditemukan di gambar ini.";
+"detail.ocr.failed" = "OCR gagal untuk gambar ini.";
+"quick.ocrMatch" = "Cocok di teks hasil OCR";
+"cmd.openInPreview" = "Buka di Pratinjau";
+"cmd.retryOCR" = "Coba lagi OCR";

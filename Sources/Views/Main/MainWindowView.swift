@@ -537,7 +537,8 @@ struct MainWindowView: View {
         ClipItemListRow(
             item: item,
             isSelected: isSelected,
-            groupIcon: store.sidebarCounts.byGroup.first { $0.name == item.groupName }?.icon
+            groupIcon: store.sidebarCounts.byGroup.first { $0.name == item.groupName }?.icon,
+            searchText: searchText
         )
             .padding(.horizontal, 12)
             .padding(.vertical, 3)
@@ -784,6 +785,12 @@ struct MainWindowView: View {
             } else {
                 copyToClipboard(item)
             }
+        case .retryOCR:
+            if item.contentType == .image, item.imageData != nil {
+                OCRTaskCoordinator.shared.retry(itemID: item.itemID)
+            }
+        case .openInPreview:
+            QuickLookHelper.shared.openInPreviewApp(item: item)
         case .addToRelay:
             let items = selectedItems.count > 1 ? selectedClipItems : [item]
             let texts = items.compactMap { $0.content.isEmpty ? nil : $0.content }
@@ -1276,9 +1283,10 @@ struct ClipItemListRow: View {
     let item: ClipItem
     var isSelected: Bool = false
     var groupIcon: String?
+    var searchText: String = ""
 
     var body: some View {
-        ClipRow(item: item, isSelected: isSelected, groupIcon: groupIcon)
+        ClipRow(item: item, isSelected: isSelected, groupIcon: groupIcon, searchText: searchText)
             .padding(.vertical, 2)
             .transaction { $0.animation = nil }
     }
