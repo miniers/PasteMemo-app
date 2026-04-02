@@ -4,6 +4,7 @@ import AppKit
 
 struct QuickPreviewPane: View {
     let item: ClipItem
+    var searchText: String = ""
 
     private var isContentImage: Bool {
         item.contentType == .image && item.imageData != nil
@@ -39,9 +40,7 @@ struct QuickPreviewPane: View {
     @ViewBuilder
     private var quickContentArea: some View {
         if isContentImage {
-            imagePreview
-                .padding(10)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            imagePreviewWithOCR
         } else if isSingleVideo {
             videoPreview
                 .padding(10)
@@ -169,18 +168,99 @@ struct QuickPreviewPane: View {
 
     @ViewBuilder
     private var imagePreview: some View {
-        if let data = item.imageData, let nsImage = NSImage(data: data) {
-            Image(nsImage: nsImage)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-        } else {
-            HStack(spacing: 6) {
-                Image(systemName: "photo").foregroundStyle(.tertiary)
-                Text("[Image]").foregroundStyle(.tertiary)
+        AsyncPreviewImageView(
+            data: item.imageData,
+            cacheKey: item.itemID,
+            maxPixelSize: 1100,
+            cornerRadius: 6,
+            onDoubleClick: {
+                QuickLookHelper.shared.openInPreviewApp(item: item)
             }
-            .font(.system(size: 13))
+        )
+        .pointerCursor()
+    }
+
+    private var imagePreviewWithOCR: some View {
+        return VStack(spacing: 10) {
+            imagePreview
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if let ocrText = item.ocrText, !ocrText.isEmpty {
+                ocrSnippetCard(text: ocrText)
+            }
         }
+        .padding(10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func ocrSnippetCard(text: String) -> some View {
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Text("OCR")
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.orange.opacity(0.12), in: Capsule())
+                Text(L10n.tr("quick.ocrMatch"))
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+
+            ScrollView {
+                Text(ocrSnippetText(from: text))
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(minHeight: 56, maxHeight: 120)
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.primary.opacity(0.05))
+        )
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    static func buildOCRSnippet(text: String, query: String) -> AttributedString {
+        let compact = text.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let snippet: String = {
+            guard !compact.isEmpty else { return compact }
+            guard !trimmedQuery.isEmpty,
+                  let range = compact.range(of: trimmedQuery, options: [.caseInsensitive, .diacriticInsensitive])
+            else {
+                let prefix = compact.prefix(220)
+                return compact.count > 220 ? String(prefix) + "…" : String(prefix)
+            }
+
+            let contextRadius = 72
+            let lowerDistance = compact.distance(from: compact.startIndex, to: range.lowerBound)
+            let upperDistance = compact.distance(from: compact.startIndex, to: range.upperBound)
+            let start = compact.index(range.lowerBound, offsetBy: -min(contextRadius, lowerDistance))
+            let end = compact.index(range.upperBound, offsetBy: min(contextRadius, compact.count - upperDistance))
+            var snippet = String(compact[start..<end])
+            if start > compact.startIndex { snippet = "…" + snippet }
+            if end < compact.endIndex { snippet += "…" }
+            return snippet
+        }()
+
+        var attributed = AttributedString(snippet)
+
+        if !trimmedQuery.isEmpty,
+           let highlightRange = attributed.range(of: trimmedQuery, options: [.caseInsensitive, .diacriticInsensitive]) {
+            attributed[highlightRange].backgroundColor = .yellow.opacity(0.35)
+            attributed[highlightRange].foregroundColor = .primary
+        }
+        return attributed
+    }
+
+    private func ocrSnippetText(from text: String) -> AttributedString {
+        Self.buildOCRSnippet(text: text, query: searchText)
     }
 
     private var videoPreview: some View {

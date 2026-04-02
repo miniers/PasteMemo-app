@@ -652,3 +652,22 @@
 "onboarding.analytics.title" = "使用統計";
 "onboarding.analytics.desc" = "傳送匿名使用資料（應用版本、系統語言、macOS 版本）幫助改進 PasteMemo。不採集任何個人資訊。";
 "onboarding.analytics.hint" = "你可以隨時在 設定 → 隱私 中更改。";
+
+/* OCR */
+"settings.ocr" = "圖片 OCR";
+"settings.ocr.enable" = "啟用圖片 OCR";
+"settings.ocr.auto" = "自動處理新圖片";
+"settings.ocr.scanExisting" = "掃描現有圖片";
+"settings.ocr.scanStarted" = "已開始在背景掃描現有圖片。";
+"settings.ocr.hint" = "OCR 會在本機執行，讓圖片中的文字可被搜尋。";
+"detail.ocr" = "辨識文字";
+"detail.ocr.copy" = "複製文字";
+"detail.ocr.retry" = "重新辨識";
+"detail.ocr.pending" = "等待掃描圖片文字。";
+"detail.ocr.processing" = "正在辨識圖片文字…";
+"detail.ocr.ready" = "辨識文字已可供搜尋。";
+"detail.ocr.empty" = "目前尚未在這張圖片中辨識到文字。";
+"detail.ocr.failed" = "這張圖片的 OCR 辨識失敗。";
+"quick.ocrMatch" = "命中辨識文字";
+"cmd.openInPreview" = "用「預覽」打開";
+"cmd.retryOCR" = "重新辨識 OCR";

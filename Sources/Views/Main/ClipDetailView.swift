@@ -9,6 +9,7 @@ struct ClipDetailView: View {
 
     @State private var isEditing = false
     @State private var editingContent = ""
+    @State private var isOCRExpanded = false
 
     private var isEditableType: Bool {
         item.contentType == .text || item.contentType == .code
@@ -34,10 +35,16 @@ struct ClipDetailView: View {
 
             Divider().opacity(0.3)
 
+            if item.contentType == .image {
+                ocrCard
+                Divider().opacity(0.3)
+            }
+
             propertiesCard
         }
         .onChange(of: item.persistentModelID) {
             if isEditing { cancelEdit() }
+            isOCRExpanded = false
         }
     }
 
@@ -392,17 +399,12 @@ struct ClipDetailView: View {
 
     @ViewBuilder
     private var imagePreview: some View {
-        if let data = item.imageData, let nsImage = NSImage(data: data) {
-            Image(nsImage: nsImage)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-        } else {
-            HStack(spacing: 6) {
-                Image(systemName: "photo").foregroundStyle(.tertiary)
-                Text("[Image]").foregroundStyle(.tertiary)
-            }
-        }
+        AsyncPreviewImageView(
+            data: item.imageData,
+            cacheKey: item.itemID,
+            maxPixelSize: 1400,
+            cornerRadius: 8
+        )
     }
 
     @AppStorage("webPreviewEnabled") private var webPreviewEnabled = true
@@ -609,6 +611,106 @@ struct ClipDetailView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(Color.clear)
+    }
+
+    private var ocrCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(L10n.tr("detail.ocr"))
+                    .font(.headline)
+                Spacer()
+                if let text = item.ocrText, !text.isEmpty {
+                    Button(L10n.tr("detail.ocr.copy")) {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(text, forType: .string)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+                if OCRTaskCoordinator.shared.canRetry(item: item) {
+                    Button(L10n.tr("detail.ocr.retry")) {
+                        OCRTaskCoordinator.shared.retry(itemID: item.itemID)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+                if shouldShowOCRExpandToggle {
+                    Button(isOCRExpanded ? L10n.tr("action.showLess") : L10n.tr("action.showMore")) {
+                        isOCRExpanded.toggle()
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            }
+
+            Text(ocrStatusText)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Group {
+                if let text = item.ocrText, !text.isEmpty {
+                    ScrollView {
+                        Text(displayedOCRText)
+                            .font(.system(size: 12))
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .frame(minHeight: 70, maxHeight: isOCRExpanded ? 220 : 120)
+                } else {
+                    Text(ocrEmptyText)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.tertiary)
+                        .frame(maxWidth: .infinity, minHeight: 70, alignment: .topLeading)
+                }
+            }
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.primary.opacity(0.04))
+            )
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+
+    private var ocrStatusText: String {
+        switch item.resolvedOCRStatus {
+        case .pending:
+            return L10n.tr("detail.ocr.pending")
+        case .processing:
+            return L10n.tr("detail.ocr.processing")
+        case .done:
+            return L10n.tr("detail.ocr.ready")
+        case .failed:
+            return item.ocrErrorMessage ?? L10n.tr("detail.ocr.failed")
+        case .skipped:
+            return item.ocrText?.isEmpty == false ? L10n.tr("detail.ocr.ready") : L10n.tr("detail.ocr.empty")
+        }
+    }
+
+    private var ocrEmptyText: String {
+        switch item.resolvedOCRStatus {
+        case .failed:
+            return L10n.tr("detail.ocr.failed")
+        case .processing, .pending:
+            return L10n.tr("detail.ocr.processing")
+        case .done, .skipped:
+            return L10n.tr("detail.ocr.empty")
+        }
+    }
+
+    private var displayedOCRText: String {
+        guard let text = item.ocrText else { return "" }
+        guard !isOCRExpanded else { return text }
+        let limit = 1600
+        guard text.count > limit else { return text }
+        let end = text.index(text.startIndex, offsetBy: limit)
+        return String(text[..<end]) + "\n…"
+    }
+
+    private var shouldShowOCRExpandToggle: Bool {
+        guard let text = item.ocrText else { return false }
+        return text.count > 1600
     }
 }
 

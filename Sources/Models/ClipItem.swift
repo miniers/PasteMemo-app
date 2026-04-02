@@ -2,6 +2,14 @@ import Foundation
 import SwiftData
 import AppKit
 
+enum OCRStatus: String, Codable, CaseIterable {
+    case pending = "pending"
+    case processing = "processing"
+    case done = "done"
+    case failed = "failed"
+    case skipped = "skipped"
+}
+
 enum ClipContentType: String, Codable, CaseIterable {
     case text = "text"
     case link = "link"
@@ -120,6 +128,11 @@ final class ClipItem {
     /// Original rich text format type: "rtf" or "html"
     var richTextType: String?
     var groupName: String?
+    var ocrText: String?
+    var ocrStatus: String = OCRStatus.skipped.rawValue
+    var ocrUpdatedAt: Date?
+    var ocrErrorMessage: String?
+    var ocrVersion: Int = 1
 
     @MainActor
     init(
@@ -149,6 +162,28 @@ final class ClipItem {
         self.richTextData = richTextData
         self.richTextType = richTextType
         self.displayTitle = Self.buildTitle(content: content, contentType: contentType, imageData: imageData)
+        if contentType == .image, imageData != nil {
+            self.ocrStatus = OCRStatus.pending.rawValue
+        }
+    }
+
+    var resolvedOCRStatus: OCRStatus {
+        OCRStatus(rawValue: ocrStatus) ?? .skipped
+    }
+
+    func matchesOCROnly(searchText: String) -> Bool {
+        let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        guard contentType == .image else { return false }
+        guard let ocrText, !ocrText.isEmpty else { return false }
+
+        let query = trimmed.lowercased()
+        let contentMatch = content.lowercased().contains(query)
+        let titleMatch = (displayTitle ?? "").lowercased().contains(query)
+        let linkTitleMatch = (linkTitle ?? "").lowercased().contains(query)
+        let ocrMatch = ocrText.lowercased().contains(query)
+
+        return ocrMatch && !contentMatch && !titleMatch && !linkTitleMatch
     }
 
     /// Resolved code language — uses stored override if available, otherwise auto-detects.

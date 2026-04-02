@@ -84,9 +84,19 @@ final class AutomationEngine {
     ) -> Bool {
         switch logic {
         case .all:
-            return conditions.allSatisfy { $0.matches(content: content, contentType: contentType, sourceApp: sourceApp) }
+            for condition in conditions {
+                if !condition.matches(content: content, contentType: contentType, sourceApp: sourceApp) {
+                    return false
+                }
+            }
+            return true
         case .any:
-            return conditions.contains { $0.matches(content: content, contentType: contentType, sourceApp: sourceApp) }
+            for condition in conditions {
+                if condition.matches(content: content, contentType: contentType, sourceApp: sourceApp) {
+                    return true
+                }
+            }
+            return false
         }
     }
 
@@ -111,7 +121,11 @@ final class AutomationEngine {
     }
 
     nonisolated static func executeActions(_ actions: [RuleAction], on content: String) -> String {
-        actions.reduce(content) { current, action in action.execute(on: current) }
+        var current = content
+        for action in actions {
+            current = action.execute(on: current)
+        }
+        return current
     }
 
     // MARK: - Private

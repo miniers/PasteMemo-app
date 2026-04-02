@@ -555,7 +555,7 @@ struct QuickPanelView: View {
                             ForEach(group.items) { item in
                                 let itemID = item.persistentModelID
                                 let shortcutIdx = shortcutIndex(for: item)
-                                QuickClipRow(item: item, isSelected: selectedItemIDs.contains(itemID), shortcutIndex: shortcutIdx)
+                                QuickClipRow(item: item, isSelected: selectedItemIDs.contains(itemID), shortcutIndex: shortcutIdx, searchText: searchText)
                                     .id(itemID)
                                     .contentShape(Rectangle())
                                     .popover(
@@ -708,7 +708,7 @@ struct QuickPanelView: View {
         if isMultiSelected {
             multiSelectPreview
         } else if let item = currentItem {
-            QuickPreviewPane(item: item)
+            QuickPreviewPane(item: item, searchText: searchText)
         } else {
             VStack(spacing: 8) {
                 Image(systemName: "square.text.square")
@@ -1029,6 +1029,14 @@ struct QuickPanelView: View {
         case .copy:
             let items = isMultiSelected ? currentItems : (currentItem.map { [$0] } ?? [])
             if !items.isEmpty { copyItemsToClipboard(items) }
+        case .retryOCR:
+            if let item = currentItem, item.contentType == .image, item.imageData != nil {
+                OCRTaskCoordinator.shared.retry(itemID: item.itemID)
+            }
+        case .openInPreview:
+            if let item = currentItem {
+                QuickLookHelper.shared.openInPreviewApp(item: item)
+            }
         case .addToRelay:
             let items = isMultiSelected ? currentItems : (currentItem.map { [$0] } ?? [])
             let texts = items.compactMap { $0.content.isEmpty ? nil : $0.content }

@@ -311,13 +311,13 @@ struct PasteMemoApp: App {
     }
 
     private static func ensureFTS(db: SQLiteConnection) {
-        // Migrate from unicode61 to trigram tokenizer for CJK substring matching
+        // Migrate from older tokenizers or older schemas to the current trigram-backed schema.
         migrateToTrigramIfNeeded(db: db)
 
         // Create FTS5 virtual table with trigram tokenizer for substring search
         db.execute("""
             CREATE VIRTUAL TABLE IF NOT EXISTS clip_fts USING fts5(
-                itemID UNINDEXED, content, displayTitle, linkTitle,
+                itemID UNINDEXED, content, displayTitle, linkTitle, ocrText,
                 tokenize='trigram'
             )
         """)
@@ -325,8 +325,8 @@ struct PasteMemoApp: App {
         // Auto-sync triggers
         db.execute("""
             CREATE TRIGGER IF NOT EXISTS clip_fts_insert AFTER INSERT ON ZCLIPITEM BEGIN
-                INSERT INTO clip_fts(itemID, content, displayTitle, linkTitle)
-                VALUES (NEW.ZITEMID, COALESCE(NEW.ZCONTENT, ''), COALESCE(NEW.ZDISPLAYTITLE, ''), COALESCE(NEW.ZLINKTITLE, ''));
+                INSERT INTO clip_fts(itemID, content, displayTitle, linkTitle, ocrText)
+                VALUES (NEW.ZITEMID, COALESCE(NEW.ZCONTENT, ''), COALESCE(NEW.ZDISPLAYTITLE, ''), COALESCE(NEW.ZLINKTITLE, ''), COALESCE(NEW.ZOCRTEXT, ''));
             END
         """)
         db.execute("""
@@ -335,10 +335,10 @@ struct PasteMemoApp: App {
             END
         """)
         db.execute("""
-            CREATE TRIGGER IF NOT EXISTS clip_fts_update AFTER UPDATE OF ZCONTENT, ZDISPLAYTITLE, ZLINKTITLE ON ZCLIPITEM BEGIN
+            CREATE TRIGGER IF NOT EXISTS clip_fts_update AFTER UPDATE OF ZCONTENT, ZDISPLAYTITLE, ZLINKTITLE, ZOCRTEXT ON ZCLIPITEM BEGIN
                 DELETE FROM clip_fts WHERE itemID = OLD.ZITEMID;
-                INSERT INTO clip_fts(itemID, content, displayTitle, linkTitle)
-                VALUES (NEW.ZITEMID, COALESCE(NEW.ZCONTENT, ''), COALESCE(NEW.ZDISPLAYTITLE, ''), COALESCE(NEW.ZLINKTITLE, ''));
+                INSERT INTO clip_fts(itemID, content, displayTitle, linkTitle, ocrText)
+                VALUES (NEW.ZITEMID, COALESCE(NEW.ZCONTENT, ''), COALESCE(NEW.ZDISPLAYTITLE, ''), COALESCE(NEW.ZLINKTITLE, ''), COALESCE(NEW.ZOCRTEXT, ''));
             END
         """)
 
@@ -346,8 +346,8 @@ struct PasteMemoApp: App {
         let count = db.queryStrings("SELECT COUNT(*) FROM clip_fts")
         if count.first == "0" {
             db.execute("""
-                INSERT INTO clip_fts(itemID, content, displayTitle, linkTitle)
-                SELECT ZITEMID, COALESCE(ZCONTENT, ''), COALESCE(ZDISPLAYTITLE, ''), COALESCE(ZLINKTITLE, '')
+                INSERT INTO clip_fts(itemID, content, displayTitle, linkTitle, ocrText)
+                SELECT ZITEMID, COALESCE(ZCONTENT, ''), COALESCE(ZDISPLAYTITLE, ''), COALESCE(ZLINKTITLE, ''), COALESCE(ZOCRTEXT, '')
                 FROM ZCLIPITEM
             """)
         }
@@ -358,7 +358,8 @@ struct PasteMemoApp: App {
         let sql = db.queryStrings(
             "SELECT sql FROM sqlite_master WHERE type='table' AND name='clip_fts'"
         )
-        guard let createSQL = sql.first, !createSQL.contains("trigram") else { return }
+        guard let createSQL = sql.first else { return }
+        guard !createSQL.contains("trigram") || !createSQL.contains("ocrText") else { return }
         // Old tokenizer detected — drop everything and recreate
         db.execute("DROP TRIGGER IF EXISTS clip_fts_insert")
         db.execute("DROP TRIGGER IF EXISTS clip_fts_delete")

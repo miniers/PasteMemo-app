@@ -1,7 +1,7 @@
 import AppKit
+import ImageIO
 
-@MainActor
-final class ImageCache {
+final class ImageCache: @unchecked Sendable {
     static let shared = ImageCache()
 
     private let cache = NSCache<NSString, NSImage>()
@@ -15,10 +15,35 @@ final class ImageCache {
         let cacheKey = "\(key)_\(Int(size))" as NSString
         if let cached = cache.object(forKey: cacheKey) { return cached }
 
-        guard let source = NSImage(data: data) else { return nil }
+        guard let source = downsample(data: data, maxPixelSize: size * 2) ?? NSImage(data: data) else { return nil }
         let thumb = resize(source, to: size)
         cache.setObject(thumb, forKey: cacheKey, cost: data.count)
         return thumb
+    }
+
+    func cachedPreview(for key: String, maxDimension: CGFloat) -> NSImage? {
+        cache.object(forKey: previewCacheKey(for: key, maxDimension: maxDimension))
+    }
+
+    func preview(for data: Data, key: String, maxDimension: CGFloat) -> NSImage? {
+        let cacheKey = previewCacheKey(for: key, maxDimension: maxDimension)
+        if let cached = cache.object(forKey: cacheKey) { return cached }
+
+        guard let image = downsample(data: data, maxPixelSize: maxDimension * 2) ?? NSImage(data: data) else {
+            return nil
+        }
+        cache.setObject(image, forKey: cacheKey, cost: data.count)
+        return image
+    }
+
+    func imageDimensions(for data: Data) -> NSSize? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let width = properties[kCGImagePropertyPixelWidth] as? CGFloat,
+              let height = properties[kCGImagePropertyPixelHeight] as? CGFloat else {
+            return nil
+        }
+        return NSSize(width: width, height: height)
     }
 
     func favicon(for data: Data, key: String) -> NSImage? {
@@ -45,6 +70,32 @@ final class ImageCache {
     func setVideoThumbnail(_ image: NSImage, forPath path: String) {
         let cacheKey = "video_\(path)" as NSString
         cache.setObject(image, forKey: cacheKey, cost: 4096)
+    }
+
+    private func previewCacheKey(for key: String, maxDimension: CGFloat) -> NSString {
+        "preview_\(key)_\(Int(maxDimension))" as NSString
+    }
+
+    private func downsample(data: Data, maxPixelSize: CGFloat) -> NSImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: false] as CFDictionary) else {
+            return nil
+        }
+
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: max(1, Int(maxPixelSize.rounded(.up)))
+        ]
+
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return nil
+        }
+
+        return NSImage(
+            cgImage: cgImage,
+            size: NSSize(width: cgImage.width, height: cgImage.height)
+        )
     }
 
     private func resize(_ image: NSImage, to maxDimension: CGFloat) -> NSImage {

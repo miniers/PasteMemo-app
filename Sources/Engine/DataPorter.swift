@@ -21,6 +21,11 @@ struct ExportItem: Codable {
     let richTextDataBase64: String?
     let richTextType: String?
     let groupName: String?
+    let ocrText: String?
+    let ocrStatus: String?
+    let ocrUpdatedAt: Date?
+    let ocrErrorMessage: String?
+    let ocrVersion: Int?
 }
 
 struct ExportPayload: Codable {
@@ -148,7 +153,12 @@ enum DataPorter {
             faviconDataBase64: clip.faviconData?.base64EncodedString(),
             richTextDataBase64: clip.richTextData?.base64EncodedString(),
             richTextType: clip.richTextType,
-            groupName: clip.groupName
+            groupName: clip.groupName,
+            ocrText: clip.ocrText,
+            ocrStatus: clip.ocrStatus,
+            ocrUpdatedAt: clip.ocrUpdatedAt,
+            ocrErrorMessage: clip.ocrErrorMessage,
+            ocrVersion: clip.ocrVersion
         )
     }
 
@@ -190,6 +200,13 @@ enum DataPorter {
         clip.displayTitle = exportItem.displayTitle
         clip.faviconData = exportItem.faviconDataBase64.flatMap { Data(base64Encoded: $0) }
         clip.groupName = exportItem.groupName
+        clip.ocrText = exportItem.ocrText
+        clip.ocrStatus = exportItem.ocrStatus ?? clip.ocrStatus
+        clip.ocrUpdatedAt = exportItem.ocrUpdatedAt
+        clip.ocrErrorMessage = exportItem.ocrErrorMessage
+        if let version = exportItem.ocrVersion {
+            clip.ocrVersion = version
+        }
         context.insert(clip)
     }
 }

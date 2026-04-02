@@ -33,6 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppDelegate.applyAppearance(mode)
 
         ClipboardManager.shared.modelContainer = PasteMemoApp.sharedModelContainer
+        OCRTaskCoordinator.shared.configure(modelContainer: PasteMemoApp.sharedModelContainer)
         if ProManager.AUTOMATION_ENABLED {
             BuiltInRules.seedIfNeeded(context: PasteMemoApp.sharedModelContainer.mainContext)
         }

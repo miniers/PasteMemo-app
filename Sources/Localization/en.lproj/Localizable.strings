@@ -120,6 +120,12 @@
 "settings.preferences" = "Preferences";
 "settings.showLinkURL" = "Show URL instead of page title for links";
 "settings.webPreview" = "Web preview";
+"settings.ocr" = "Image OCR";
+"settings.ocr.enable" = "Enable image OCR";
+"settings.ocr.auto" = "Process new images automatically";
+"settings.ocr.scanExisting" = "Scan existing images";
+"settings.ocr.scanStarted" = "Background OCR started for existing images.";
+"settings.ocr.hint" = "OCR runs on-device and makes text inside images searchable.";
 
 /* Pro */
 "pro.title" = "Upgrade to PasteMemo Pro";
@@ -170,6 +176,14 @@
 "detail.openInBrowser" = "Open in Browser";
 "detail.preview_failed" = "Unable to load preview";
 "detail.multiSelected" = "%d Selected";
+"detail.ocr" = "Recognized Text";
+"detail.ocr.copy" = "Copy Text";
+"detail.ocr.retry" = "Retry OCR";
+"detail.ocr.pending" = "Waiting to scan image text.";
+"detail.ocr.processing" = "Scanning text from image…";
+"detail.ocr.ready" = "Recognized text is available for search.";
+"detail.ocr.empty" = "No text found in this image yet.";
+"detail.ocr.failed" = "OCR failed for this image.";
 "action.deleteSelected" = "Delete %d items";
 "action.deleteSelected.confirm" = "Delete %d items?";
 "file.multiTitle" = " and %d files";
@@ -214,6 +228,7 @@
 "quick.pasteTo" = "Paste to %@";
 "quick.actions" = "Actions";
 "quick.navigate" = "Navigate";
+"quick.ocrMatch" = "Matched in recognized text";
 "quick.pasteAction" = "Paste";
 "quick.close" = "Close";
 "quick.pasteNewLine" = "Paste + Enter";
@@ -571,6 +586,8 @@
 "cmd.openLink" = "Open Link";
 "cmd.pasteAsFile" = "Paste as File";
 "cmd.pastePath" = "Paste Path";
+"cmd.openInPreview" = "Open in Preview";
+"cmd.retryOCR" = "Retry OCR";
 "cmd.andNewLine" = " + New Line";
 
 "relay.title" = "Relay Mode";

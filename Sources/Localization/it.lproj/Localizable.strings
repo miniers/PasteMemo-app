@@ -654,3 +654,22 @@ Usa %@ per incollare uno per uno.";
 "onboarding.analytics.title" = "Statistiche d'uso";
 "onboarding.analytics.desc" = "Aiuta a migliorare PasteMemo inviando dati anonimi (versione app, lingua, versione macOS). Nessun dato personale viene raccolto.";
 "onboarding.analytics.hint" = "Puoi modificarlo in Impostazioni → Privacy.";
+
+/* OCR */
+"settings.ocr" = "OCR immagini";
+"settings.ocr.enable" = "Abilita OCR immagini";
+"settings.ocr.auto" = "Elabora automaticamente le nuove immagini";
+"settings.ocr.scanExisting" = "Scansiona le immagini esistenti";
+"settings.ocr.scanStarted" = "L'OCR in background per le immagini esistenti è stato avviato.";
+"settings.ocr.hint" = "L'OCR viene eseguito sul dispositivo e rende ricercabile il testo nelle immagini.";
+"detail.ocr" = "Testo riconosciuto";
+"detail.ocr.copy" = "Copia testo";
+"detail.ocr.retry" = "Riprova OCR";
+"detail.ocr.pending" = "In attesa di analizzare il testo dell'immagine.";
+"detail.ocr.processing" = "Analisi del testo dell'immagine in corso…";
+"detail.ocr.ready" = "Il testo riconosciuto è disponibile per la ricerca.";
+"detail.ocr.empty" = "Nessun testo trovato finora in questa immagine.";
+"detail.ocr.failed" = "OCR non riuscito per questa immagine.";
+"quick.ocrMatch" = "Corrispondenza nel testo riconosciuto";
+"cmd.openInPreview" = "Apri in Anteprima";
+"cmd.retryOCR" = "Riprova OCR";

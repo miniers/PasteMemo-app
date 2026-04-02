@@ -120,6 +120,12 @@
 "settings.preferences" = "偏好";
 "settings.showLinkURL" = "链接显示原始网址而非页面标题";
 "settings.webPreview" = "网页预览";
+"settings.ocr" = "图片 OCR";
+"settings.ocr.enable" = "启用图片 OCR";
+"settings.ocr.auto" = "自动处理新图片";
+"settings.ocr.scanExisting" = "扫描已有图片";
+"settings.ocr.scanStarted" = "已开始在后台扫描已有图片。";
+"settings.ocr.hint" = "OCR 在本机完成，并让图片中的文字可被搜索。";
 
 /* Pro */
 "pro.title" = "升级到 PasteMemo Pro";
@@ -170,6 +176,14 @@
 "detail.openInBrowser" = "在浏览器中打开";
 "detail.preview_failed" = "无法加载预览";
 "detail.multiSelected" = "选中 %d 项";
+"detail.ocr" = "识别文本";
+"detail.ocr.copy" = "复制文本";
+"detail.ocr.retry" = "重新识别";
+"detail.ocr.pending" = "等待扫描图片文字。";
+"detail.ocr.processing" = "正在识别图片文字…";
+"detail.ocr.ready" = "识别文本已可搜索。";
+"detail.ocr.empty" = "暂未在这张图片中识别到文字。";
+"detail.ocr.failed" = "这张图片的 OCR 识别失败。";
 "action.deleteSelected" = "删除 %d 条记录";
 "action.deleteSelected.confirm" = "确定删除 %d 条记录？";
 "file.multiTitle" = "等%d个文件";
@@ -215,6 +229,7 @@
 "quick.pasteToApp" = "粘贴到 %@";
 "quick.actions" = "操作";
 "quick.navigate" = "导航";
+"quick.ocrMatch" = "命中识别文本";
 "quick.pasteAction" = "粘贴";
 "quick.close" = "关闭";
 "quick.pasteNewLine" = "粘贴+换行";
@@ -572,6 +587,8 @@
 "cmd.openLink" = "打开链接";
 "cmd.pasteAsFile" = "粘贴为文件";
 "cmd.pastePath" = "粘贴路径";
+"cmd.openInPreview" = "用“预览”打开";
+"cmd.retryOCR" = "重新识别 OCR";
 "cmd.andNewLine" = "并换行";
 
 "relay.title" = "接力模式";
