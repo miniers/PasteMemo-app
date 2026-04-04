@@ -127,6 +127,7 @@ final class QuickPanelWindowController {
         let appToRestore = previousApp
         clipboardManager.writeToPasteboard(item)
         item.lastUsedAt = Date()
+        try? item.modelContext?.save()
         SoundManager.playPaste()
 
         dismiss()
