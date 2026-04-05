@@ -485,6 +485,7 @@
 "relay.settings.op.skip" = "跳過當前條";
 "relay.settings.op.previous" = "回退上一條";
 "relay.autoExit.short" = "結束後自動退出";
+"relay.pasteAsText" = "貼上為文字";
 "relay.autoExit" = "佇列清空後自動退出";
 "relay.previous" = "上一條";
 "relay.skip" = "跳過";

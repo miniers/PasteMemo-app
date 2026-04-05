@@ -69,7 +69,8 @@ struct QuickPanelView: View {
 
     private var currentItems: [ClipItem] {
         guard !store.items.isEmpty else { return [] }
-        return selectedItemIDs.compactMap { cachedItemMap[$0] }.filter { !$0.isDeleted && $0.modelContext != nil }
+        let ids = selectedItemIDs
+        return cachedDisplayOrder.filter { ids.contains($0.persistentModelID) && !$0.isDeleted && $0.modelContext != nil }
     }
 
     private var currentItem: ClipItem? {
@@ -611,8 +612,7 @@ struct QuickPanelView: View {
                                             }
                                             Divider()
                                             Button(L10n.tr("relay.addToQueue")) {
-                                                let texts = items.compactMap(\.content)
-                                                RelayManager.shared.enqueue(texts: texts)
+                                                RelayManager.shared.enqueue(clipItems: items)
                                                 if !RelayManager.shared.isActive {
                                                     RelayManager.shared.activate()
                                                 }
@@ -651,9 +651,9 @@ struct QuickPanelView: View {
                                                 }
                                             }
                                             Divider()
-                                            if !item.content.isEmpty {
+                                            if !item.content.isEmpty || item.imageData != nil {
                                                 Button(L10n.tr("relay.addToQueue")) {
-                                                    RelayManager.shared.enqueue(texts: [item.content])
+                                                    RelayManager.shared.enqueue(clipItems: [item])
                                                     if !RelayManager.shared.isActive {
                                                         RelayManager.shared.activate()
                                                     }
@@ -1053,8 +1053,7 @@ struct QuickPanelView: View {
             }
         case .addToRelay:
             let items = isMultiSelected ? currentItems : (currentItem.map { [$0] } ?? [])
-            let texts = items.compactMap { $0.content.isEmpty ? nil : $0.content }
-            RelayManager.shared.enqueue(texts: texts)
+            RelayManager.shared.enqueue(clipItems: items)
             if !RelayManager.shared.isActive { RelayManager.shared.activate() }
         case .splitAndRelay:
             if let item = currentItem, !item.content.isEmpty {

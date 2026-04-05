@@ -13,6 +13,7 @@ final class RelayManager {
     var isActive = false
     var isPaused = false
     var autoExitOnEmpty = true
+    var pasteAsPlainText = false
 
     weak var clipboardController: (any ClipboardControllable)?
     weak var hotkeyController: (any HotkeyControllable)?
@@ -45,6 +46,31 @@ final class RelayManager {
         guard !filtered.isEmpty else { return }
         let newItems = filtered.prefix(capacity).map { RelayItem(content: $0) }
         // Resize window first, then add items so panel expands before content appears
+        windowController?.updateSize(for: items.count + newItems.count)
+        items.append(contentsOf: newItems)
+        markCurrentIfNeeded()
+    }
+
+    func enqueue(clipItems: [ClipItem]) {
+        let capacity = Self.MAX_QUEUE_SIZE - items.count
+        guard capacity > 0 else { return }
+        let newItems: [RelayItem] = clipItems.prefix(capacity).compactMap { clip in
+            // Pure image (screenshot/clipboard capture)
+            if clip.contentType == .image, clip.content == "[Image]", let data = clip.imageData {
+                return RelayItem(content: clip.content, imageData: data, contentKind: .image)
+            }
+            // File-based items (files copied from Finder, including image/video/audio files)
+            if clip.contentType.isFileBased {
+                let text = clip.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !text.isEmpty else { return nil }
+                return RelayItem(content: text, contentKind: .file)
+            }
+            // Plain text
+            let text = clip.content.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { return nil }
+            return RelayItem(content: text)
+        }
+        guard !newItems.isEmpty else { return }
         windowController?.updateSize(for: items.count + newItems.count)
         items.append(contentsOf: newItems)
         markCurrentIfNeeded()
@@ -280,7 +306,22 @@ final class RelayManager {
         }
         guard let mon = monitor else { return }
         Task {
-            await RelayPaster.paste(item.content, monitor: mon)
+            if pasteAsPlainText {
+                await RelayPaster.paste(item.content, monitor: mon)
+            } else {
+                switch item.contentKind {
+                case .image:
+                    if let imageData = item.imageData {
+                        await RelayPaster.pasteImage(imageData, monitor: mon)
+                    } else {
+                        await RelayPaster.paste(item.content, monitor: mon)
+                    }
+                case .file:
+                    await RelayPaster.pasteFile(item.content, monitor: mon)
+                case .text:
+                    await RelayPaster.paste(item.content, monitor: mon)
+                }
+            }
             SoundManager.playPaste()
             // Check if queue just became exhausted after this paste
             if isQueueExhausted {

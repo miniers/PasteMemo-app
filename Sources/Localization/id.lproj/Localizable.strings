@@ -463,6 +463,7 @@
 "relay.delimiter.custom" = "Kustom";
 "relay.exitRelay" = "Keluar relay";
 "relay.autoExit.short" = "Keluar otomatis saat selesai";
+"relay.pasteAsText" = "Tempel sebagai teks";
 "relay.startRelay" = "Mulai relay";
 "relay.pause" = "Jeda";
 "relay.resume" = "Lanjutkan";

@@ -407,6 +407,7 @@
 "relay.settings.op.skip" = "현재 항목 건너뛰기";
 "relay.settings.op.previous" = "이전 항목으로 돌아가기";
 "relay.autoExit.short" = "완료 후 자동 종료";
+"relay.pasteAsText" = "텍스트로 붙여넣기";
 "relay.autoExit" = "대기열이 비면 자동 종료";
 "relay.previous" = "이전";
 "relay.skip" = "건너뛰기";

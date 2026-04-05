@@ -176,7 +176,7 @@ struct ClipDetailView: View {
 
     private var relayButton: some View {
         Button {
-            RelayManager.shared.enqueue(texts: [item.content])
+            RelayManager.shared.enqueue(clipItems: [item])
             if !RelayManager.shared.isActive {
                 RelayManager.shared.activate()
             }

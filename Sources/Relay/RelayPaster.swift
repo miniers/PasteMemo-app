@@ -16,6 +16,31 @@ enum RelayPaster {
         simulateCommandV()
     }
 
+    /// Write image data to system pasteboard and simulate Cmd+V.
+    static func pasteImage(_ data: Data, monitor: RelayClipboardMonitor) async {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setData(data, forType: .png)
+        pasteboard.setData(data, forType: .tiff)
+        monitor.skipNextChange()
+        try? await Task.sleep(for: PASTE_DELAY)
+        simulateCommandV()
+    }
+
+    /// Write file URLs to system pasteboard and simulate Cmd+V.
+    static func pasteFile(_ pathsContent: String, monitor: RelayClipboardMonitor) async {
+        let paths = pathsContent.components(separatedBy: "\n").filter { !$0.isEmpty }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        let urls = paths.map { URL(fileURLWithPath: $0) as NSURL }
+        pasteboard.writeObjects(urls)
+        let pboardType = NSPasteboard.PasteboardType("NSFilenamesPboardType")
+        pasteboard.setPropertyList(paths, forType: pboardType)
+        monitor.skipNextChange()
+        try? await Task.sleep(for: PASTE_DELAY)
+        simulateCommandV()
+    }
+
     private static func simulateCommandV() {
         let source = CGEventSource(stateID: .hidSystemState)
         guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: true),

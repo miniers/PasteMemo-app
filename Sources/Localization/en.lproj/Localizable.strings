@@ -618,6 +618,7 @@
 "relay.settings.op.skip" = "Skip current item";
 "relay.settings.op.previous" = "Go back one item";
 "relay.autoExit.short" = "Auto exit when done";
+"relay.pasteAsText" = "Paste as text";
 "relay.autoExit" = "Auto exit when queue empty";
 "relay.previous" = "Previous";
 "relay.skip" = "Skip";

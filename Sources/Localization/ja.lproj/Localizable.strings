@@ -423,6 +423,7 @@
 "relay.settings.op.skip" = "現在のアイテムをスキップ";
 "relay.settings.op.previous" = "1つ前に戻る";
 "relay.autoExit.short" = "完了後に自動終了";
+"relay.pasteAsText" = "テキストとして貼り付け";
 "relay.autoExit" = "キューが空になったら自動終了";
 "relay.previous" = "前へ";
 "relay.skip" = "スキップ";

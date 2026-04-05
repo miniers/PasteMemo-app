@@ -463,6 +463,7 @@
 "relay.delimiter.custom" = "Пользовательский";
 "relay.exitRelay" = "Выйти из эстафеты";
 "relay.autoExit.short" = "Авто-выход по завершении";
+"relay.pasteAsText" = "Вставить как текст";
 "relay.startRelay" = "Начать эстафету";
 "relay.pause" = "Пауза";
 "relay.resume" = "Продолжить";

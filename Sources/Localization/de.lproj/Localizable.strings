@@ -407,6 +407,7 @@ Verwenden Sie %@ zum Einfügen.";
 "relay.settings.op.skip" = "Aktuelles überspringen";
 "relay.settings.op.previous" = "Zurück zum vorherigen";
 "relay.autoExit.short" = "Auto-Beenden nach Abschluss";
+"relay.pasteAsText" = "Als Text einfügen";
 "relay.autoExit" = "Auto-Beenden bei leerer Warteschlange";
 "relay.previous" = "Zurück";
 "relay.skip" = "Überspringen";

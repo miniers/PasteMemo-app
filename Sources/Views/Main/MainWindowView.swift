@@ -659,15 +659,14 @@ struct MainWindowView: View {
                 Divider()
                 if selectedItems.count > 1 {
                     Button(L10n.tr("relay.addToQueue")) {
-                        let texts = selectedClipItems.compactMap(\.content)
-                        RelayManager.shared.enqueue(texts: texts)
+                        RelayManager.shared.enqueue(clipItems: selectedClipItems)
                         if !RelayManager.shared.isActive {
                             RelayManager.shared.activate()
                         }
                     }
-                } else if !item.content.isEmpty {
+                } else if !item.content.isEmpty || item.imageData != nil {
                     Button(L10n.tr("relay.addToQueue")) {
-                        RelayManager.shared.enqueue(texts: [item.content])
+                        RelayManager.shared.enqueue(clipItems: [item])
                         if !RelayManager.shared.isActive {
                             RelayManager.shared.activate()
                         }
@@ -799,8 +798,7 @@ struct MainWindowView: View {
             QuickLookHelper.shared.openInPreviewApp(item: item)
         case .addToRelay:
             let items = selectedItems.count > 1 ? selectedClipItems : [item]
-            let texts = items.compactMap { $0.content.isEmpty ? nil : $0.content }
-            RelayManager.shared.enqueue(texts: texts)
+            RelayManager.shared.enqueue(clipItems: items)
             if !RelayManager.shared.isActive { RelayManager.shared.activate() }
         case .splitAndRelay:
             if !item.content.isEmpty { relaySplitText = item.content }
@@ -1112,8 +1110,7 @@ struct MainWindowView: View {
                     }
                 }
                 multiActionRow(L10n.tr("relay.addToQueue"), icon: "arrow.right.arrow.left") {
-                    let texts = items.compactMap { $0.content.isEmpty ? nil : $0.content }
-                    RelayManager.shared.enqueue(texts: texts)
+                    RelayManager.shared.enqueue(clipItems: items)
                     if !RelayManager.shared.isActive { RelayManager.shared.activate() }
                 }
 

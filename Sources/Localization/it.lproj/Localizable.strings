@@ -483,6 +483,7 @@ Usa %@ per incollare uno per uno.";
 "relay.settings.op.skip" = "Salta attuale";
 "relay.settings.op.previous" = "Torna al precedente";
 "relay.autoExit.short" = "Uscita auto a fine";
+"relay.pasteAsText" = "Incolla come testo";
 "relay.autoExit" = "Uscita auto quando la coda è vuota";
 "relay.previous" = "Precedente";
 "relay.skip" = "Salta";

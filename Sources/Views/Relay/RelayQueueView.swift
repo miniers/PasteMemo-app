@@ -134,13 +134,25 @@ struct RelayQueueView: View {
     private var footerBar: some View {
         VStack(spacing: 8) {
             HStack(spacing: 6) {
-                Toggle(isOn: $manager.autoExitOnEmpty) {
-                    Text(L10n.tr("relay.autoExit.short"))
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle(isOn: $manager.autoExitOnEmpty) {
+                        Text(L10n.tr("relay.autoExit.short"))
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                    .toggleStyle(.checkbox)
+                    .controlSize(.small)
+
+                    if manager.items.contains(where: { $0.isFile || $0.isImage }) {
+                        Toggle(isOn: $manager.pasteAsPlainText) {
+                            Text(L10n.tr("relay.pasteAsText"))
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                        }
+                        .toggleStyle(.checkbox)
+                        .controlSize(.small)
+                    }
                 }
-                .toggleStyle(.checkbox)
-                .controlSize(.small)
 
                 Spacer()
 
@@ -229,15 +241,41 @@ private struct RelayQueueRow: View {
     var body: some View {
         HStack(spacing: 8) {
             stateIndicator
-            Text(item.content.replacingOccurrences(of: "\n", with: " ↵ "))
-                .lineLimit(1)
-                .font(.system(size: 13))
-                .foregroundStyle(textColor)
-                .strikethrough(item.state == .skipped, color: .secondary)
-                .onTapGesture(count: 2) { showEditAlert() }
+            if item.isImage {
+                if let data = item.imageData, let img = NSImage(data: data) {
+                    Image(nsImage: img)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 20, height: 20)
+                        .clipShape(RoundedRectangle(cornerRadius: 3))
+                }
+                Text("[Image]")
+                    .lineLimit(1)
+                    .font(.system(size: 13))
+                    .foregroundStyle(textColor)
+                    .strikethrough(item.state == .skipped, color: .secondary)
+            } else if item.isFile {
+                Image(systemName: "doc")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                Text(item.displayName)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .font(.system(size: 13))
+                    .foregroundStyle(textColor)
+                    .strikethrough(item.state == .skipped, color: .secondary)
+            } else {
+                Text(item.content.replacingOccurrences(of: "\n", with: " ↵ "))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .font(.system(size: 13))
+                    .foregroundStyle(textColor)
+                    .strikethrough(item.state == .skipped, color: .secondary)
+                    .onTapGesture(count: 2) { showEditAlert() }
+            }
             Spacer(minLength: 0)
             if isHovering {
-                if item.content.count > 1 {
+                if !item.isImage, !item.isFile, item.content.count > 1 {
                     Button { onSplit?() } label: {
                         Image(systemName: "scissors")
                             .font(.system(size: 9))
@@ -246,13 +284,15 @@ private struct RelayQueueRow: View {
                     .buttonStyle(.plain)
                     .transition(.opacity)
                 }
-                Button { showEditAlert() } label: {
-                    Image(systemName: "square.and.pencil")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
+                if !item.isImage, !item.isFile {
+                    Button { showEditAlert() } label: {
+                        Image(systemName: "square.and.pencil")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .transition(.opacity)
                 }
-                .buttonStyle(.plain)
-                .transition(.opacity)
                 Button { onDelete?() } label: {
                     Image(systemName: "trash")
                         .font(.system(size: 9))
