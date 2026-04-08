@@ -113,6 +113,7 @@
 "settings.preferences" = "Настройки";
 "settings.showLinkURL" = "Показывать URL вместо заголовка для ссылок";
 "settings.webPreview" = "Веб-предпросмотр";
+"settings.imageLinkPreview" = "Предпросмотр ссылок на изображения";
 
 /* Pro */
 "pro.title" = "Перейти на PasteMemo Pro";

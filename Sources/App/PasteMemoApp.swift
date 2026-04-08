@@ -319,11 +319,14 @@ struct PasteMemoApp: App {
         guard let db = SQLiteConnection(path: storeURL.path) else { return }
         defer { db.close() }
 
+        // Drop legacy index on old column name before recreating on correct column
+        db.execute("DROP INDEX IF EXISTS idx_clip_type")
+
         // Regular indexes
         let indexes = [
             "CREATE INDEX IF NOT EXISTS idx_clip_lastused ON ZCLIPITEM (ZLASTUSEDAT DESC)",
             "CREATE INDEX IF NOT EXISTS idx_clip_created ON ZCLIPITEM (ZCREATEDAT DESC)",
-            "CREATE INDEX IF NOT EXISTS idx_clip_type ON ZCLIPITEM (ZCONTENTTYPE)",
+            "CREATE INDEX IF NOT EXISTS idx_clip_type ON ZCLIPITEM (ZCONTENTTYPERAW)",
             "CREATE INDEX IF NOT EXISTS idx_clip_pinned_lastused ON ZCLIPITEM (ZISPINNED, ZLASTUSEDAT DESC)",
             "CREATE INDEX IF NOT EXISTS idx_clip_sourceapp ON ZCLIPITEM (ZSOURCEAPP)",
             "CREATE INDEX IF NOT EXISTS idx_clip_itemid ON ZCLIPITEM (ZITEMID)",

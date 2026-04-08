@@ -114,6 +114,7 @@
 "settings.preferences" = "偏好";
 "settings.showLinkURL" = "連結顯示原始網址而非頁面標題";
 "settings.webPreview" = "網頁預覽";
+"settings.imageLinkPreview" = "圖片連結預覽";
 
 /* Pro */
 "pro.title" = "升級到 PasteMemo Pro";

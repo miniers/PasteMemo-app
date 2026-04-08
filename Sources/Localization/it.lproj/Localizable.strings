@@ -113,6 +113,7 @@
 "settings.preferences" = "Preferenze";
 "settings.showLinkURL" = "Mostra URL invece del titolo per i link";
 "settings.webPreview" = "Anteprima web";
+"settings.imageLinkPreview" = "Anteprima link immagine";
 
 /* Pro */
 "pro.title" = "Passa a PasteMemo Pro";

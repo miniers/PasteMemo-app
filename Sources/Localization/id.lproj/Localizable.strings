@@ -113,6 +113,7 @@
 "settings.preferences" = "Preferensi";
 "settings.showLinkURL" = "Tampilkan URL alih-alih judul halaman untuk tautan";
 "settings.webPreview" = "Pratinjau web";
+"settings.imageLinkPreview" = "Pratinjau tautan gambar";
 
 /* Pro */
 "pro.title" = "Upgrade ke PasteMemo Pro";

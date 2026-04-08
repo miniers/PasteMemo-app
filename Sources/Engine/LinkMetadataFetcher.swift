@@ -11,6 +11,18 @@ actor LinkMetadataFetcher {
         let faviconData: Data?
     }
 
+    private static let imageExtensions: Set<String> = [
+        "png", "jpg", "jpeg", "gif", "bmp", "webp", "heic", "heif", "svg", "ico", "tiff", "tif"
+    ]
+
+    static func isImageURL(_ urlString: String) -> Bool {
+        let trimmed = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.hasPrefix("data:image/") { return true }
+        guard let url = URL(string: trimmed) else { return false }
+        let ext = url.pathExtension.lowercased()
+        return imageExtensions.contains(ext)
+    }
+
     func fetchMetadata(urlString: String) async -> LinkMetadata {
         let trimmed = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let url = URL(string: trimmed),

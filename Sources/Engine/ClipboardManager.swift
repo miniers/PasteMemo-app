@@ -369,7 +369,7 @@ final class ClipboardManager: ObservableObject {
 
         if isPhone(trimmed) { return DetectedContent(type: .phone, language: nil) }
         if isColor(trimmed) { return DetectedContent(type: .color, language: nil) }
-        if isURL(trimmed) { return DetectedContent(type: .link, language: nil) }
+        if isURL(trimmed) || trimmed.hasPrefix("data:image/") { return DetectedContent(type: .link, language: nil) }
         if isFilePath(trimmed) { return DetectedContent(type: .file, language: nil) }
         if let lang = CodeDetector.detectLanguage(trimmed) {
             return DetectedContent(type: .code, language: lang.rawValue)

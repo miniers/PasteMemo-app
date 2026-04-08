@@ -213,17 +213,18 @@ struct QuickPanelView: View {
             isPanelPinned = false
             store.isActive = true
             store.configure(modelContext: modelContext)
-            // Check if new content arrived before resetting
+            // Reset filters if new content arrived
             let latestItemID = store.queryFirstItemID()
             if latestItemID != lastSeenFirstItemID {
                 store.resetFilters()
-                rebuildGroupedItems()
-                scrollResetToken = UUID()
-                if let id = cachedDisplayOrder.first?.persistentModelID {
-                    selectedItemIDs = [id]
-                    lastNavigatedID = id
-                }
                 lastSeenFirstItemID = latestItemID
+            }
+            // Always rebuild and select first item on panel open
+            rebuildGroupedItems()
+            scrollResetToken = UUID()
+            if let id = cachedDisplayOrder.first?.persistentModelID {
+                selectedItemIDs = [id]
+                lastNavigatedID = id
             }
             targetApp = QuickPanelWindowController.shared.previousApp
             isSearchFocused = true
@@ -1367,6 +1368,12 @@ struct QuickPanelView: View {
         return isTargetFinder
     }
 
+    private var canSaveLinkToFolder: Bool {
+        guard let item = currentItem,
+              item.contentType == .link else { return false }
+        return isTargetFinder
+    }
+
     private func handleCmdEnter() {
         guard let item = currentItem else { return }
         // Link → open in browser
@@ -1430,6 +1437,68 @@ struct QuickPanelView: View {
         }
     }
 
+    private func handlePasteLinkToFolder() {
+        guard let item = currentItem, item.contentType == .link else { return }
+        guard let folder = clipboardManager.getFinderSelectedFolder() else { return }
+
+        let content = item.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        let linkTitle = item.linkTitle
+        let cm = clipboardManager
+        let appToRestore = QuickPanelWindowController.shared.previousApp
+        QuickPanelWindowController.shared.dismiss()
+
+        Task { @MainActor in
+            let savedURL: URL? = await Self.saveLinkToFolder(content: content, linkTitle: linkTitle, folder: folder, clipboardManager: cm)
+            guard let savedURL else { return }
+            if let app = appToRestore {
+                app.activate()
+                for _ in 0..<20 {
+                    try? await Task.sleep(for: .milliseconds(50))
+                    if NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier { break }
+                }
+                try? await Task.sleep(for: .milliseconds(100))
+                NSWorkspace.shared.selectFile(savedURL.path, inFileViewerRootedAtPath: savedURL.deletingLastPathComponent().path)
+            }
+        }
+    }
+
+    private static func saveLinkToFolder(content: String, linkTitle: String?, folder: URL, clipboardManager: ClipboardManager) async -> URL? {
+        if content.hasPrefix("data:image/") {
+            // data:image URI → decode base64, save as PNG
+            guard let commaIndex = content.firstIndex(of: ",") else { return nil }
+            let base64 = String(content[content.index(after: commaIndex)...])
+            guard let data = Data(base64Encoded: base64, options: .ignoreUnknownCharacters) else { return nil }
+            return clipboardManager.saveImageToFolder(data, folder: folder)
+        } else if LinkMetadataFetcher.isImageURL(content) {
+            // Image URL → download and save as PNG
+            guard let url = URL(string: content) else { return nil }
+            do {
+                var request = URLRequest(url: url)
+                request.timeoutInterval = 10
+                let (data, response) = try await URLSession.shared.data(for: request)
+                guard let httpResponse = response as? HTTPURLResponse,
+                      httpResponse.statusCode == 200,
+                      NSImage(data: data) != nil else { return nil }
+                return clipboardManager.saveImageToFolder(data, folder: folder)
+            } catch {
+                return nil
+            }
+        } else {
+            // Regular link → save as .webloc
+            let title = linkTitle ?? (URL(string: content)?.host ?? "link")
+            let safeName = String(title
+                .replacingOccurrences(of: "/", with: "_")
+                .replacingOccurrences(of: ":", with: "_")
+                .trimmingCharacters(in: .controlCharacters)
+                .prefix(50))
+            let fileURL = folder.appendingPathComponent("\(safeName).webloc")
+            let dict: NSDictionary = ["URL": content]
+            guard let data = try? PropertyListSerialization.data(fromPropertyList: dict, format: .xml, options: 0) else { return nil }
+            try? data.write(to: fileURL)
+            return fileURL
+        }
+    }
+
     private func handlePasteImage() {
         guard let item = currentItem, let imageData = item.imageData else { return }
         let pasteboard = NSPasteboard.general
@@ -1482,6 +1551,8 @@ struct QuickPanelView: View {
         guard let item = currentItem else { return }
         if canPasteToFinderFolder {
             handlePasteImageToFolder()
+        } else if canSaveLinkToFolder {
+            handlePasteLinkToFolder()
         } else if canSaveTextToFolder {
             handlePasteTextToFolder()
         } else {

@@ -122,6 +122,7 @@
 "settings.preferences" = "偏好";
 "settings.showLinkURL" = "链接显示原始网址而非页面标题";
 "settings.webPreview" = "网页预览";
+"settings.imageLinkPreview" = "图片链接预览";
 "settings.ocr" = "图片 OCR";
 "settings.ocr.enable" = "启用图片 OCR";
 "settings.ocr.auto" = "自动处理新图片";

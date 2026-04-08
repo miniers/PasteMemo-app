@@ -138,6 +138,7 @@
 "settings.preferences" = "Préférences";
 "settings.showLinkURL" = "Afficher l'URL au lieu du titre pour les liens";
 "settings.webPreview" = "Aperçu web";
+"settings.imageLinkPreview" = "Aperçu des liens d'image";
 "settings.showGuide" = "Afficher le guide de bienvenue";
 
 /* Pro */

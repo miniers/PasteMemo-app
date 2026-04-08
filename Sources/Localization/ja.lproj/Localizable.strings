@@ -152,6 +152,7 @@
 "settings.ocr.hint" = "OCR はデバイス上で実行され、画像内の文字を検索可能にします。";
 "settings.showLinkURL" = "リンクをページタイトルではなくURLで表示";
 "settings.webPreview" = "Webプレビュー";
+"settings.imageLinkPreview" = "画像リンクプレビュー";
 "settings.showGuide" = "ウェルカムガイドを表示";
 
 /* Pro */

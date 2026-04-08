@@ -79,6 +79,7 @@ final class ClipItemStore {
             Self.activeStores.add(self)
             observeChanges()
         }
+        invalidateDB()
         if needsRefresh {
             refreshAvailableTypes()
             refreshSidebarCounts()
@@ -213,7 +214,7 @@ final class ClipItemStore {
 
     private func addFilterConditions(_ conditions: inout [String], _ params: inout [Any]) {
         if let type = filterType {
-            conditions.append("ZCONTENTTYPE = ?")
+            conditions.append("ZCONTENTTYPERAW = ?")
             params.append(type.rawValue)
         }
         if pinnedOnly { conditions.append("ZISPINNED = 1") }
@@ -252,7 +253,7 @@ final class ClipItemStore {
     func refreshAvailableTypes() {
         guard let db = openDB() else { return }
 
-        let rawTypes = db.queryStrings("SELECT DISTINCT ZCONTENTTYPE FROM ZCLIPITEM")
+        let rawTypes = db.queryStrings("SELECT DISTINCT ZCONTENTTYPERAW FROM ZCLIPITEM")
         let existingTypes = Set(rawTypes.compactMap { ClipContentType(rawValue: $0) })
         availableTypes = ClipContentType.visibleCases.filter { type in
             ProManager.shared.canUseContentType(type) && existingTypes.contains(type)
@@ -279,7 +280,7 @@ final class ClipItemStore {
         counts.pinned = db.queryInt("SELECT COUNT(*) FROM ZCLIPITEM WHERE ZISPINNED = 1")
         counts.sensitive = db.queryInt("SELECT COUNT(*) FROM ZCLIPITEM WHERE ZISSENSITIVE = 1")
         for type in ClipContentType.visibleCases {
-            let c = db.queryInt("SELECT COUNT(*) FROM ZCLIPITEM WHERE ZCONTENTTYPE = ?", params: [type.rawValue])
+            let c = db.queryInt("SELECT COUNT(*) FROM ZCLIPITEM WHERE ZCONTENTTYPERAW = ?", params: [type.rawValue])
             if c > 0 { counts.byType[type] = c }
         }
         let apps = db.queryStrings("SELECT DISTINCT ZSOURCEAPP FROM ZCLIPITEM WHERE ZSOURCEAPP IS NOT NULL ORDER BY ZSOURCEAPP")
@@ -402,12 +403,20 @@ final class ClipItemStore {
 
     private func performRefresh() {
         isRefreshing = true
+        invalidateDB()
         refreshAvailableTypes()
         refreshSidebarCounts()
         refreshSourceApps()
         needsRefresh = false
         reload()
         isRefreshing = false
+    }
+
+    /// Close the cached raw SQLite connection so the next query opens a fresh one
+    /// that sees the latest SwiftData/CoreData WAL writes.
+    private func invalidateDB() {
+        _db?.close()
+        _db = nil
     }
 
 }

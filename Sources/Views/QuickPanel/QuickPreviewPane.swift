@@ -312,12 +312,13 @@ struct QuickPreviewPane: View {
     }
 
     @AppStorage("webPreviewEnabled") private var webPreviewEnabled = true
+    @AppStorage("imageLinkPreviewEnabled") private var imageLinkPreviewEnabled = true
 
     @ViewBuilder
     private var linkPreview: some View {
         let trimmed = item.content.trimmingCharacters(in: .whitespacesAndNewlines)
         if let url = URL(string: trimmed) {
-            if webPreviewEnabled {
+            if (imageLinkPreviewEnabled && LinkMetadataFetcher.isImageURL(trimmed)) || webPreviewEnabled {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 6) {
                         if let data = item.faviconData, let img = NSImage(data: data) {

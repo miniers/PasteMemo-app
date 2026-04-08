@@ -10,6 +10,7 @@ struct ClipRow: View {
     var showGroupLabel: Bool = true
     var searchText: String = ""
     @AppStorage(OCRTaskCoordinator.enableOCRKey) private var ocrEnabled = true
+    @AppStorage("imageLinkPreviewEnabled") private var imageLinkPreviewEnabled = true
 
     var body: some View {
         if item.isDeleted {
@@ -81,25 +82,32 @@ struct ClipRow: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 36, height: 36)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
-        } else if item.contentType == .link, let data = item.faviconData,
-                  let img = ImageCache.shared.favicon(for: data, key: item.content) {
-            ZStack(alignment: .bottomTrailing) {
+        } else if item.contentType == .link, imageLinkPreviewEnabled,
+                  LinkMetadataFetcher.isImageURL(item.content) {
+            if let img = Self.decodeDataURIImage(item.content) {
                 Image(nsImage: img)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 20, height: 20)
+                    .aspectRatio(contentMode: .fill)
                     .frame(width: 36, height: 36)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(Color.primary.opacity(0.05))
-                    )
-                Image(systemName: "globe")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 14, height: 14)
-                    .background(Color.blue, in: Circle())
-                    .offset(x: 2, y: 2)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            } else if let url = URL(string: item.content) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 36, height: 36)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    default:
+                        linkFaviconThumbnail
+                    }
+                }
+            } else {
+                linkFaviconThumbnail
             }
+        } else if item.contentType == .link {
+            linkFaviconThumbnail
         } else if item.contentType == .color, let parsed = ColorConverter.parse(item.content) {
             Circle()
                 .fill(Color(nsColor: parsed.nsColor))
@@ -161,6 +169,39 @@ struct ClipRow: View {
             Image(systemName: icon.symbol)
                 .font(.system(size: 14))
                 .foregroundStyle(icon.color)
+                .frame(width: 36, height: 36)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.primary.opacity(0.05))
+                )
+        }
+    }
+
+    @ViewBuilder
+    private var linkFaviconThumbnail: some View {
+        if let data = item.faviconData,
+           let img = ImageCache.shared.favicon(for: data, key: item.content) {
+            ZStack(alignment: .bottomTrailing) {
+                Image(nsImage: img)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 20, height: 20)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.primary.opacity(0.05))
+                    )
+                Image(systemName: "globe")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 14, height: 14)
+                    .background(Color.blue, in: Circle())
+                    .offset(x: 2, y: 2)
+            }
+        } else {
+            Image(systemName: "link")
+                .font(.system(size: 14))
+                .foregroundStyle(.blue)
                 .frame(width: 36, height: 36)
                 .background(
                     RoundedRectangle(cornerRadius: 6)
@@ -282,6 +323,15 @@ struct ClipRow: View {
     private func isDirectory(_ path: String) -> Bool {
         var isDir: ObjCBool = false
         return FileManager.default.fileExists(atPath: path, isDirectory: &isDir) && isDir.boolValue
+    }
+
+    private static func decodeDataURIImage(_ content: String) -> NSImage? {
+        let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasPrefix("data:image/"),
+              let commaIndex = trimmed.firstIndex(of: ",") else { return nil }
+        let base64String = String(trimmed[trimmed.index(after: commaIndex)...])
+        guard let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) else { return nil }
+        return NSImage(data: data)
     }
 
     private var isMultiFile: Bool {

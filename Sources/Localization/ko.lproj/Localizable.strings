@@ -138,6 +138,7 @@
 "settings.preferences" = "환경설정";
 "settings.showLinkURL" = "링크를 페이지 제목 대신 URL로 표시";
 "settings.webPreview" = "웹 미리보기";
+"settings.imageLinkPreview" = "이미지 링크 미리보기";
 "settings.showGuide" = "환영 가이드 표시";
 
 /* Pro */
