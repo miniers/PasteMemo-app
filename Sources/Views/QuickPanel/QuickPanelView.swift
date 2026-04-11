@@ -833,6 +833,18 @@ struct QuickPanelView: View {
                     }
                     .buttonStyle(.plain)
                     .pointerCursor()
+
+                    Button {
+                        handleDismiss()
+                        AppAction.shared.openSettings?()
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.tertiary)
+                            .frame(width: 20, height: 20)
+                    }
+                    .buttonStyle(.plain)
+                    .pointerCursor()
                 }
             }
             .padding(.horizontal, 16)
@@ -1084,12 +1096,12 @@ struct QuickPanelView: View {
         isSearchFocused = true
         switch action {
         case .paste:
-            handlePaste()
+            handlePaste(respectAutoPaste: false)
         case .cmdEnter:
             if isMultiSelected {
-                handleMultiPaste(asPlainText: true, forceNewLine: false)
+                handleMultiPaste(asPlainText: true, forceNewLine: false, respectAutoPaste: false)
             } else {
-                handleCmdEnter()
+                handleCmdEnter(respectAutoPaste: false)
             }
         case .copy:
             let items = isMultiSelected ? currentItems : (currentItem.map { [$0] } ?? [])
@@ -1190,11 +1202,11 @@ struct QuickPanelView: View {
         return clipboardManager.isFinderApp(QuickPanelWindowController.shared.previousApp)
     }
 
-    private func handleMultiPaste(asPlainText: Bool, forceNewLine: Bool = false) {
+    private func handleMultiPaste(asPlainText: Bool, forceNewLine: Bool = false, respectAutoPaste: Bool = true) {
         let items = currentItems
         guard !items.isEmpty else { return }
 
-        if !quickPanelAutoPaste {
+        if respectAutoPaste && !quickPanelAutoPaste {
             guard !forceNewLine else { return }
             copyItemsToClipboard(items, dismissAfterCopy: true, playSound: true)
             return
@@ -1442,7 +1454,7 @@ struct QuickPanelView: View {
         return isTargetFinder
     }
 
-    private func handleCmdEnter() {
+    private func handleCmdEnter(respectAutoPaste: Bool = true) {
         guard let item = currentItem else { return }
         // Link → open in browser
         if item.contentType == .link,
@@ -1452,7 +1464,7 @@ struct QuickPanelView: View {
         }
         // File-based (including file images) → paste path
         else if isFileBasedItem(item) {
-            if quickPanelAutoPaste {
+            if !respectAutoPaste || quickPanelAutoPaste {
                 handlePastePath()
             } else {
                 copyItemToClipboardAndDismiss(item, plainTextOnly: true)
@@ -1464,7 +1476,7 @@ struct QuickPanelView: View {
         }
         // Text-like types → paste as plain text
         else if [.text, .code, .color, .email, .phone].contains(item.contentType) {
-            if quickPanelAutoPaste {
+            if !respectAutoPaste || quickPanelAutoPaste {
                 handlePlainTextPaste(item)
             } else {
                 copyItemToClipboardAndDismiss(item, plainTextOnly: true)
@@ -1639,9 +1651,9 @@ struct QuickPanelView: View {
         }
     }
 
-    private func handlePaste(forceNewLine: Bool = false) {
+    private func handlePaste(forceNewLine: Bool = false, respectAutoPaste: Bool = true) {
         guard let item = currentItem else { return }
-        if !quickPanelAutoPaste {
+        if respectAutoPaste && !quickPanelAutoPaste {
             guard !forceNewLine else { return }
             if isFileBasedItem(item) {
                 copyItemToClipboardAndDismiss(item, plainTextOnly: true)

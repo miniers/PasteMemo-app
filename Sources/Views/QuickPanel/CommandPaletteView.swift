@@ -102,7 +102,6 @@ struct CommandPaletteContent: View {
     let onAction: (CommandAction) -> Void
     let onDismiss: () -> Void
 
-    @AppStorage("quickPanelAutoPaste") private var quickPanelAutoPaste = true
     @State private var selectedIndex = 0
     @State private var keyMonitor: Any?
     @State private var flagsMonitor: Any?
@@ -149,10 +148,10 @@ struct CommandPaletteContent: View {
     private func cmdEnterLabel(for item: ClipItem) -> String {
         switch item.contentType {
         case .text, .code, .color, .email, .phone:
-            quickPanelAutoPaste ? L10n.tr("cmd.pasteAsPlainText") : L10n.tr("cmd.copyAsPlainText")
+            L10n.tr("cmd.pasteAsPlainText")
         case .link: L10n.tr("cmd.openLink")
         case .image, .file, .document, .archive, .application, .video, .audio:
-            quickPanelAutoPaste ? L10n.tr("cmd.pastePath") : L10n.tr("quick.copyPath")
+            L10n.tr("cmd.pastePath")
         }
     }
 
@@ -181,12 +180,9 @@ struct CommandPaletteContent: View {
     }
 
     private func displayLabel(for action: CommandAction) -> String {
-        let suffix = isOptionPressed && quickPanelAutoPaste ? L10n.tr("cmd.andNewLine") : ""
+        let suffix = isOptionPressed ? L10n.tr("cmd.andNewLine") : ""
         switch action {
-        case .paste:
-            return (quickPanelAutoPaste ? L10n.tr("cmd.paste") : L10n.tr("cmd.copy")) + suffix
-        case .cmdEnter:
-            return action.label + suffix
+        case .paste, .cmdEnter: return action.label + suffix
         default: return action.label
         }
     }
