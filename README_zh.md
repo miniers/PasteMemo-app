@@ -176,6 +176,9 @@ make package VERSION=1.2.3
 
 欢迎贡献代码！请先提交 Issue 讨论你想要修改的内容。
 
+- 请从 `develop` 分支创建你的开发分支
+- Pull Request 请提交到 `develop` 分支（不是 `main`）
+
 ## 捐助
 
 如果 PasteMemo 对你有帮助，欢迎[请我喝杯咖啡](https://www.lifedever.com)。

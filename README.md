@@ -176,6 +176,9 @@ To sign the app bundle during packaging, pass `CODESIGN_IDENTITY="Developer ID A
 
 Contributions are welcome! Please open an issue first to discuss what you'd like to change.
 
+- Fork the repo and create your branch from `develop`
+- Submit pull requests to the `develop` branch (not `main`)
+
 ## Sponsor
 
 If PasteMemo is useful to you, consider [buying me a coffee](https://www.lifedever.com).
