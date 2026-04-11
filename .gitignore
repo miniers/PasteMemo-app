@@ -1,6 +1,7 @@
 .build/
 .dev-build/
 .release/
+dist/
 .swiftpm/
 *.xcodeproj
 *.xcworkspace

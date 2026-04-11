@@ -6,7 +6,10 @@ enum DevDataImporter {
     static let RELEASE_BUNDLE_ID = "com.lifedever.pastememo"
 
     static var isDevBuild: Bool {
-        Bundle.main.bundleIdentifier?.hasSuffix(".dev") == true
+        if ProcessInfo.processInfo.environment["PASTEMEMO_DEV"] == "1" {
+            return true
+        }
+        return Bundle.main.bundleIdentifier?.hasSuffix(".dev") == true
     }
 
     static func importFromRelease() {

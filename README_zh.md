@@ -69,7 +69,7 @@
 ### 快捷粘贴面板
 
 - **全局快捷键** -- 在任何应用中按下 Cmd+Shift+V（可自定义，支持 F1-F12）打开快捷粘贴面板。
-- **键盘导航** -- Cmd+1 到 Cmd+9 直接粘贴，方向键导航，回车粘贴，全程键盘操作。
+- **键盘导航** -- Cmd+1 到 Cmd+9 直接粘贴，方向键或 Ctrl+P / Ctrl+N 浏览历史，左/右方向键切换内容类型，回车粘贴。
 - **快捷操作（Cmd+K）** -- 命令面板，粘贴、复制、置顶、删除等操作一键完成。
 - **粘贴+换行** -- Shift+Enter 粘贴后自动回车，终端命令和聊天工具的最佳搭档。
 
@@ -104,7 +104,8 @@
 |--------|------|
 | Cmd+Shift+V（可自定义） | 打开/关闭快捷粘贴面板 |
 | Cmd+1 - Cmd+9 | 直接粘贴第 N 条 |
-| 上/下方向键 | 浏览历史 |
+| 上/下方向键、Ctrl+P / Ctrl+N | 浏览历史 |
+| 左/右方向键 | 切换内容类型 |
 | 回车 | 粘贴选中项 |
 | Shift+回车 | 粘贴并回车 |
 | Cmd+K | 打开快捷操作 |
@@ -151,6 +152,25 @@ git clone https://github.com/lifedever/PasteMemo-app.git
 cd PasteMemo
 swift build
 ```
+
+### 开发模式
+
+```bash
+make dev
+```
+
+这个命令会启动应用，并在 `Sources/`、`Tests/` 或 `Package.swift` 发生变化后自动重新执行 `swift run`。
+如果系统里装了 `fswatch`，脚本会优先使用它；否则退化为每秒轮询一次。
+
+### 打包
+
+```bash
+make package VERSION=1.2.3
+```
+
+这个命令会构建 release 版本，并生成 `dist/PasteMemo.app` 和 `dist/PasteMemo-1.2.3-<arch>.dmg`。
+如果没有传入 `VERSION`，脚本会回退到最近的 git tag。
+如果打包时需要签名，可以同时传入 `CODESIGN_IDENTITY="Developer ID Application: ..."`。
 
 ## 参与贡献
 

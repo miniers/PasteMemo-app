@@ -34,15 +34,15 @@ final class UpdateChecker: ObservableObject {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     }
 
-    private var isDev: Bool {
-        Bundle.main.bundleIdentifier?.hasSuffix(".dev") == true
-    }
+    private var isDev: Bool { DevDataImporter.isDevBuild }
 
     private init() {}
 
     // MARK: - Check
 
     func checkForUpdates(userInitiated: Bool = false) async {
+        guard userInitiated || !isDev else { return }
+
         isChecking = true
         defer { isChecking = false }
 
@@ -198,6 +198,8 @@ final class UpdateChecker: ObservableObject {
 
     func startPeriodicChecks() {
         periodicTimer?.invalidate()
+        guard !isDev else { return }
+
         let hours = max(UserDefaults.standard.integer(forKey: "updateCheckInterval"), 24)
 
         periodicTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(hours * 3600), repeats: true) { [weak self] _ in

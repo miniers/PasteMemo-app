@@ -69,7 +69,7 @@
 ### Quick Paste Panel
 
 - **Global Hotkey** -- Press Cmd+Shift+V (customizable, supports F1-F12) from anywhere to open the Quick Paste panel.
-- **Keyboard Navigation** -- Cmd+1 to Cmd+9 to paste directly. Arrow keys to navigate. Enter to paste. Full keyboard workflow.
+- **Keyboard Navigation** -- Cmd+1 to Cmd+9 to paste directly. Arrow keys or Ctrl+P / Ctrl+N navigate history. Left/right arrows switch content types. Enter to paste.
 - **Quick Actions (Cmd+K)** -- Command palette for paste, copy, pin, delete, and more -- all without leaving the keyboard.
 - **Paste + Enter** -- Shift+Enter pastes and presses Enter. Perfect for terminal commands and chat apps.
 
@@ -104,7 +104,8 @@
 |----------|--------|
 | Cmd+Shift+V (customizable) | Open/close Quick Paste panel |
 | Cmd+1 - Cmd+9 | Paste the Nth item directly |
-| Up / Down | Navigate history |
+| Up / Down, Ctrl+P / Ctrl+N | Navigate history |
+| Left / Right | Switch content type |
 | Enter | Paste selected item |
 | Shift+Enter | Paste and press Enter |
 | Cmd+K | Open Quick Actions |
@@ -151,6 +152,25 @@ git clone https://github.com/lifedever/PasteMemo-app.git
 cd PasteMemo
 swift build
 ```
+
+### Development
+
+```bash
+make dev
+```
+
+This starts the app and automatically restarts `swift run` when files under `Sources/`, `Tests/`, or `Package.swift` change.
+If `fswatch` is installed, the script uses it. Otherwise it falls back to polling once per second.
+
+### Packaging
+
+```bash
+make package VERSION=1.2.3
+```
+
+This builds a release app bundle and generates `dist/PasteMemo.app` plus `dist/PasteMemo-1.2.3-<arch>.dmg`.
+If `VERSION` is omitted, the script falls back to the latest git tag.
+To sign the app bundle during packaging, pass `CODESIGN_IDENTITY="Developer ID Application: ..."` together with the command.
 
 ## Contributing
 
