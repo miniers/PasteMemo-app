@@ -126,6 +126,7 @@
 "settings.managerShortcut" = "Open Manager";
 "settings.shortcut.none" = "Non défini";
 "settings.paste" = "Collage";
+"settings.autoPaste" = "Coller automatiquement après sélection";
 "settings.addNewLine" = "Ajouter un retour à la ligne après le collage";
 "settings.history" = "Historique";
 "settings.retentionDays" = "Conserver l'historique";
@@ -370,6 +371,7 @@
 "cmd.title" = "Actions rapides";
 "cmd.paste" = "Coller";
 "cmd.pasteAsPlainText" = "Coller en texte brut";
+"cmd.copyAsPlainText" = "Copier en texte brut";
 "cmd.copy" = "Copier";
 "cmd.pin" = "Épingler / Désépingler";
 "cmd.toggleSensitive" = "Basculer sensible";
@@ -518,7 +520,9 @@ Utilisez %@ pour coller un par un.";
 "quick.pasteName" = "Coller le nom";
 "quick.pasteNewLine" = "Coller + Entrée";
 "quick.pastePath" = "Coller le chemin";
+"quick.copyPath" = "Copier le chemin";
 "quick.pasteTo" = "Coller dans %@";
+"quick.copyToClipboard" = "Copier dans le presse-papiers";
 "quick.pasteToApp" = "Coller dans %@";
 "quick.preview" = "Aperçu";
 "quick.recent" = "Récents";

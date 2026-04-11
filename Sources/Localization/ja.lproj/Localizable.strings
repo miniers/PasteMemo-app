@@ -134,6 +134,7 @@
 "settings.managerShortcut" = "Open Manager";
 "settings.shortcut.none" = "未設定";
 "settings.paste" = "ペースト";
+"settings.autoPaste" = "選択後に自動ペースト";
 "settings.addNewLine" = "ペースト後に改行を追加";
 "settings.history" = "履歴";
 "settings.retentionDays" = "履歴の保持";
@@ -384,6 +385,7 @@
 "cmd.title" = "クイックアクション";
 "cmd.paste" = "ペースト";
 "cmd.pasteAsPlainText" = "プレーンテキストでペースト";
+"cmd.copyAsPlainText" = "プレーンテキストとしてコピー";
 "cmd.copy" = "コピー";
 "cmd.pin" = "ピン / ピン解除";
 "cmd.toggleSensitive" = "機密の切り替え";
@@ -535,7 +537,9 @@
 "quick.pasteName" = "名前をペースト";
 "quick.pasteNewLine" = "ペースト＋改行";
 "quick.pastePath" = "パスをペースト";
+"quick.copyPath" = "パスをコピー";
 "quick.pasteTo" = "%@ にペースト";
+"quick.copyToClipboard" = "クリップボードにコピー";
 "quick.pasteToApp" = "%@ にペースト";
 "quick.preview" = "プレビュー";
 "quick.recent" = "最近";

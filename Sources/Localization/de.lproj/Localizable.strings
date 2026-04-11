@@ -126,6 +126,7 @@
 "settings.managerShortcut" = "Open Manager";
 "settings.shortcut.none" = "Nicht festgelegt";
 "settings.paste" = "Einfügen";
+"settings.autoPaste" = "Nach Auswahl automatisch einfügen";
 "settings.addNewLine" = "Nach dem Einfügen neue Zeile hinzufügen";
 "settings.history" = "Verlauf";
 "settings.retentionDays" = "Verlauf behalten";
@@ -370,6 +371,7 @@
 "cmd.title" = "Schnellaktionen";
 "cmd.paste" = "Einfügen";
 "cmd.pasteAsPlainText" = "Als Text einfügen";
+"cmd.copyAsPlainText" = "Als Text kopieren";
 "cmd.copy" = "Kopieren";
 "cmd.pin" = "Anheften / Lösen";
 "cmd.toggleSensitive" = "Sensibel umschalten";
@@ -514,7 +516,9 @@ Verwenden Sie %@ zum Einfügen.";
 "quick.pasteName" = "Name einfügen";
 "quick.pasteNewLine" = "Einfügen + Enter";
 "quick.pastePath" = "Pfad einfügen";
+"quick.copyPath" = "Pfad kopieren";
 "quick.pasteTo" = "Einfügen in %@";
+"quick.copyToClipboard" = "In Zwischenablage kopieren";
 "quick.pasteToApp" = "Einfügen in %@";
 "quick.preview" = "Vorschau";
 "quick.recent" = "Zuletzt";

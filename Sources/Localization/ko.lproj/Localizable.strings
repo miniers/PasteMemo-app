@@ -126,6 +126,7 @@
 "settings.managerShortcut" = "Open Manager";
 "settings.shortcut.none" = "미설정";
 "settings.paste" = "붙여넣기";
+"settings.autoPaste" = "선택 후 자동 붙여넣기";
 "settings.addNewLine" = "붙여넣기 후 줄바꿈 추가";
 "settings.history" = "기록";
 "settings.retentionDays" = "기록 보관";
@@ -370,6 +371,7 @@
 "cmd.title" = "빠른 작업";
 "cmd.paste" = "붙여넣기";
 "cmd.pasteAsPlainText" = "일반 텍스트로 붙여넣기";
+"cmd.copyAsPlainText" = "일반 텍스트로 복사";
 "cmd.copy" = "복사";
 "cmd.pin" = "고정 / 고정 해제";
 "cmd.toggleSensitive" = "민감 표시 전환";
@@ -518,7 +520,9 @@
 "quick.pasteName" = "이름 붙여넣기";
 "quick.pasteNewLine" = "붙여넣기 + Enter";
 "quick.pastePath" = "경로 붙여넣기";
+"quick.copyPath" = "경로 복사";
 "quick.pasteTo" = "%@에 붙여넣기";
+"quick.copyToClipboard" = "클립보드로 복사";
 "quick.pasteToApp" = "%@에 붙여넣기";
 "quick.preview" = "미리보기";
 "quick.recent" = "최근";

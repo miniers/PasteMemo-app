@@ -110,6 +110,7 @@
 "settings.doubleTap" = "Double-tap to open";
 "settings.doubleTap.modifier" = "Double-tap Modifier Key";
 "settings.paste" = "Paste";
+"settings.autoPaste" = "Paste Immediately After Selection";
 "settings.addNewLine" = "Add new line after paste";
 "settings.history" = "History";
 "settings.retentionDays" = "Keep History";
@@ -229,6 +230,7 @@
 "quick.recent" = "Recent";
 "quick.selectHint" = "Select an item to preview";
 "quick.pasteTo" = "Paste to %@";
+"quick.copyToClipboard" = "Copy to Clipboard";
 "quick.actions" = "Actions";
 "quick.navigate" = "Navigate";
 "quick.ocrMatch" = "Matched in recognized text";
@@ -236,6 +238,7 @@
 "quick.close" = "Close";
 "quick.pasteNewLine" = "Paste + Enter";
 "quick.pastePath" = "Paste Path";
+"quick.copyPath" = "Copy Path";
 "quick.pasteName" = "Paste Name";
 "quick.saveToFolder" = "Paste File";
 "quick.switchType" = "Type";
@@ -582,6 +585,7 @@
 "cmd.title" = "Quick Actions";
 "cmd.paste" = "Paste";
 "cmd.pasteAsPlainText" = "Paste as Plain Text";
+"cmd.copyAsPlainText" = "Copy as Plain Text";
 "cmd.copy" = "Copy";
 "cmd.pin" = "Pin / Unpin";
 "cmd.toggleSensitive" = "Toggle Sensitive";

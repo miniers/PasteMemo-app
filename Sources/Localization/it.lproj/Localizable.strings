@@ -101,6 +101,7 @@
 "settings.shortcut.clickToRecord" = "Clicca per registrare";
 "settings.shortcut.pressKey" = "Premi scorciatoia…";
 "settings.paste" = "Incolla";
+"settings.autoPaste" = "Incolla automaticamente dopo la selezione";
 "settings.addNewLine" = "Aggiungi a capo dopo incolla";
 "settings.history" = "Cronologia";
 "settings.retentionDays" = "Conserva cronologia";
@@ -206,12 +207,14 @@
 "quick.recent" = "Recenti";
 "quick.selectHint" = "Seleziona un elemento per l'anteprima";
 "quick.pasteTo" = "Incolla in %@";
+"quick.copyToClipboard" = "Copia negli appunti";
 "quick.actions" = "Azioni";
 "quick.navigate" = "Naviga";
 "quick.pasteAction" = "Incolla";
 "quick.close" = "Chiudi";
 "quick.pasteNewLine" = "Incolla + Invio";
 "quick.pastePath" = "Incolla percorso";
+"quick.copyPath" = "Copia percorso";
 "quick.pasteName" = "Incolla nome";
 "quick.saveToFolder" = "Incolla file";
 "quick.switchType" = "Tipo";
@@ -446,6 +449,7 @@
 "cmd.title" = "Azioni rapide";
 "cmd.paste" = "Incolla";
 "cmd.pasteAsPlainText" = "Incolla come testo";
+"cmd.copyAsPlainText" = "Copia come testo";
 "cmd.copy" = "Copia";
 "cmd.pin" = "Fissa / Rimuovi";
 "cmd.toggleSensitive" = "Attiva/disattiva sensibile";

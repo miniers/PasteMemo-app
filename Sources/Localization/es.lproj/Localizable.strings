@@ -126,6 +126,7 @@
 "settings.managerShortcut" = "Open Manager";
 "settings.shortcut.none" = "No configurado";
 "settings.paste" = "Pegar";
+"settings.autoPaste" = "Pegar automáticamente al seleccionar";
 "settings.addNewLine" = "Agregar nueva línea después de pegar";
 "settings.history" = "Historial";
 "settings.retentionDays" = "Conservar historial";
@@ -370,6 +371,7 @@
 "cmd.title" = "Acciones rápidas";
 "cmd.paste" = "Pegar";
 "cmd.pasteAsPlainText" = "Pegar como texto";
+"cmd.copyAsPlainText" = "Copiar como texto";
 "cmd.copy" = "Copiar";
 "cmd.pin" = "Fijar / Desfijar";
 "cmd.toggleSensitive" = "Alternar sensible";
@@ -518,7 +520,9 @@ Usa %@ para pegar uno por uno.";
 "quick.pasteName" = "Pegar nombre";
 "quick.pasteNewLine" = "Pegar + Intro";
 "quick.pastePath" = "Pegar ruta";
+"quick.copyPath" = "Copiar ruta";
 "quick.pasteTo" = "Pegar en %@";
+"quick.copyToClipboard" = "Copiar al portapapeles";
 "quick.pasteToApp" = "Pegar en %@";
 "quick.preview" = "Vista previa";
 "quick.recent" = "Recientes";

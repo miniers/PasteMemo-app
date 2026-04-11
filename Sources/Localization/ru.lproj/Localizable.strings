@@ -101,6 +101,7 @@
 "settings.shortcut.clickToRecord" = "Нажмите для записи";
 "settings.shortcut.pressKey" = "Нажмите клавиши…";
 "settings.paste" = "Вставка";
+"settings.autoPaste" = "Автоматически вставлять после выбора";
 "settings.addNewLine" = "Добавлять перевод строки после вставки";
 "settings.history" = "История";
 "settings.retentionDays" = "Хранить историю";
@@ -206,12 +207,14 @@
 "quick.recent" = "Недавние";
 "quick.selectHint" = "Выберите элемент для предпросмотра";
 "quick.pasteTo" = "Вставить в %@";
+"quick.copyToClipboard" = "Скопировать в буфер обмена";
 "quick.actions" = "Действия";
 "quick.navigate" = "Навигация";
 "quick.pasteAction" = "Вставить";
 "quick.close" = "Закрыть";
 "quick.pasteNewLine" = "Вставить + Enter";
 "quick.pastePath" = "Вставить путь";
+"quick.copyPath" = "Скопировать путь";
 "quick.pasteName" = "Вставить имя";
 "quick.saveToFolder" = "Вставить файл";
 "quick.switchType" = "Тип";
@@ -542,6 +545,7 @@
 "cmd.title" = "Быстрые действия";
 "cmd.paste" = "Вставить";
 "cmd.pasteAsPlainText" = "Вставить как обычный текст";
+"cmd.copyAsPlainText" = "Скопировать как обычный текст";
 "cmd.copy" = "Копировать";
 "cmd.pin" = "Закрепить / Открепить";
 "cmd.toggleSensitive" = "Переключить конфиденциальность";

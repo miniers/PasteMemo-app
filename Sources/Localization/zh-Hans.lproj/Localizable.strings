@@ -110,6 +110,7 @@
 "settings.doubleTap" = "双击按键唤起";
 "settings.doubleTap.modifier" = "双击修饰键";
 "settings.paste" = "粘贴";
+"settings.autoPaste" = "选中后立即粘贴";
 "settings.addNewLine" = "粘贴后自动换行";
 "settings.history" = "历史记录";
 "settings.retentionDays" = "保留时长";
@@ -230,6 +231,7 @@
 "quick.selectHint" = "选择一条记录预览";
 "quick.pasteTo" = "粘贴到 %@";
 "quick.pasteToApp" = "粘贴到 %@";
+"quick.copyToClipboard" = "复制到剪贴板";
 "quick.actions" = "操作";
 "quick.navigate" = "导航";
 "quick.ocrMatch" = "命中识别文本";
@@ -237,6 +239,7 @@
 "quick.close" = "关闭";
 "quick.pasteNewLine" = "粘贴+换行";
 "quick.pastePath" = "粘贴路径";
+"quick.copyPath" = "复制路径";
 "quick.pasteName" = "粘贴文件名";
 "quick.saveToFolder" = "粘贴文件";
 "quick.switchType" = "类型";
@@ -583,6 +586,7 @@
 "cmd.title" = "快捷操作";
 "cmd.paste" = "粘贴";
 "cmd.pasteAsPlainText" = "纯文本粘贴";
+"cmd.copyAsPlainText" = "复制为纯文本";
 "cmd.copy" = "复制";
 "cmd.pin" = "置顶 / 取消置顶";
 "cmd.toggleSensitive" = "标记 / 取消敏感";

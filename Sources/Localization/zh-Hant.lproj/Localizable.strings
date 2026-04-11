@@ -102,6 +102,7 @@
 "settings.shortcut.clickToRecord" = "點擊錄入";
 "settings.shortcut.pressKey" = "請按快捷鍵…";
 "settings.paste" = "貼上";
+"settings.autoPaste" = "選中後立即貼上";
 "settings.addNewLine" = "貼上後自動換行";
 "settings.history" = "歷史記錄";
 "settings.retentionDays" = "保留時長";
@@ -207,12 +208,14 @@
 "quick.recent" = "最近";
 "quick.selectHint" = "選擇一筆記錄預覽";
 "quick.pasteTo" = "貼上到 %@";
+"quick.copyToClipboard" = "複製到剪貼簿";
 "quick.actions" = "操作";
 "quick.navigate" = "導覽";
 "quick.pasteAction" = "貼上";
 "quick.close" = "關閉";
 "quick.pasteNewLine" = "貼上+換行";
 "quick.pastePath" = "貼上路徑";
+"quick.copyPath" = "複製路徑";
 "quick.pasteName" = "貼上檔名";
 "quick.saveToFolder" = "貼上檔案";
 "quick.switchType" = "類型";
@@ -448,6 +451,7 @@
 "cmd.title" = "快捷操作";
 "cmd.paste" = "貼上";
 "cmd.pasteAsPlainText" = "純文字貼上";
+"cmd.copyAsPlainText" = "複製為純文字";
 "cmd.copy" = "複製";
 "cmd.pin" = "置頂 / 取消置頂";
 "cmd.toggleSensitive" = "標記 / 取消敏感";
