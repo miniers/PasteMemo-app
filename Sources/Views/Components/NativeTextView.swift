@@ -70,22 +70,34 @@ struct NativeTextView: NSViewRepresentable {
         let result = NSMutableAttributedString(attributedString: source)
         let fullRange = NSRange(location: 0, length: result.length)
 
+        // Strip source backgroundColor across the whole string — the preview
+        // uses the panel's own material background; dragging in black/gray
+        // backgrounds from the source makes text unreadable on dark mode.
+        result.removeAttribute(.backgroundColor, range: fullRange)
+
+        let isDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+
         result.enumerateAttribute(.foregroundColor, in: fullRange) { value, range, _ in
             guard let color = value as? NSColor else {
                 result.addAttribute(.foregroundColor, value: NSColor.labelColor, range: range)
                 return
             }
-            if isNearBlackOrWhite(color) {
+            if shouldAdaptForegroundColor(color, isDark: isDark) {
                 result.addAttribute(.foregroundColor, value: NSColor.labelColor, range: range)
             }
         }
         return result
     }
 
-    private func isNearBlackOrWhite(_ color: NSColor) -> Bool {
+    private func shouldAdaptForegroundColor(_ color: NSColor, isDark: Bool) -> Bool {
         guard let rgb = color.usingColorSpace(.sRGB) else { return false }
         let brightness = rgb.redComponent * 0.299 + rgb.greenComponent * 0.587 + rgb.blueComponent * 0.114
-        return brightness < 0.15 || brightness > 0.85
+        // Near-black or near-white: always adapt.
+        if brightness < 0.15 || brightness > 0.85 { return true }
+        // Mid-grey on dark / light panel — low contrast, swap to label color.
+        if isDark, brightness < 0.40 { return true }
+        if !isDark, brightness > 0.70 { return true }
+        return false
     }
 
     class Coordinator: NSObject, NSTextViewDelegate {
