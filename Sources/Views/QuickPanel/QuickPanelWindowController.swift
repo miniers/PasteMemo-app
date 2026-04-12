@@ -37,6 +37,7 @@ final class QuickPanelWindowController {
     private var clickOutsideMonitor: Any?
     private var deactivationObserver: Any?
     private var resignKeyObserver: Any?
+    private var resizeObserver: Any?
     private(set) var previousApp: NSRunningApplication?
     private var isWarmedUp = false
     var isPinned = false
@@ -222,8 +223,12 @@ final class QuickPanelWindowController {
         panel.contentView = container
         panel.minSize = NSSize(width: MIN_WIDTH, height: MIN_HEIGHT)
 
-        // Save size when resized
-        NotificationCenter.default.addObserver(
+        // Save size when resized. warmUp runs once so registering here is safe;
+        // we still track the token so a future rebuild path wouldn't duplicate writes.
+        if let previous = resizeObserver {
+            NotificationCenter.default.removeObserver(previous)
+        }
+        resizeObserver = NotificationCenter.default.addObserver(
             forName: NSWindow.didResizeNotification,
             object: panel,
             queue: .main
@@ -259,12 +264,15 @@ final class QuickPanelWindowController {
         if hasSaved,
            let screen = rememberedScreen() ?? NSScreen.screenWithMouse ?? NSScreen.main ?? NSScreen.screens.first {
             let visibleFrame = screen.visibleFrame
-            // Saved offset is relative to the screen's visible frame (0.0~1.0 ratio)
+            // Saved offset is relative to the screen's visible frame (0.0~1.0 ratio).
+            // Clamp so the panel stays on-screen if the display shrunk or was swapped.
             let rx = UserDefaults.standard.double(forKey: "\(POSITION_KEY).rx")
             let ry = UserDefaults.standard.double(forKey: "\(POSITION_KEY).ry")
-            let x = visibleFrame.origin.x + rx * visibleFrame.width
-            let y = visibleFrame.origin.y + ry * visibleFrame.height
-            panel.setFrameOrigin(NSPoint(x: x, y: y))
+            let origin = CGPoint(
+                x: visibleFrame.origin.x + rx * visibleFrame.width,
+                y: visibleFrame.origin.y + ry * visibleFrame.height
+            )
+            setClampedOrigin(origin, for: panel, on: screen)
         } else {
             let screen = NSScreen.screenWithMouse ?? NSScreen.main ?? NSScreen.screens.first
             guard let screen else { return }
@@ -375,6 +383,9 @@ final class QuickPanelWindowController {
         guard let screen = NSScreen.screens.first(where: { $0.visibleFrame.intersects(panel.frame) })
                 ?? NSScreen.screenWithMouse else { return }
         let visibleFrame = screen.visibleFrame
+        // Guard against transient 0-sized frames during display reconfiguration,
+        // which would produce NaN and permanently break remembered-position mode.
+        guard visibleFrame.width > 0, visibleFrame.height > 0 else { return }
         let rx = (panel.frame.origin.x - visibleFrame.origin.x) / visibleFrame.width
         let ry = (panel.frame.origin.y - visibleFrame.origin.y) / visibleFrame.height
         UserDefaults.standard.set(rx, forKey: "\(POSITION_KEY).rx")

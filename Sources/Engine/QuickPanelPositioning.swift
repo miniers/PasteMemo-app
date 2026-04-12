@@ -94,7 +94,8 @@ enum ActiveWindowLocator {
         let appElement = AXUIElementCreateApplication(app.processIdentifier)
         var windowRef: CFTypeRef?
         guard AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &windowRef) == .success,
-              let windowRef
+              let windowRef,
+              CFGetTypeID(windowRef) == AXUIElementGetTypeID()
         else {
             return nil
         }
@@ -115,7 +116,9 @@ enum ActiveWindowLocator {
         guard AXUIElementCopyAttributeValue(window, kAXPositionAttribute as CFString, &positionRef) == .success,
               AXUIElementCopyAttributeValue(window, kAXSizeAttribute as CFString, &sizeRef) == .success,
               let positionRef,
-              let sizeRef
+              let sizeRef,
+              CFGetTypeID(positionRef) == AXValueGetTypeID(),
+              CFGetTypeID(sizeRef) == AXValueGetTypeID()
         else {
             return nil
         }
@@ -173,9 +176,5 @@ enum MenuBarIconLocator {
 private extension CGRect {
     var area: CGFloat {
         width * height
-    }
-
-    var center: CGPoint {
-        CGPoint(x: midX, y: midY)
     }
 }
