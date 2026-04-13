@@ -6,6 +6,14 @@ struct ClipPropertiesView: View {
     var fontSize: CGFloat = 12
     var onLocationTap: ((String) -> Void)?
 
+    struct TextStats: Equatable, Sendable {
+        let chars: Int
+        let lines: Int
+        let words: Int
+    }
+
+    @State private var textStats: TextStats?
+
     @ViewBuilder
     var body: some View {
         if item.isDeleted { EmptyView() } else {
@@ -14,6 +22,20 @@ struct ClipPropertiesView: View {
             typeSpecificProperties
             propDivider
             propRow(L10n.tr("detail.created"), formatDate(item.createdAt))
+        }
+        .task(id: item.persistentModelID) {
+            textStats = nil
+            guard item.contentType == .text || item.contentType == .code else { return }
+            let content = item.content
+            let stats = await Task.detached(priority: .userInitiated) {
+                let lines = content.components(separatedBy: .newlines)
+                let words = content.components(separatedBy: .whitespacesAndNewlines)
+                    .reduce(into: 0) { acc, s in if !s.isEmpty { acc += 1 } }
+                return TextStats(chars: content.count, lines: lines.count, words: words)
+            }.value
+            if !Task.isCancelled {
+                textStats = stats
+            }
         }
         }
     }
@@ -193,15 +215,13 @@ struct ClipPropertiesView: View {
     // MARK: - Text
 
     private var textProperties: some View {
-        let lines = item.content.components(separatedBy: .newlines)
-        let words = item.content.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
-        return Group {
+        Group {
             propDivider
-            propRow(L10n.tr("detail.chars"), "\(item.content.count)")
+            propRow(L10n.tr("detail.chars"), textStats.map { "\($0.chars)" } ?? "…")
             propDivider
-            propRow(L10n.tr("detail.lines"), "\(lines.count)")
+            propRow(L10n.tr("detail.lines"), textStats.map { "\($0.lines)" } ?? "…")
             propDivider
-            propRow(L10n.tr("detail.words"), "\(words.count)")
+            propRow(L10n.tr("detail.words"), textStats.map { "\($0.words)" } ?? "…")
         }
     }
 

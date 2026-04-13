@@ -327,13 +327,38 @@ final class ClipboardManager: ObservableObject {
     }
 
     private func matchesDuplicateCandidate(_ existingItem: ClipItem, with newItem: ClipItem) -> Bool {
-        guard existingItem.content == newItem.content, existingItem.contentType == newItem.contentType else {
+        guard existingItem.content == newItem.content else {
             return false
         }
-        // Different image data means edited image, not a duplicate
-        if existingItem.contentType == .image, existingItem.imageData != newItem.imageData { return false }
-        // Different rich text data means different format, not a duplicate
-        return existingItem.richTextData == newItem.richTextData
+
+        let existingIsRelaxedText = existingItem.contentType == .text
+        let newIsRelaxedText = newItem.contentType == .text
+
+        if existingItem.contentType == newItem.contentType {
+            if existingItem.contentType == .image, existingItem.imageData != newItem.imageData { return false }
+            if existingIsRelaxedText && newIsRelaxedText {
+                let existingHasRichText = existingItem.richTextData != nil
+                let newHasRichText = newItem.richTextData != nil
+                if existingHasRichText != newHasRichText {
+                    return true
+                }
+                return existingItem.richTextData == newItem.richTextData
+            }
+            // For non-text, non-image types (.link, .code, .phone, .color,
+            // .file, .email, .video, .audio, .document, ...), the content
+            // string is the authoritative identity — an identical URL copied
+            // from Chrome vs Terminal should merge even if Chrome attached
+            // HTML rich text and Terminal didn't.
+            return true
+        }
+
+        guard existingIsRelaxedText, newIsRelaxedText else {
+            return false
+        }
+
+        let existingHasRichText = existingItem.richTextData != nil
+        let newHasRichText = newItem.richTextData != nil
+        return existingHasRichText != newHasRichText
     }
 
     private func refreshLinkMetadataIfNeeded(for item: ClipItem, in context: ModelContext) {
@@ -346,7 +371,7 @@ final class ClipboardManager: ObservableObject {
             await MainActor.run {
                 if let title = metadata.title { targetItem.linkTitle = title }
                 if let favicon = metadata.faviconData { targetItem.faviconData = favicon }
-                try? context.save()
+                ClipItemStore.saveAndNotifyContent(context)
             }
         }
     }
@@ -437,10 +462,44 @@ final class ClipboardManager: ObservableObject {
         }
         // Bare domain: example.com, sub.example.com/path
         if text.range(of: #"^[a-zA-Z0-9]([a-zA-Z0-9-]*\.)+[a-zA-Z]{2,}(/\S*)?$"#, options: .regularExpression) != nil {
+            // Reject if the trailing label is a common file extension and
+            // the text has no URL path (e.g. "mn-little-yellow-duck.conf"
+            // or "foo.bar.json"). This avoids misclassifying config file
+            // names as links.
+            if !text.contains("/") {
+                let lastDot = text.lastIndex(of: ".")!
+                let suffix = text[text.index(after: lastDot)...].lowercased()
+                if Self.nonDomainSuffixes.contains(String(suffix)) { return false }
+            }
             return true
         }
         return false
     }
+
+    private static let nonDomainSuffixes: Set<String> = [
+        // configs / text
+        "conf", "config", "ini", "env", "lock", "plist", "toml",
+        "log", "txt", "md", "markdown", "rtf", "csv", "tsv",
+        // data / markup
+        "json", "xml", "yml", "yaml", "html", "htm", "xhtml", "sql",
+        // code
+        "swift", "js", "ts", "jsx", "tsx", "py", "rb", "go", "rs",
+        "c", "cc", "cpp", "cxx", "h", "hpp", "hxx", "m", "mm",
+        "java", "kt", "kts", "scala", "groovy", "dart", "lua",
+        "sh", "bash", "zsh", "fish", "ps1", "bat", "cmd",
+        "php", "pl", "r", "jl", "clj", "erl", "ex", "exs",
+        // binaries / archives
+        "exe", "dll", "so", "dylib", "a", "o",
+        "zip", "tar", "gz", "bz2", "xz", "rar", "7z",
+        "iso", "dmg", "pkg", "deb", "rpm", "app",
+        // documents
+        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "odp",
+        "pages", "numbers", "keynote",
+        // media
+        "png", "jpg", "jpeg", "gif", "webp", "bmp", "tiff", "tif", "svg", "ico", "heic", "heif",
+        "mp3", "wav", "flac", "ogg", "m4a", "aac",
+        "mp4", "mov", "avi", "mkv", "webm", "m4v"
+    ]
 
     private func isFilePath(_ text: String) -> Bool {
         guard text.hasPrefix("/") || text.hasPrefix("~") else { return false }

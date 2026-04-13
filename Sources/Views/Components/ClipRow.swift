@@ -259,7 +259,14 @@ struct ClipRow: View {
         if item.contentType == .link, !showLinkURL, let linkTitle = item.linkTitle {
             return linkTitle
         }
-        return item.displayTitle ?? item.content
+        if let title = item.displayTitle { return title }
+        // Fallback for legacy items without a precomputed displayTitle — never
+        // render megabytes of raw content: a truncated first-line preview is
+        // enough for a list row and avoids freezing SwiftUI on huge pastes.
+        let cap = 500
+        let head = item.content.prefix(cap)
+        let firstLine = head.split(separator: "\n", omittingEmptySubsequences: false).first.map(String.init) ?? String(head)
+        return firstLine
     }
 
     private func partialMask(_ text: String) -> String {

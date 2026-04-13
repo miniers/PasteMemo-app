@@ -532,6 +532,7 @@
 "menu.pause" = "監視を一時停止";
 "menu.quickPanel" = "クイックペースト";
 "menu.quit" = "%@ を終了";
+"menu.accessibility.grant" = "⚠ アクセシビリティ権限を許可";
 "menu.resume" = "監視を再開";
 "menu.settings" = "設定";
 

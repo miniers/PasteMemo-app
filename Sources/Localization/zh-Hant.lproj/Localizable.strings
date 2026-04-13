@@ -212,6 +212,7 @@
 "menu.resume" = "恢復監聽";
 "menu.settings" = "設定";
 "menu.quit" = "結束 %@";
+"menu.accessibility.grant" = "⚠ 授權輔助使用權限";
 
 /* Quick Panel */
 "quick.search" = "搜尋剪貼簿歷史…";

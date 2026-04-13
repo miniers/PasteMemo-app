@@ -235,6 +235,7 @@
 "menu.resume" = "恢复监听";
 "menu.settings" = "设置";
 "menu.quit" = "退出 %@";
+"menu.accessibility.grant" = "⚠ 授权辅助功能权限";
 
 /* Quick Panel */
 "quick.search" = "搜索，输入 / 发现更多…";

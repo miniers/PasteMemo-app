@@ -211,6 +211,7 @@
 "menu.resume" = "Lanjutkan Pemantauan";
 "menu.settings" = "Pengaturan";
 "menu.quit" = "Keluar %@";
+"menu.accessibility.grant" = "⚠ Berikan Izin Aksesibilitas";
 
 /* Quick Panel */
 "quick.search" = "Ketik untuk mencari klip…";

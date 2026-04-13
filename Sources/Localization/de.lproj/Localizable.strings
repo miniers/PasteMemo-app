@@ -512,6 +512,7 @@ Verwenden Sie %@ zum Einfügen.";
 "menu.pause" = "Überwachung pausieren";
 "menu.quickPanel" = "Schnelles Einfügen";
 "menu.quit" = "%@ beenden";
+"menu.accessibility.grant" = "⚠ Bedienungshilfen-Berechtigung erteilen";
 "menu.resume" = "Überwachung fortsetzen";
 "menu.settings" = "Einstellungen";
 

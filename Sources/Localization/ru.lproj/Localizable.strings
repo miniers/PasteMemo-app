@@ -211,6 +211,7 @@
 "menu.resume" = "Возобновить мониторинг";
 "menu.settings" = "Настройки";
 "menu.quit" = "Завершить %@";
+"menu.accessibility.grant" = "⚠ Предоставить разрешение на универсальный доступ";
 
 /* Quick Panel */
 "quick.search" = "Поиск по буферу…";
