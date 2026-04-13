@@ -211,6 +211,7 @@
 "menu.resume" = "Riprendi monitoraggio";
 "menu.settings" = "Impostazioni";
 "menu.quit" = "Esci da %@";
+"menu.accessibility.grant" = "⚠ Concedi permesso di accessibilità";
 
 /* Quick Panel */
 "quick.search" = "Cerca negli appunti…";

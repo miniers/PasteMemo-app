@@ -516,6 +516,7 @@
 "menu.pause" = "모니터링 일시 정지";
 "menu.quickPanel" = "빠른 붙여넣기";
 "menu.quit" = "%@ 종료";
+"menu.accessibility.grant" = "⚠ 손쉬운 사용 권한 부여";
 "menu.resume" = "모니터링 재개";
 "menu.settings" = "설정";
 

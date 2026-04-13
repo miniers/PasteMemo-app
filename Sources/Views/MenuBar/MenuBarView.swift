@@ -1,4 +1,5 @@
 import SwiftUI
+import ApplicationServices
 
 struct MenuBarContent: View {
     @Environment(\.openWindow) private var openWindow
@@ -9,6 +10,15 @@ struct MenuBarContent: View {
 
     var body: some View {
         let _ = storeOpenWindowAction()
+
+        if !AXIsProcessTrusted() {
+            Button {
+                openAccessibilitySettings()
+            } label: {
+                Text(L10n.tr("menu.accessibility.grant"))
+            }
+            Divider()
+        }
 
         Button {
             handleOpenMainWindow()
@@ -112,5 +122,13 @@ struct MenuBarContent: View {
             clipboardManager: ClipboardManager.shared,
             modelContainer: PasteMemoApp.sharedModelContainer
         )
+    }
+
+    private func openAccessibilitySettings() {
+        let opened = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+            .map { NSWorkspace.shared.open($0) } ?? false
+        if !opened {
+            ClipboardManager.shared.requestAccessibilityPermission()
+        }
     }
 }

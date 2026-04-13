@@ -235,6 +235,7 @@
 "menu.resume" = "Resume Monitoring";
 "menu.settings" = "Settings";
 "menu.quit" = "Quit %@";
+"menu.accessibility.grant" = "⚠ Grant Accessibility Permission";
 
 /* Quick Panel */
 "quick.search" = "Search or type / for more…";

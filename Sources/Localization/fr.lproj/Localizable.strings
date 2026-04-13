@@ -516,6 +516,7 @@ Utilisez %@ pour coller un par un.";
 "menu.pause" = "Suspendre la surveillance";
 "menu.quickPanel" = "Collage rapide";
 "menu.quit" = "Quitter %@";
+"menu.accessibility.grant" = "⚠ Autoriser l'accessibilité";
 "menu.resume" = "Reprendre la surveillance";
 "menu.settings" = "Réglages";
 
