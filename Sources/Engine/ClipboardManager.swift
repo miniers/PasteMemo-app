@@ -13,7 +13,21 @@ final class ClipboardManager: ObservableObject {
     var lastChangeCount: Int = 0
     private var timer: Timer?
     var modelContainer: ModelContainer?
-    @Published var isPaused = false
+
+    private static let MONITORING_ENABLED_KEY = "clipboardMonitoringEnabled"
+
+    @Published var isMonitoringEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isMonitoringEnabled, forKey: Self.MONITORING_ENABLED_KEY)
+            applyMonitoringState()
+        }
+    }
+
+    @Published private(set) var isTemporarilyPaused: Bool = false {
+        didSet { applyMonitoringState() }
+    }
+
+    var isPaused: Bool { !isMonitoringEnabled || isTemporarilyPaused }
 
     // Track app switches to determine the real source app
     private var appBeforeSwitch: (name: String?, bundleID: String?) = (nil, nil)
@@ -21,7 +35,10 @@ final class ClipboardManager: ObservableObject {
     private var appSwitchObserver: Any?
     private static let APP_SWITCH_THRESHOLD: TimeInterval = 1.0
 
-    private init() {}
+    private init() {
+        let stored = UserDefaults.standard.object(forKey: Self.MONITORING_ENABLED_KEY) as? Bool
+        self.isMonitoringEnabled = stored ?? true
+    }
 
     // MARK: - Monitoring
 
@@ -32,6 +49,14 @@ final class ClipboardManager: ObservableObject {
             Task { @MainActor in
                 self?.checkClipboard()
             }
+        }
+    }
+
+    private func applyMonitoringState() {
+        if isPaused {
+            stopMonitoring()
+        } else if timer == nil {
+            startMonitoring()
         }
     }
 
