@@ -38,6 +38,20 @@ final class ClipboardManager: ObservableObject {
     private init() {
         let stored = UserDefaults.standard.object(forKey: Self.MONITORING_ENABLED_KEY) as? Bool
         self.isMonitoringEnabled = stored ?? true
+
+        NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: UserDefaults.standard,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                let current = UserDefaults.standard.object(forKey: Self.MONITORING_ENABLED_KEY) as? Bool ?? true
+                if current != self.isMonitoringEnabled {
+                    self.isMonitoringEnabled = current
+                }
+            }
+        }
     }
 
     // MARK: - Monitoring
