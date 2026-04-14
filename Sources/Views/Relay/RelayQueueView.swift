@@ -235,7 +235,21 @@ struct RelayQueueView: View {
                 Button {
                     manager.deactivate()
                 } label: {
-                    Text(L10n.tr("relay.exitRelay"))
+                    Text(L10n.tr("relay.exit"))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 5)
+                        .background(Color.primary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+                }
+                .buttonStyle(.plain)
+            }
+
+            HStack(spacing: 8) {
+                Button {
+                    manager.deactivate(clearQueue: true)
+                } label: {
+                    Text(L10n.tr("relay.clearAndExit"))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.red)
                         .frame(maxWidth: .infinity)
@@ -243,6 +257,7 @@ struct RelayQueueView: View {
                         .background(Color.red.opacity(0.1), in: RoundedRectangle(cornerRadius: 6))
                 }
                 .buttonStyle(.plain)
+                .disabled(manager.items.isEmpty)
             }
         }
         .padding(.horizontal, 12)
