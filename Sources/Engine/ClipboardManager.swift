@@ -634,6 +634,7 @@ final class ClipboardManager: ObservableObject {
             }
         }
         lastChangeCount = NSPasteboard.general.changeCount
+        skipRelayMonitorIfActive()
     }
 
     func writeFileURLsToPasteboard(_ pasteboard: NSPasteboard, paths: [String]) {
