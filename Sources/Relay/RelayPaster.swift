@@ -14,6 +14,8 @@ enum RelayPaster {
         monitor.skipNextChange()
         try? await Task.sleep(for: PASTE_DELAY)
         simulateCommandV()
+        try? await Task.sleep(for: .milliseconds(100))
+        simulatePostPasteKey()
     }
 
     /// Write image data to system pasteboard and simulate Cmd+V.
@@ -29,6 +31,8 @@ enum RelayPaster {
         monitor.skipNextChange()
         try? await Task.sleep(for: PASTE_DELAY)
         simulateCommandV()
+        try? await Task.sleep(for: .milliseconds(100))
+        simulatePostPasteKey()
     }
 
     /// Write file URLs to system pasteboard and simulate Cmd+V.
@@ -43,6 +47,8 @@ enum RelayPaster {
         monitor.skipNextChange()
         try? await Task.sleep(for: PASTE_DELAY)
         simulateCommandV()
+        try? await Task.sleep(for: .milliseconds(100))
+        simulatePostPasteKey()
     }
 
     private static func simulateCommandV() {
@@ -51,6 +57,15 @@ enum RelayPaster {
               let keyUp = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: false) else { return }
         keyDown.flags = .maskCommand
         keyUp.flags = .maskCommand
+        keyDown.post(tap: .cgAnnotatedSessionEventTap)
+        keyUp.post(tap: .cgAnnotatedSessionEventTap)
+    }
+
+    private static func simulatePostPasteKey() {
+        guard let keyCode = RelayPostPasteKey.current.keyCode else { return }
+        let source = CGEventSource(stateID: .hidSystemState)
+        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false) else { return }
         keyDown.post(tap: .cgAnnotatedSessionEventTap)
         keyUp.post(tap: .cgAnnotatedSessionEventTap)
     }
