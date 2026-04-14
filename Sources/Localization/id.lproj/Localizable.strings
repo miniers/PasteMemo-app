@@ -461,6 +461,7 @@
 // Relay Mode
 "relay.title" = "Mode Relay";
 "relay.exit" = "Keluar";
+"relay.clearAndExit" = "Kosongkan & Keluar";
 "relay.close" = "Tutup";
 "relay.autoExit" = "Keluar otomatis saat antrian kosong";
 "relay.previous" = "Sebelumnya";

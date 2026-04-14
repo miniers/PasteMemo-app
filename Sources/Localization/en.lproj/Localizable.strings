@@ -615,6 +615,7 @@
 "relay.title" = "Relay Mode";
 "relay.tab" = "Relay";
 "relay.exit" = "Exit";
+"relay.clearAndExit" = "Clear & Exit";
 "relay.close" = "Close";
 "relay.exitRelay" = "Exit Relay";
 "relay.startRelay" = "Start Relay";

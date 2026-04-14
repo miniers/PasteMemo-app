@@ -460,7 +460,8 @@
 
 // Relay Mode
 "relay.title" = "Режим Эстафеты";
-"relay.exit" = "Выход";
+"relay.exit" = "Выйти";
+"relay.clearAndExit" = "Очистить и выйти";
 "relay.close" = "Закрыть";
 "relay.autoExit" = "Авто-выход при пустой очереди";
 "relay.previous" = "Назад";

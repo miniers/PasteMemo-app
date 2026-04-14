@@ -398,6 +398,7 @@
 "relay.title" = "Modo Relevo";
 "relay.tab" = "Relevo";
 "relay.exit" = "Salir";
+"relay.clearAndExit" = "Vaciar y salir";
 "relay.close" = "Cerrar";
 "relay.exitRelay" = "Salir del relevo";
 "relay.startRelay" = "Iniciar relevo";

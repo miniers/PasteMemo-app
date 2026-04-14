@@ -398,6 +398,7 @@
 "relay.title" = "릴레이 모드";
 "relay.tab" = "릴레이";
 "relay.exit" = "종료";
+"relay.clearAndExit" = "비우고 종료";
 "relay.close" = "닫기";
 "relay.exitRelay" = "릴레이 종료";
 "relay.startRelay" = "릴레이 시작";

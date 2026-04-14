@@ -398,6 +398,7 @@
 "relay.title" = "Relay-Modus";
 "relay.tab" = "Relay";
 "relay.exit" = "Beenden";
+"relay.clearAndExit" = "Leeren & beenden";
 "relay.close" = "Schließen";
 "relay.exitRelay" = "Relay beenden";
 "relay.startRelay" = "Relay starten";

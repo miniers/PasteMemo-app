@@ -479,6 +479,7 @@
 "relay.title" = "接力模式";
 "relay.tab" = "接力";
 "relay.exit" = "退出";
+"relay.clearAndExit" = "清空並退出";
 "relay.close" = "關閉";
 "relay.exitRelay" = "退出接力";
 "relay.startRelay" = "開啟接力";

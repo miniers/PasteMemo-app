@@ -414,6 +414,7 @@
 "relay.title" = "リレーモード";
 "relay.tab" = "リレー";
 "relay.exit" = "終了";
+"relay.clearAndExit" = "クリアして終了";
 "relay.close" = "閉じる";
 "relay.exitRelay" = "リレー終了";
 "relay.startRelay" = "リレー開始";

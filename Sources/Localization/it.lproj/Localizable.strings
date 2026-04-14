@@ -477,6 +477,7 @@
 "relay.title" = "Modalità Staffetta";
 "relay.tab" = "Staffetta";
 "relay.exit" = "Esci";
+"relay.clearAndExit" = "Svuota ed esci";
 "relay.close" = "Chiudi";
 "relay.exitRelay" = "Esci dalla staffetta";
 "relay.startRelay" = "Avvia staffetta";

@@ -398,6 +398,7 @@
 "relay.title" = "Mode Relais";
 "relay.tab" = "Relais";
 "relay.exit" = "Quitter";
+"relay.clearAndExit" = "Vider et quitter";
 "relay.close" = "Fermer";
 "relay.exitRelay" = "Quitter le relais";
 "relay.startRelay" = "Démarrer le relais";
