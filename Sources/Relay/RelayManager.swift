@@ -207,9 +207,6 @@ final class RelayManager {
         guard !isActive else { return }
         isActive = true
         clipboardController?.pauseMonitoring(persistent: false)
-        hotkeyController?.disableHotkey()
-        // Defensive: ensure quick panel hotkey is fully unregistered
-        HotkeyManager.shared.unregister()
         startMonitor()
         startHotkeys()
         showWindow()
@@ -225,15 +222,12 @@ final class RelayManager {
         stopMonitor()
         stopHotkeys()
         clipboardController?.resumeMonitoring(persistent: false)
-        HotkeyManager.shared.register()
     }
 
     func resume() {
         guard isActive, isPaused else { return }
         isPaused = false
         clipboardController?.pauseMonitoring(persistent: false)
-        HotkeyManager.shared.unregister()
-        QuickPanelWindowController.shared.dismiss()
         startMonitor()
         startHotkeys()
     }
@@ -244,13 +238,10 @@ final class RelayManager {
         isPaused = false
         stopMonitor()
         stopHotkeys()
-        QuickPanelWindowController.shared.dismiss()
         dismissWindow()
         items.removeAll()
         currentIndex = 0
         clipboardController?.resumeMonitoring(persistent: false)
-        hotkeyController?.enableHotkey()
-        HotkeyManager.shared.register()
     }
 
     // MARK: - External API
