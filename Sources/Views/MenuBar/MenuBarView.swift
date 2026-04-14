@@ -45,7 +45,7 @@ struct MenuBarContent: View {
         Button {
             clipboardManager.togglePause()
         } label: {
-            Text(clipboardManager.isPaused ? L10n.tr("menu.resume") : L10n.tr("menu.pause"))
+            Text(clipboardManager.isMonitoringEnabled ? L10n.tr("menu.pause") : L10n.tr("menu.resume"))
         }
         .disabled(RelayManager.shared.isActive)
 
