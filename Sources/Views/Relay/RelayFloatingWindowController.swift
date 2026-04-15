@@ -52,6 +52,7 @@ final class RelayFloatingWindowController {
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = true
+        panel.acceptsMouseMovedEvents = true
 
         let container = NSView(frame: NSRect(x: 0, y: 0, width: initialWidth, height: 200))
         container.wantsLayer = true
@@ -93,7 +94,7 @@ final class RelayFloatingWindowController {
             resizeHandle.topAnchor.constraint(equalTo: container.topAnchor),
             resizeHandle.bottomAnchor.constraint(equalTo: container.bottomAnchor),
             resizeHandle.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            resizeHandle.widthAnchor.constraint(equalToConstant: 6),
+            resizeHandle.widthAnchor.constraint(equalToConstant: 8),
         ])
 
         panel.contentView = container
@@ -181,7 +182,8 @@ private final class WindowCloseDelegate: NSObject, NSWindowDelegate {
 }
 
 /// Custom resize handle along the left edge for borderless panels.
-/// Shows the east-west resize cursor and drags to change the window width.
+/// Uses NSTrackingArea with .activeAlways so the cursor updates on
+/// nonactivating panels (where the standard addCursorRect path is skipped).
 private final class ResizeHandleView: NSView {
     private let minWidth: CGFloat
     private let maxWidth: CGFloat
@@ -189,6 +191,7 @@ private final class ResizeHandleView: NSView {
     private let save: (CGFloat) -> Void
     private var dragStartWidth: CGFloat = 0
     private var dragStartX: CGFloat = 0
+    private var trackingArea: NSTrackingArea?
 
     init(
         minWidth: CGFloat,
@@ -205,8 +208,27 @@ private final class ResizeHandleView: NSView {
 
     required init?(coder: NSCoder) { nil }
 
-    override func resetCursorRects() {
-        addCursorRect(bounds, cursor: .resizeLeftRight)
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let existing = trackingArea {
+            removeTrackingArea(existing)
+        }
+        let area = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(area)
+        trackingArea = area
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        NSCursor.resizeLeftRight.push()
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        NSCursor.pop()
     }
 
     override func mouseDown(with event: NSEvent) {
