@@ -62,20 +62,11 @@ enum RelayPaster {
     }
 
     private static func simulatePostPasteKey() {
-        let key = RelayPostPasteKey.current
-        print("[RelayPaster] simulatePostPasteKey called: key=\(key.rawValue)")
-        guard let keyCode = key.keyCode else {
-            print("[RelayPaster] post-paste key is .none, skipping")
-            return
-        }
+        guard let keyCode = RelayPostPasteKey.current.keyCode else { return }
         let source = CGEventSource(stateID: .hidSystemState)
         guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true),
-              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false) else {
-            print("[RelayPaster] failed to create CGEvent for keyCode \(keyCode)")
-            return
-        }
+              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false) else { return }
         keyDown.post(tap: .cgAnnotatedSessionEventTap)
         keyUp.post(tap: .cgAnnotatedSessionEventTap)
-        print("[RelayPaster] posted keyCode \(keyCode)")
     }
 }

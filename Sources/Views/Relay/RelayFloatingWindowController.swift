@@ -229,21 +229,17 @@ private final class ResizeHandleView: NSView {
         )
         addTrackingArea(area)
         trackingArea = area
-        print("[ResizeHandle] tracking area installed at bounds=\(bounds)")
     }
 
     override func cursorUpdate(with event: NSEvent) {
-        print("[ResizeHandle] cursorUpdate fired")
         NSCursor.resizeLeftRight.set()
     }
 
     override func mouseMoved(with event: NSEvent) {
-        print("[ResizeHandle] mouseMoved fired")
         NSCursor.resizeLeftRight.set()
     }
 
     override func mouseEntered(with event: NSEvent) {
-        print("[ResizeHandle] mouseEntered fired")
         NSCursor.resizeLeftRight.set()
     }
 
