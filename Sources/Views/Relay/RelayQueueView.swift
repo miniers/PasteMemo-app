@@ -32,8 +32,11 @@ struct RelayQueueView: View {
         case .none: return L10n.tr("relay.settings.postPasteKey.none")
         case .return: return L10n.tr("relay.settings.postPasteKey.return")
         case .tab: return L10n.tr("relay.settings.postPasteKey.tab")
-        case .down: return L10n.tr("relay.settings.postPasteKey.down")
         case .space: return L10n.tr("relay.settings.postPasteKey.space")
+        case .up: return L10n.tr("relay.settings.postPasteKey.up")
+        case .down: return L10n.tr("relay.settings.postPasteKey.down")
+        case .left: return L10n.tr("relay.settings.postPasteKey.left")
+        case .right: return L10n.tr("relay.settings.postPasteKey.right")
         }
     }
 
