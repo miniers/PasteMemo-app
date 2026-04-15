@@ -33,8 +33,7 @@ final class RelayFloatingWindowController {
             : DEFAULT_WIDTH
 
         let content = RelayQueueView(manager: relayManager)
-        let hosting = NSHostingController(rootView: AnyView(content.ignoresSafeArea().frame(minWidth: MIN_WIDTH, maxWidth: MAX_WIDTH)))
-        hosting.sizingOptions = .preferredContentSize
+        let hosting = NSHostingController(rootView: AnyView(content.ignoresSafeArea()))
         hostingController = hosting
 
         let panel = NSPanel(
@@ -208,6 +207,13 @@ private final class ResizeHandleView: NSView {
 
     required init?(coder: NSCoder) { nil }
 
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        // hitTest receives point in SUPERVIEW coordinates. Claim hits inside our frame
+        // so SwiftUI hostingView (which is a sibling below us) doesn't swallow the event.
+        if frame.contains(point) { return self }
+        return nil
+    }
+
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         if let existing = trackingArea {
@@ -215,7 +221,7 @@ private final class ResizeHandleView: NSView {
         }
         let area = NSTrackingArea(
             rect: bounds,
-            options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+            options: [.cursorUpdate, .mouseMoved, .activeAlways, .inVisibleRect],
             owner: self,
             userInfo: nil
         )
@@ -223,12 +229,12 @@ private final class ResizeHandleView: NSView {
         trackingArea = area
     }
 
-    override func mouseEntered(with event: NSEvent) {
-        NSCursor.resizeLeftRight.push()
+    override func cursorUpdate(with event: NSEvent) {
+        NSCursor.resizeLeftRight.set()
     }
 
-    override func mouseExited(with event: NSEvent) {
-        NSCursor.pop()
+    override func mouseMoved(with event: NSEvent) {
+        NSCursor.resizeLeftRight.set()
     }
 
     override func mouseDown(with event: NSEvent) {
