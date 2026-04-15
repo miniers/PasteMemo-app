@@ -4,6 +4,7 @@ struct RelayQueueView: View {
     @Bindable var manager: RelayManager
     @State private var splitTargetIndex: Int?
     @State private var draggingItem: RelayItem?
+    @State private var showSettingsPopover = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -50,6 +51,21 @@ struct RelayQueueView: View {
                 .disabled(manager.items.isEmpty)
 
                 Spacer()
+
+                Button {
+                    showSettingsPopover.toggle()
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.primary.opacity(0.06), in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .popover(isPresented: $showSettingsPopover, arrowEdge: .top) {
+                    RelaySettingsPopover()
+                }
             }
         }
         .padding(.horizontal, 14)
@@ -165,16 +181,6 @@ struct RelayQueueView: View {
                     }
                     .toggleStyle(.checkbox)
                     .controlSize(.small)
-
-                    if manager.items.contains(where: { $0.isFile || $0.isImage }) {
-                        Toggle(isOn: $manager.pasteAsPlainText) {
-                            Text(L10n.tr("relay.pasteAsText"))
-                                .font(.system(size: 11))
-                                .foregroundStyle(.secondary)
-                        }
-                        .toggleStyle(.checkbox)
-                        .controlSize(.small)
-                    }
                 }
 
                 Spacer()
