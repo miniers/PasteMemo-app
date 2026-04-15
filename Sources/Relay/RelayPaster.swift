@@ -8,9 +8,11 @@ enum RelayPaster {
 
     /// Write text to system pasteboard and simulate Cmd+V.
     static func paste(_ text: String, monitor: RelayClipboardMonitor) async {
+        let actions = RelayRuleResolver.currentRuleActions()
+        let transformed = actions.isEmpty ? text : AutomationEngine.apply(actions, to: text)
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
+        pasteboard.setString(transformed, forType: .string)
         monitor.skipNextChange()
         try? await Task.sleep(for: PASTE_DELAY)
         simulateCommandV()
