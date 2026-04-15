@@ -193,6 +193,16 @@ private final class ResizeHandleView: NSView {
     private var dragStartWidth: CGFloat = 0
     private var dragStartX: CGFloat = 0
     private var trackingArea: NSTrackingArea?
+    private var isHovering = false { didSet { indicator.alphaValue = isHovering ? 1 : 0 } }
+
+    private let indicator: NSView = {
+        let v = NSView()
+        v.wantsLayer = true
+        v.layer?.backgroundColor = NSColor.secondaryLabelColor.withAlphaComponent(0.35).cgColor
+        v.layer?.cornerRadius = 1
+        v.alphaValue = 0
+        return v
+    }()
 
     init(
         minWidth: CGFloat,
@@ -205,6 +215,14 @@ private final class ResizeHandleView: NSView {
         self.pinTopRight = pinTopRight
         self.save = save
         super.init(frame: .zero)
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(indicator)
+        NSLayoutConstraint.activate([
+            indicator.widthAnchor.constraint(equalToConstant: 2),
+            indicator.heightAnchor.constraint(equalToConstant: 28),
+            indicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            indicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
     }
 
     required init?(coder: NSCoder) { nil }
@@ -240,7 +258,12 @@ private final class ResizeHandleView: NSView {
     }
 
     override func mouseEntered(with event: NSEvent) {
+        isHovering = true
         NSCursor.resizeLeftRight.set()
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        isHovering = false
     }
 
     override func mouseDown(with event: NSEvent) {
