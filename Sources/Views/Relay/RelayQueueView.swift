@@ -43,7 +43,7 @@ struct RelayQueueView: View {
             queueList
             footerBar
         }
-        .frame(minWidth: 320, maxWidth: .infinity)
+        // Width is controlled by parent (RelayPanelWidthWrapper)
         .background(Color.clear)
         .onChange(of: splitTargetIndex) {
             guard let index = splitTargetIndex, index < manager.items.count else { return }

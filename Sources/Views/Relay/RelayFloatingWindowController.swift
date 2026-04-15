@@ -32,13 +32,15 @@ final class RelayFloatingWindowController {
             ? min(max(storedWidth, MIN_WIDTH), MAX_WIDTH)
             : DEFAULT_WIDTH
 
-        let content = RelayQueueView(manager: relayManager)
+        // Wrap content so width tracks @AppStorage("relayPanelWidth") set by the resize handle.
+        let content = RelayPanelWidthWrapper(manager: relayManager)
         let hosting = NSHostingController(rootView: AnyView(content.ignoresSafeArea()))
+        hosting.sizingOptions = .preferredContentSize
         hostingController = hosting
 
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: initialWidth, height: 200),
-            styleMask: [.nonactivatingPanel, .borderless, .resizable],
+            styleMask: [.nonactivatingPanel, .borderless],
             backing: .buffered,
             defer: false
         )
@@ -221,19 +223,27 @@ private final class ResizeHandleView: NSView {
         }
         let area = NSTrackingArea(
             rect: bounds,
-            options: [.cursorUpdate, .mouseMoved, .activeAlways, .inVisibleRect],
+            options: [.cursorUpdate, .mouseMoved, .mouseEnteredAndExited, .activeAlways, .inVisibleRect],
             owner: self,
             userInfo: nil
         )
         addTrackingArea(area)
         trackingArea = area
+        print("[ResizeHandle] tracking area installed at bounds=\(bounds)")
     }
 
     override func cursorUpdate(with event: NSEvent) {
+        print("[ResizeHandle] cursorUpdate fired")
         NSCursor.resizeLeftRight.set()
     }
 
     override func mouseMoved(with event: NSEvent) {
+        print("[ResizeHandle] mouseMoved fired")
+        NSCursor.resizeLeftRight.set()
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        print("[ResizeHandle] mouseEntered fired")
         NSCursor.resizeLeftRight.set()
     }
 
@@ -255,11 +265,26 @@ private final class ResizeHandleView: NSView {
         frame.size.width = newWidth
         frame.origin.x = rightEdge - newWidth
         window.setFrame(frame, display: true, animate: false)
+        // Update AppStorage so SwiftUI content re-renders its .frame(width:) in sync
+        save(newWidth)
     }
 
     override func mouseUp(with event: NSEvent) {
         guard let window else { return }
         save(window.frame.size.width)
         pinTopRight()
+    }
+}
+
+// MARK: - Width-tracking wrapper
+
+private struct RelayPanelWidthWrapper: View {
+    let manager: RelayManager
+    @AppStorage("relayPanelWidth") private var panelWidth: Double = 320
+
+    var body: some View {
+        let w = min(max(panelWidth, 320), 800)
+        RelayQueueView(manager: manager)
+            .frame(width: w)
     }
 }
