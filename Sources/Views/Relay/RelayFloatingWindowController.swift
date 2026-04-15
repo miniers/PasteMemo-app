@@ -75,6 +75,27 @@ final class RelayFloatingWindowController {
             hostingView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
         ])
 
+        // Left-edge resize handle (borderless panels don't show resize cursor natively)
+        let resizeHandle = ResizeHandleView(
+            minWidth: MIN_WIDTH,
+            maxWidth: MAX_WIDTH,
+            pinTopRight: { [weak self] in
+                guard let self, let win = self.window else { return }
+                self.pinTopRight(win)
+            },
+            save: { width in
+                UserDefaults.standard.set(Double(width), forKey: WIDTH_PREF_KEY)
+            }
+        )
+        resizeHandle.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(resizeHandle)
+        NSLayoutConstraint.activate([
+            resizeHandle.topAnchor.constraint(equalTo: container.topAnchor),
+            resizeHandle.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            resizeHandle.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            resizeHandle.widthAnchor.constraint(equalToConstant: 6),
+        ])
+
         panel.contentView = container
 
         let delegate = WindowCloseDelegate { [weak self] in
@@ -157,4 +178,60 @@ private final class WindowCloseDelegate: NSObject, NSWindowDelegate {
     let onClose: () -> Void
     init(_ onClose: @escaping () -> Void) { self.onClose = onClose }
     func windowWillClose(_ notification: Notification) { onClose() }
+}
+
+/// Custom resize handle along the left edge for borderless panels.
+/// Shows the east-west resize cursor and drags to change the window width.
+private final class ResizeHandleView: NSView {
+    private let minWidth: CGFloat
+    private let maxWidth: CGFloat
+    private let pinTopRight: () -> Void
+    private let save: (CGFloat) -> Void
+    private var dragStartWidth: CGFloat = 0
+    private var dragStartX: CGFloat = 0
+
+    init(
+        minWidth: CGFloat,
+        maxWidth: CGFloat,
+        pinTopRight: @escaping () -> Void,
+        save: @escaping (CGFloat) -> Void
+    ) {
+        self.minWidth = minWidth
+        self.maxWidth = maxWidth
+        self.pinTopRight = pinTopRight
+        self.save = save
+        super.init(frame: .zero)
+    }
+
+    required init?(coder: NSCoder) { nil }
+
+    override func resetCursorRects() {
+        addCursorRect(bounds, cursor: .resizeLeftRight)
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        guard let window else { return }
+        dragStartWidth = window.frame.size.width
+        dragStartX = NSEvent.mouseLocation.x
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard let window else { return }
+        let currentX = NSEvent.mouseLocation.x
+        let delta = dragStartX - currentX  // pulling left = widening (right edge pinned)
+        var newWidth = dragStartWidth + delta
+        newWidth = min(max(newWidth, minWidth), maxWidth)
+
+        var frame = window.frame
+        let rightEdge = frame.maxX
+        frame.size.width = newWidth
+        frame.origin.x = rightEdge - newWidth
+        window.setFrame(frame, display: true, animate: false)
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        guard let window else { return }
+        save(window.frame.size.width)
+        pinTopRight()
+    }
 }
