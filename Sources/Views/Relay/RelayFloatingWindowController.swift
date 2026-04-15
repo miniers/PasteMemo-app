@@ -34,7 +34,9 @@ final class RelayFloatingWindowController {
 
         // Wrap content so width tracks @AppStorage("relayPanelWidth") set by the resize handle.
         let content = RelayPanelWidthWrapper(manager: relayManager)
-        let hosting = NSHostingController(rootView: AnyView(content.ignoresSafeArea()))
+        let hosting = NSHostingController(
+            rootView: AnyView(content.ignoresSafeArea().modelContainer(PasteMemoApp.sharedModelContainer))
+        )
         hosting.sizingOptions = .preferredContentSize
         hostingController = hosting
 

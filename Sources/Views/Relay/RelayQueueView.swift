@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 struct RelayQueueView: View {
@@ -7,16 +8,22 @@ struct RelayQueueView: View {
     @State private var showSettingsPopover = false
     @AppStorage("relayPasteAsPlainText") private var settingPlainText = false
     @AppStorage(RelayPostPasteKey.userDefaultsKey) private var settingPostPasteKey = RelayPostPasteKey.none.rawValue
+    @AppStorage("relayAutomationRuleId") private var settingAutomationRuleId = ""
+    @AppStorage("relayPreviewEnabled") private var settingPreviewEnabled = false
 
     private var hasActiveSettings: Bool {
         settingPlainText
             || (RelayPostPasteKey(rawValue: settingPostPasteKey) ?? .none) != .none
+            || !settingAutomationRuleId.isEmpty
     }
 
     private var settingsTooltip: String {
         var parts: [String] = []
         if settingPlainText {
             parts.append(L10n.tr("relay.settings.plainText"))
+        }
+        if !settingAutomationRuleId.isEmpty {
+            parts.append(L10n.tr("relay.settings.automation"))
         }
         if let key = RelayPostPasteKey(rawValue: settingPostPasteKey), key != .none {
             parts.append(L10n.tr("relay.settings.postPasteKey") + ": " + postPasteKeyDisplay(key))
@@ -329,6 +336,16 @@ private struct RelayQueueRow: View {
     var onEdit: ((String) -> Void)?
     @State private var isHovering = false
     @AppStorage(RelayPostPasteKey.userDefaultsKey) private var postPasteKeyRaw = RelayPostPasteKey.none.rawValue
+    @AppStorage("relayAutomationRuleId") private var automationRuleId = ""
+    @AppStorage("relayPreviewEnabled") private var previewEnabled = false
+    @Query(filter: #Predicate<AutomationRule> { $0.enabled == true })
+    private var enabledRules: [AutomationRule]
+
+    private var displayText: String {
+        guard previewEnabled, !automationRuleId.isEmpty else { return item.content }
+        guard let rule = enabledRules.first(where: { $0.ruleID == automationRuleId }) else { return item.content }
+        return AutomationEngine.apply(rule.actions, to: item.content)
+    }
 
     var body: some View {
         HStack(spacing: 8) {
@@ -357,7 +374,7 @@ private struct RelayQueueRow: View {
                     .foregroundStyle(textColor)
                     .strikethrough(item.state == .skipped, color: .secondary)
             } else {
-                Text(item.content.replacingOccurrences(of: "\n", with: " ↵ "))
+                Text(displayText.replacingOccurrences(of: "\n", with: " ↵ "))
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .font(.system(size: 13))
