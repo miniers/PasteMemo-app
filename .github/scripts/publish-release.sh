@@ -120,14 +120,26 @@ else
     echo "   Gitee release $GITEE_RELEASE_ID already exists, reusing"
 fi
 
-# attach_files is idempotent on Gitee: uploading same filename replaces it
-echo "   uploading DMGs..."
-curl -sf -X POST "https://gitee.com/api/v5/repos/${SITE_REPO_GITEE}/releases/${GITEE_RELEASE_ID}/attach_files" \
-    -F "access_token=${GITEE_TOKEN}" \
-    -F "file=@${ARM_DMG}"
-curl -sf -X POST "https://gitee.com/api/v5/repos/${SITE_REPO_GITEE}/releases/${GITEE_RELEASE_ID}/attach_files" \
-    -F "access_token=${GITEE_TOKEN}" \
-    -F "file=@${X86_DMG}"
+# Uploading DMGs to Gitee is best-effort: the GitHub Actions runner's
+# network path to Gitee is unreliable. The site-repo push + source mirror
+# already give Chinese users a working download path, so skip on failure.
+# If it fails, re-run `.github/scripts/upload-gitee-dmg.sh <version>` from
+# a local macOS shell where Gitee responds in seconds.
+upload_gitee_asset() {
+    local dmg="$1"
+    echo "   uploading $(basename "$dmg")..."
+    if curl -sf --max-time 120 --retry 2 --retry-delay 5 \
+        -X POST "https://gitee.com/api/v5/repos/${SITE_REPO_GITEE}/releases/${GITEE_RELEASE_ID}/attach_files" \
+        -F "access_token=${GITEE_TOKEN}" \
+        -F "file=@${dmg}" \
+        >/dev/null 2>&1; then
+        echo "   ✓ uploaded"
+    else
+        echo "   ⚠ upload failed; skip (retry locally if needed)"
+    fi
+}
+upload_gitee_asset "$ARM_DMG"
+upload_gitee_asset "$X86_DMG"
 
 echo "🍺 Updating Homebrew cask..."
 TAP_DIR="$WORK/tap"
