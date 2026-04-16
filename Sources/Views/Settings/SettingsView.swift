@@ -336,6 +336,7 @@ struct PreferencesTab: View {
     @AppStorage("webPreviewEnabled") private var webPreviewEnabled = true
     @AppStorage("imageLinkPreviewEnabled") private var imageLinkPreviewEnabled = true
     @AppStorage(QuickPanelSettings.launchAnimationEnabledKey) private var quickPanelLaunchAnimationEnabled = true
+    @AppStorage(QuickPanelSettings.secondaryRowKey) private var quickPanelSecondaryRow = QuickPanelSecondaryRow.types.rawValue
     @AppStorage(QuickPanelPositionSettings.modeKey) private var quickPanelPositionMode = QuickPanelPositionMode.screenCenter.rawValue
     @AppStorage(QuickPanelPositionSettings.screenTargetKey) private var quickPanelScreenTarget = QuickPanelScreenTarget.active.rawValue
     @AppStorage(QuickPanelPositionSettings.specifiedScreenIDKey) private var quickPanelSpecifiedScreenID = ""
@@ -355,6 +356,11 @@ struct PreferencesTab: View {
     var body: some View {
         Form {
             Section(L10n.tr("settings.display")) {
+                Picker(L10n.tr("settings.quickPanelSecondaryRow"), selection: $quickPanelSecondaryRow) {
+                    ForEach(QuickPanelSecondaryRow.allCases, id: \.rawValue) { option in
+                        Text(L10n.tr(option.titleKey)).tag(option.rawValue)
+                    }
+                }
                 HStack {
                     Text(L10n.tr("settings.quickPanelPosition"))
                     Spacer()

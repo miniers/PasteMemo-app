@@ -2,10 +2,19 @@ import SwiftUI
 import SwiftData
 import Quartz
 
+/// tabBar 的主过滤维度：所有模式共用 pinned/all；类型模式下追加 .type，分组模式下追加 .group
 private enum QuickFilter: Equatable {
     case all
     case pinned
     case type(ClipContentType)
+    case group(String)
+}
+
+/// `/` 下拉选择留下的次级过滤（以 pill 展示于搜索框）
+private enum PillSelection: Equatable {
+    case type(ClipContentType)
+    case group(String)
+    case app(String)
 }
 
 private let PANEL_WIDTH: CGFloat = 750
@@ -18,8 +27,9 @@ struct QuickPanelView: View {
     @State private var store = ClipItemStore()
     @State private var searchText = ""
     @State private var groupSuggestionIndex = -1
-    @State private var selectedGroupFilter: String?
-    @State private var isAppFilter = false
+    @State private var pill: PillSelection?
+    /// 刚打开面板的前几十毫秒内抑制建议浮层渲染，避免上次残留状态首帧闪现
+    @State private var suggestionsArmed = false
     @State private var selectedItemIDs: Set<PersistentIdentifier> = []
     @State private var selectedFilter: QuickFilter = .all
     @State private var keyMonitor: Any?
@@ -42,6 +52,11 @@ struct QuickPanelView: View {
     @State private var cachedItemMap: [PersistentIdentifier: ClipItem] = [:]
     @State private var cachedIDSet: Set<PersistentIdentifier> = []
     @AppStorage("quickPanelAutoPaste") private var quickPanelAutoPaste = true
+    @AppStorage(QuickPanelSettings.secondaryRowKey) private var quickPanelSecondaryRowRaw = QuickPanelSecondaryRow.types.rawValue
+
+    private var secondaryRow: QuickPanelSecondaryRow {
+        QuickPanelSecondaryRow(rawValue: quickPanelSecondaryRowRaw) ?? .types
+    }
 
     private var filteredItems: [ClipItem] { store.items }
 
@@ -220,17 +235,25 @@ struct QuickPanelView: View {
             // 关闭前清空 "/" 触发的分组建议及相关状态，避免下次打开首帧闪现
             searchText = ""
             groupSuggestionIndex = -1
-            selectedGroupFilter = nil
-            isAppFilter = false
+            pill = nil
             showCommandPalette = false
+            suggestionsArmed = false
         }
         .onReceive(NotificationCenter.default.publisher(for: .quickPanelDidShow)) { _ in
             showCommandPalette = false
             searchText = ""
-            selectedGroupFilter = nil
-            isAppFilter = false
+            pill = nil
             selectedFilter = .all
             isPanelPinned = false
+            suggestionsArmed = false
+            // 延后一小会儿再放开建议浮层，给 SwiftUI 一次 tick 把状态提交到渲染树，
+            // 避免刚 orderFrontRegardless 时显示上一次的 `/` 建议面板。
+            // 代价：打开 80ms 内如果立即输入 `/`，这一帧的建议不会渲染，
+            // 下次 searchText 变动即会正常显示，实际几乎感知不到。
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(80))
+                suggestionsArmed = true
+            }
             store.isActive = true
             let latestItemID = store.queryFirstItemID()
             if latestItemID != lastSeenFirstItemID {
@@ -248,30 +271,24 @@ struct QuickPanelView: View {
             isSearchFocused = true
         }
         .onChange(of: searchText) {
-            if selectedGroupFilter != nil {
-                // Group tag is active — search text is just keyword
+            if pill != nil {
+                // Pill is active — search text is just keyword within the pill's scope
                 store.searchText = searchText
             } else if searchText.hasPrefix(Self.GROUP_SEARCH_PREFIX) {
-                // Typing / for group selection — don't search yet
+                // Typing / for suggestion selection — don't search yet
                 store.searchText = ""
-                store.groupName = nil
             } else {
-                store.groupName = nil
                 store.searchText = searchText
             }
-            // Default-select the first suggestion row when typing `/`,
-            // so Enter immediately picks the top group/app.
+            // Default-select the first suggestion row when typing `/`
             groupSuggestionIndex = totalSuggestionCount > 0 ? 0 : -1
         }
-        .onChange(of: selectedFilter) {
-            store.pinnedOnly = false
-            store.filterType = nil
-            switch selectedFilter {
-            case .all: break
-            case .pinned: store.pinnedOnly = true
-            case .type(let t): store.filterType = t
-            }
-            store.applyFilters()
+        .onChange(of: selectedFilter) { applyFiltersToStore() }
+        .onChange(of: pill) { applyFiltersToStore() }
+        .onChange(of: quickPanelSecondaryRowRaw) {
+            // 切换 tabBar 维度时，相关过滤会失配，统一重置成干净状态
+            selectedFilter = .all
+            pill = nil
         }
         .onChange(of: store.items) {
             rebuildGroupedItems()
@@ -301,28 +318,46 @@ struct QuickPanelView: View {
     private enum SuggestionItem: Equatable {
         case group(name: String, icon: String, count: Int)
         case app(name: String, count: Int)
+        case type(ClipContentType)
 
         static func == (lhs: SuggestionItem, rhs: SuggestionItem) -> Bool {
             switch (lhs, rhs) {
             case (.group(let a, _, _), .group(let b, _, _)): return a == b
             case (.app(let a, _), .app(let b, _)): return a == b
+            case (.type(let a), .type(let b)): return a == b
             default: return false
             }
         }
     }
 
     private var isShowingSuggestions: Bool {
-        guard selectedGroupFilter == nil else { return false }
+        guard suggestionsArmed else { return false }
+        guard pill == nil else { return false }
         guard searchText.hasPrefix(Self.GROUP_SEARCH_PREFIX) else { return false }
-        return !currentSuggestionGroups.isEmpty || !currentSuggestionApps.isEmpty
+        return !currentSuggestionGroups.isEmpty || !currentSuggestionApps.isEmpty || !currentSuggestionTypes.isEmpty
     }
 
+    /// `/` 建议里是否展示分组（tabBar 当前为类型时才展示）
+    private var shouldSuggestGroups: Bool { secondaryRow == .types }
+    /// `/` 建议里是否展示类型（tabBar 当前为分组时才展示）
+    private var shouldSuggestTypes: Bool { secondaryRow == .groups }
+
     private var currentSuggestionGroups: [(name: String, icon: String, count: Int)] {
+        guard shouldSuggestGroups else { return [] }
         guard searchText.hasPrefix(Self.GROUP_SEARCH_PREFIX) else { return [] }
         let query = String(searchText.dropFirst()).trimmingCharacters(in: .whitespaces).lowercased()
         return store.sidebarCounts.byGroup.filter { group in
             guard group.count > 0 else { return false }
             return query.isEmpty || group.name.lowercased().contains(query)
+        }
+    }
+
+    private var currentSuggestionTypes: [ClipContentType] {
+        guard shouldSuggestTypes else { return [] }
+        guard searchText.hasPrefix(Self.GROUP_SEARCH_PREFIX) else { return [] }
+        let query = String(searchText.dropFirst()).trimmingCharacters(in: .whitespaces).lowercased()
+        return availableContentTypes.filter { type in
+            query.isEmpty || type.label.lowercased().contains(query)
         }
     }
 
@@ -342,14 +377,15 @@ struct QuickPanelView: View {
     }
 
     private var totalSuggestionCount: Int {
-        currentSuggestionGroups.count + currentSuggestionApps.count
+        currentSuggestionGroups.count + currentSuggestionTypes.count + currentSuggestionApps.count
     }
 
     @ViewBuilder
     private var groupSuggestions: some View {
         let groups = currentSuggestionGroups
+        let types = currentSuggestionTypes
         let apps = currentSuggestionApps
-        if !groups.isEmpty || !apps.isEmpty {
+        if !groups.isEmpty || !types.isEmpty || !apps.isEmpty {
             VStack(spacing: 0) {
                 if !groups.isEmpty {
                     suggestionSectionHeader(L10n.tr("filter.groups"))
@@ -362,10 +398,23 @@ struct QuickPanelView: View {
                         }
                     }
                 }
-                if !apps.isEmpty {
+                if !types.isEmpty {
                     if !groups.isEmpty { Divider().padding(.vertical, 2) }
-                    suggestionSectionHeader(L10n.tr("filter.apps"))
+                    suggestionSectionHeader(L10n.tr("filter.types"))
                     let offset = groups.count
+                    ForEach(Array(types.enumerated()), id: \.element) { idx, type in
+                        suggestionRow(
+                            icon: type.icon, name: type.label, count: store.sidebarCounts.byType[type] ?? 0,
+                            isSelected: (offset + idx) == groupSuggestionIndex
+                        ) {
+                            selectSuggestion(.type(type))
+                        }
+                    }
+                }
+                if !apps.isEmpty {
+                    if !groups.isEmpty || !types.isEmpty { Divider().padding(.vertical, 2) }
+                    suggestionSectionHeader(L10n.tr("filter.apps"))
+                    let offset = groups.count + types.count
                     ForEach(Array(apps.enumerated()), id: \.element.name) { idx, app in
                         suggestionRow(
                             icon: "app.dashed", appName: app.name, name: app.name, count: app.count,
@@ -429,24 +478,66 @@ struct QuickPanelView: View {
         groupSuggestionIndex = -1
         switch item {
         case .group(let name, _, _):
-            selectedGroupFilter = name
-            isAppFilter = false
-            store.groupName = name
-            store.sourceApp = nil
+            pill = .group(name)
         case .app(let name, _):
-            selectedGroupFilter = name
-            isAppFilter = true
-            store.groupName = nil
-            store.sourceApp = .named(name)
+            pill = .app(name)
+        case .type(let type):
+            pill = .type(type)
         }
         store.searchText = ""
-        store.applyFilters()
     }
 
-    private func clearGroupFilter() {
-        selectedGroupFilter = nil
+    @ViewBuilder
+    private func pillView(for pill: PillSelection) -> some View {
+        HStack(spacing: 4) {
+            switch pill {
+            case .type(let t):
+                Image(systemName: t.icon).font(.system(size: 10))
+                Text(t.label).font(.system(size: 12))
+            case .group(let name):
+                let icon = store.sidebarCounts.byGroup.first { $0.name == name }?.icon ?? "folder"
+                Image(systemName: icon).font(.system(size: 10))
+                Text(name).font(.system(size: 12))
+            case .app(let name):
+                if let nsIcon = appIcon(forBundleID: nil, name: name) {
+                    Image(nsImage: nsIcon).resizable().frame(width: 12, height: 12)
+                } else {
+                    Image(systemName: "app.dashed").font(.system(size: 10))
+                }
+                Text(name).font(.system(size: 12))
+            }
+            Button { self.pill = nil } label: {
+                Image(systemName: "xmark").font(.system(size: 8, weight: .bold))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color.accentColor, in: Capsule())
+        .foregroundStyle(.white)
+    }
+
+    /// 将 selectedFilter + pill 合并写回到 store，两个维度正交共存
+    private func applyFiltersToStore() {
+        store.pinnedOnly = false
+        store.filterType = nil
         store.groupName = nil
         store.sourceApp = nil
+
+        switch selectedFilter {
+        case .all: break
+        case .pinned: store.pinnedOnly = true
+        case .type(let t): store.filterType = t
+        case .group(let name): store.groupName = name
+        }
+
+        switch pill {
+        case nil: break
+        case .type(let t): store.filterType = t
+        case .group(let name): store.groupName = name
+        case .app(let name): store.sourceApp = .named(name)
+        }
+
         store.applyFilters()
     }
 
@@ -455,32 +546,11 @@ struct QuickPanelView: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 18))
                 .foregroundStyle(.tertiary)
+                .frame(width: 22, height: 22)
 
-            if let filterName = selectedGroupFilter {
-                let groupIcon = store.sidebarCounts.byGroup.first { $0.name == filterName }?.icon ?? "folder"
-                HStack(spacing: 4) {
-                    if isAppFilter, let nsIcon = appIcon(forBundleID: nil, name: filterName) {
-                        Image(nsImage: nsIcon)
-                            .resizable()
-                            .frame(width: 12, height: 12)
-                    } else {
-                        Image(systemName: isAppFilter ? "app.dashed" : groupIcon)
-                            .font(.system(size: 10))
-                    }
-                    Text(filterName)
-                        .font(.system(size: 12))
-                    Button {
-                        clearGroupFilter()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 8, weight: .bold))
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.accentColor, in: Capsule())
-                .foregroundStyle(.white)
+            if let pill {
+                pillView(for: pill)
+                    .transition(.identity)
             }
 
             TextField(L10n.tr("quick.search"), text: $searchText)
@@ -488,8 +558,12 @@ struct QuickPanelView: View {
                 .font(.system(size: 16))
                 .focused($isSearchFocused)
 
-            if !searchText.isEmpty || selectedGroupFilter != nil {
-                Button { searchText = ""; clearGroupFilter(); if let id = defaultItem?.persistentModelID { selectedItemIDs = [id] } } label: {
+            if !searchText.isEmpty || pill != nil {
+                Button {
+                    searchText = ""
+                    pill = nil
+                    if let id = defaultItem?.persistentModelID { selectedItemIDs = [id] }
+                } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 14))
                         .foregroundStyle(.quaternary)
@@ -519,9 +593,16 @@ struct QuickPanelView: View {
                 .padding(.horizontal, 6)
                 .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 5))
         }
+        // 固定一个比最高 pill 略大的行高，pill 出现/消失时 HStack 不会撑高，
+        // 搜索图标、下方 tabBar 都不会上下跳动
+        .frame(height: 28)
         .padding(.horizontal, 20)
         .padding(.top, 22)
         .padding(.bottom, 14)
+        // 避免 pill 出现/消失时输入框位置被 SwiftUI 默认动画插值造成的"抖动"
+        .animation(nil, value: selectedFilter)
+        .animation(nil, value: pill)
+        .animation(nil, value: searchText.isEmpty)
     }
 
     // MARK: - Tabs
@@ -534,18 +615,32 @@ struct QuickPanelView: View {
                     isSearchFocused = true
                 }
                 badge(L10n.tr("filter.all"), isActive: selectedFilter == .all) {
-                    selectedFilter = .all; isSearchFocused = true
+                    selectedFilter = .all
+                    isSearchFocused = true
                 }
-                ForEach(availableContentTypes, id: \.self) { type in
-                    badge(type.label, isActive: selectedFilter == .type(type)) {
-                        selectedFilter = selectedFilter == .type(type) ? .all : .type(type)
-                        isSearchFocused = true
+                if secondaryRow == .types {
+                    ForEach(availableContentTypes, id: \.self) { type in
+                        badge(type.label, isActive: selectedFilter == .type(type)) {
+                            selectedFilter = selectedFilter == .type(type) ? .all : .type(type)
+                            isSearchFocused = true
+                        }
+                    }
+                } else {
+                    ForEach(availableGroupsForTab, id: \.name) { group in
+                        badge(group.name, isActive: selectedFilter == .group(group.name)) {
+                            selectedFilter = selectedFilter == .group(group.name) ? .all : .group(group.name)
+                            isSearchFocused = true
+                        }
                     }
                 }
             }
             .padding(.horizontal, 18)
             .padding(.bottom, 8)
         }
+    }
+
+    private var availableGroupsForTab: [(name: String, icon: String, count: Int)] {
+        store.sidebarCounts.byGroup.filter { $0.count > 0 }
     }
 
     private func badge(_ label: String, isActive: Bool, action: @escaping () -> Void) -> some View {
@@ -719,7 +814,7 @@ struct QuickPanelView: View {
     // MARK: - Empty State
 
     private var isFilterActive: Bool {
-        selectedFilter != .all || !searchText.isEmpty || selectedGroupFilter != nil
+        selectedFilter != .all || !searchText.isEmpty || pill != nil
     }
 
     private var emptyStateView: some View {
@@ -979,12 +1074,16 @@ struct QuickPanelView: View {
                 case 36: // Enter
                     if groupSuggestionIndex >= 0, groupSuggestionIndex < total {
                         let groups = currentSuggestionGroups
+                        let types = currentSuggestionTypes
                         let apps = currentSuggestionApps
                         if groupSuggestionIndex < groups.count {
                             let g = groups[groupSuggestionIndex]
                             selectSuggestion(.group(name: g.name, icon: g.icon, count: g.count))
+                        } else if groupSuggestionIndex < groups.count + types.count {
+                            let t = types[groupSuggestionIndex - groups.count]
+                            selectSuggestion(.type(t))
                         } else {
-                            let a = apps[groupSuggestionIndex - groups.count]
+                            let a = apps[groupSuggestionIndex - groups.count - types.count]
                             selectSuggestion(.app(name: a.name, count: a.count))
                         }
                         return nil
@@ -1031,10 +1130,9 @@ struct QuickPanelView: View {
                     qlPanel.orderOut(nil)
                     return nil
                 }
-                // If a group/app filter tag is active, Esc first clears the tag
-                // (and any keyword) before dismissing the panel.
-                if selectedGroupFilter != nil {
-                    clearGroupFilter()
+                // Esc 优先清 pill（`/` 选择），pill 不在时关闭面板
+                if pill != nil {
+                    pill = nil
                     searchText = ""
                     isSearchFocused = true
                     return nil
@@ -1064,8 +1162,9 @@ struct QuickPanelView: View {
                     if isSearchFocused, !searchText.isEmpty { return event }
                     handleDeleteSelected(); return nil
                 }
-                if isSearchFocused, searchText.isEmpty, selectedGroupFilter != nil {
-                    clearGroupFilter()
+                if isSearchFocused, searchText.isEmpty, pill != nil {
+                    // Delete 键清 pill
+                    pill = nil
                     return nil
                 }
                 return event
@@ -1119,6 +1218,14 @@ struct QuickPanelView: View {
     private var availableContentTypes: [ClipContentType] { store.availableTypes }
 
     private func switchType(_ delta: Int) {
+        if secondaryRow == .types {
+            switchTypeFilter(delta)
+        } else {
+            switchGroupFilter(delta)
+        }
+    }
+
+    private func switchTypeFilter(_ delta: Int) {
         let types = availableContentTypes
         let allFilters: [QuickFilter] = [.pinned, .all] + types.map { .type($0) }
 
@@ -1127,6 +1234,20 @@ struct QuickPanelView: View {
             selectedFilter = allFilters[newIdx]
         } else {
             selectedFilter = delta > 0 ? allFilters.first! : allFilters.last!
+        }
+    }
+
+    private func switchGroupFilter(_ delta: Int) {
+        let groups = availableGroupsForTab
+        // tabBar 顺序：[.pinned, .all, .group(g1), .group(g2), ...]
+        var all: [QuickFilter] = [.pinned, .all]
+        all.append(contentsOf: groups.map { .group($0.name) })
+
+        if let idx = all.firstIndex(of: selectedFilter) {
+            let newIdx = (idx + delta + all.count) % all.count
+            selectedFilter = all[newIdx]
+        } else {
+            selectedFilter = delta > 0 ? all.first! : all.last!
         }
     }
 

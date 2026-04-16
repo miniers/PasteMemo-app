@@ -187,9 +187,11 @@ final class QuickPanelWindowController {
         removeMoveObserver()
         snapGuide?.orderOut(nil)
         savePosition(panel)
-        // 先通知视图清理状态（搜索文本、分组筛选等），再隐藏 panel，
-        // 下次打开时首帧就是干净状态，避免残留的 "/" 分组建议卡片闪现
+        // 先通知视图清理状态（搜索文本、pill 等），强制 SwiftUI 完成一次重绘后再隐藏 panel；
+        // 这样下次打开时首帧是干净状态，不会闪现上次的 `/` 建议浮层
         NotificationCenter.default.post(name: .quickPanelWillDismiss, object: nil)
+        panel.contentView?.layoutSubtreeIfNeeded()
+        panel.displayIfNeeded()
         panel.orderOut(nil)
         HotkeyManager.shared.isQuickPanelVisible = false
     }

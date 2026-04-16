@@ -40,6 +40,19 @@ enum QuickPanelPositionSettings {
 
 enum QuickPanelSettings {
     static let launchAnimationEnabledKey = "quickPanelLaunchAnimationEnabled"
+    static let secondaryRowKey = "quickPanelSecondaryRow"
+}
+
+enum QuickPanelSecondaryRow: String, CaseIterable {
+    case types
+    case groups
+
+    var titleKey: String {
+        switch self {
+        case .types: "settings.quickPanelSecondaryRow.types"
+        case .groups: "settings.quickPanelSecondaryRow.groups"
+        }
+    }
 }
 
 struct ScreenOption: Identifiable, Hashable {
