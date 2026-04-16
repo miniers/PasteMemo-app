@@ -76,8 +76,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         BackupScheduler.shared.start(container: PasteMemoApp.sharedModelContainer)
 
-        // Pre-warm quick panel
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        // Pre-warm quick panel as soon as launch setup settles so the first open is faster.
+        DispatchQueue.main.async {
             QuickPanelWindowController.shared.warmUp(
                 clipboardManager: ClipboardManager.shared,
                 modelContainer: PasteMemoApp.sharedModelContainer

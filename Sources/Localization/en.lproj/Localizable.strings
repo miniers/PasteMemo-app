@@ -115,6 +115,7 @@
 "settings.paste" = "Paste";
 "settings.autoPaste" = "Paste to App on Enter";
 "settings.addNewLine" = "Add new line after paste";
+"settings.quickPanelLaunchAnimation" = "Quick Panel launch animation";
 "settings.history" = "History";
 "settings.retentionDays" = "Keep History";
 "settings.retentionDays.forever" = "Forever";
