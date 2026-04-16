@@ -38,6 +38,10 @@ enum QuickPanelPositionSettings {
     static let specifiedScreenIDKey = "quickPanelSpecifiedScreenID"
 }
 
+enum QuickPanelSettings {
+    static let launchAnimationEnabledKey = "quickPanelLaunchAnimationEnabled"
+}
+
 struct ScreenOption: Identifiable, Hashable {
     let id: String
     let name: String

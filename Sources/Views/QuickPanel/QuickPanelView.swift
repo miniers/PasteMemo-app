@@ -54,6 +54,16 @@ struct QuickPanelView: View {
         cachedDisplayOrder.first
     }
 
+    private func selectDefaultHistoryItem() {
+        if let id = cachedDisplayOrder.first?.persistentModelID {
+            selectedItemIDs = [id]
+            lastNavigatedID = id
+        } else {
+            selectedItemIDs.removeAll()
+            lastNavigatedID = nil
+        }
+    }
+
     private func rebuildGroupedItems() {
         cachedGroupedItems = groupItemsByTime(filteredItems, separatePinned: false)
         cachedDisplayOrder = cachedGroupedItems.flatMap(\.items)
@@ -194,7 +204,8 @@ struct QuickPanelView: View {
         .onAppear {
             store.configure(modelContext: modelContext)
             rebuildGroupedItems()
-            if let id = defaultItem?.persistentModelID { selectedItemIDs = [id]; lastNavigatedID = id }
+            selectDefaultHistoryItem()
+            lastSeenFirstItemID = store.queryFirstItemID()
             installKeyMonitor()
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(50))
@@ -221,20 +232,18 @@ struct QuickPanelView: View {
             selectedFilter = .all
             isPanelPinned = false
             store.isActive = true
-            store.configure(modelContext: modelContext)
-            // Reset filters if new content arrived
             let latestItemID = store.queryFirstItemID()
             if latestItemID != lastSeenFirstItemID {
                 store.resetFilters()
                 lastSeenFirstItemID = latestItemID
+            } else {
+                store.updateQuery(searchText: .set(""), sourceApp: .set(nil), groupName: .set(nil))
+                lastSeenFirstItemID = latestItemID
             }
-            // Always rebuild and select first item on panel open
+
             rebuildGroupedItems()
             scrollResetToken = UUID()
-            if let id = cachedDisplayOrder.first?.persistentModelID {
-                selectedItemIDs = [id]
-                lastNavigatedID = id
-            }
+            selectDefaultHistoryItem()
             targetApp = QuickPanelWindowController.shared.previousApp
             isSearchFocused = true
         }

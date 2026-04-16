@@ -78,6 +78,13 @@ final class QuickPanelWindowController {
         return value?.isEmpty == true ? nil : value
     }
 
+    private var isLaunchAnimationEnabled: Bool {
+        guard UserDefaults.standard.object(forKey: QuickPanelSettings.launchAnimationEnabledKey) != nil else {
+            return true
+        }
+        return UserDefaults.standard.bool(forKey: QuickPanelSettings.launchAnimationEnabledKey)
+    }
+
     private init() {}
 
     /// Call once at app launch to pre-build the panel off-screen
@@ -118,32 +125,48 @@ final class QuickPanelWindowController {
 
         positionPanel(panel)
 
-        // 起始状态：alpha 0 + scale 0.995（极轻微缩放）
-        panel.alphaValue = 0
-        if let layer = panel.contentView?.layer {
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            layer.transform = CATransform3DMakeScale(0.995, 0.995, 1)
-            CATransaction.commit()
+        let shouldAnimate = isLaunchAnimationEnabled
+
+        if shouldAnimate {
+            // 起始状态：alpha 0 + scale 0.995（极轻微缩放）
+            panel.alphaValue = 0
+            if let layer = panel.contentView?.layer {
+                CATransaction.begin()
+                CATransaction.setDisableActions(true)
+                layer.removeAnimation(forKey: "showScale")
+                layer.transform = CATransform3DMakeScale(0.995, 0.995, 1)
+                CATransaction.commit()
+            }
+        } else {
+            panel.alphaValue = 1
+            if let layer = panel.contentView?.layer {
+                CATransaction.begin()
+                CATransaction.setDisableActions(true)
+                layer.removeAnimation(forKey: "showScale")
+                layer.transform = CATransform3DIdentity
+                CATransaction.commit()
+            }
         }
 
         panel.orderFrontRegardless()
         panel.makeKey()
 
-        // 动画到 alpha 1 + scale 1.0
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.1
-            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            panel.animator().alphaValue = 1
-        }
-        if let layer = panel.contentView?.layer {
-            let anim = CABasicAnimation(keyPath: "transform")
-            anim.fromValue = CATransform3DMakeScale(0.995, 0.995, 1)
-            anim.toValue = CATransform3DIdentity
-            anim.duration = 0.1
-            anim.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            layer.add(anim, forKey: "showScale")
-            layer.transform = CATransform3DIdentity
+        if shouldAnimate {
+            // 动画到 alpha 1 + scale 1.0（仅作轻微空间引导，时长 0.1s）
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = 0.1
+                ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                panel.animator().alphaValue = 1
+            }
+            if let layer = panel.contentView?.layer {
+                let anim = CABasicAnimation(keyPath: "transform")
+                anim.fromValue = CATransform3DMakeScale(0.995, 0.995, 1)
+                anim.toValue = CATransform3DIdentity
+                anim.duration = 0.1
+                anim.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                layer.add(anim, forKey: "showScale")
+                layer.transform = CATransform3DIdentity
+            }
         }
 
         installClickOutsideMonitor()
