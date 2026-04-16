@@ -138,6 +138,10 @@
 "settings.paste" = "ペースト";
 "settings.autoPaste" = "Enterでアプリに直接ペースト";
 "settings.addNewLine" = "ペースト後に改行を追加";
+"settings.quickPanelLaunchAnimation" = "クイックパネル起動アニメーション";
+"settings.quickPanelSecondaryRow" = "クイックパネル検索下に表示";
+"settings.quickPanelSecondaryRow.types" = "タイプ";
+"settings.quickPanelSecondaryRow.groups" = "グループ";
 "settings.history" = "履歴";
 "settings.retentionDays" = "履歴の保持";
 "settings.retentionDays.forever" = "永久";

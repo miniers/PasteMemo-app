@@ -105,6 +105,10 @@
 "settings.paste" = "Tempel";
 "settings.autoPaste" = "Tempel ke app dengan Enter";
 "settings.addNewLine" = "Tambah baris baru setelah tempel";
+"settings.quickPanelLaunchAnimation" = "Animasi peluncuran panel cepat";
+"settings.quickPanelSecondaryRow" = "Tampilkan di bawah pencarian panel cepat";
+"settings.quickPanelSecondaryRow.types" = "Tipe";
+"settings.quickPanelSecondaryRow.groups" = "Grup";
 "settings.history" = "Riwayat";
 "settings.retentionDays" = "Simpan Riwayat";
 "settings.retentionDays.forever" = "Selamanya";
