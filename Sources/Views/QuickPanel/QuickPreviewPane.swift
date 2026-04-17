@@ -171,7 +171,7 @@ struct QuickPreviewPane: View {
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) { previewContent }
-                    .padding(.leading, 14)
+                    .padding(.horizontal, 14)
                     .padding(.vertical, 14)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
             }

@@ -151,7 +151,7 @@ final class ClipItemStore {
         case unknown
     }
 
-    private var needsRefresh = true
+    private(set) var needsRefresh = true
 
     func configure(modelContext: ModelContext, reloadData: Bool = true) {
         let isFirstTime = self.modelContext == nil
@@ -170,6 +170,13 @@ final class ClipItemStore {
         if reloadData {
             reload()
         }
+    }
+
+    /// Consume the `needsRefresh` flag set by observers while the store was inactive.
+    /// No-op when clean — safe to call on every quick panel show.
+    func refreshIfNeeded() {
+        guard needsRefresh else { return }
+        performRefresh()
     }
 
     // MARK: - Public
@@ -414,8 +421,14 @@ final class ClipItemStore {
 
     // MARK: - Helpers
 
+    /// Always returns a fresh SQLite connection. Opening is cheap (~hundreds of µs
+    /// on local files) and eliminates an entire class of "cached connection doesn't
+    /// see the latest SwiftData write" bugs (e.g. new group not appearing, multi-file
+    /// paste not bumping to top, group reorder not reflected in quick panel).
+    /// Callers don't need to remember to invalidate — every query sees fresh data.
     private func openDB() -> SQLiteConnection? {
-        if let db = _db { return db }
+        _db?.close()
+        _db = nil
         guard let url = storeURL else { return nil }
         _db = SQLiteConnection(path: url.path)
         return _db
@@ -504,7 +517,11 @@ final class ClipItemStore {
             .publisher(for: Self.itemDidUpdateNotification)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self, self.isActive, !self.isRefreshing else { return }
+                guard let self, !self.isRefreshing else { return }
+                guard self.isActive else {
+                    self.needsRefresh = true
+                    return
+                }
                 self.skipNextThrottledRefresh = true
                 self.performRefresh()
             }
@@ -513,7 +530,11 @@ final class ClipItemStore {
             .publisher(for: Self.itemLastUsedDidUpdateNotification)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self, self.isActive, !self.isRefreshing else { return }
+                guard let self, !self.isRefreshing else { return }
+                guard self.isActive else {
+                    self.needsRefresh = true
+                    return
+                }
                 self.skipNextThrottledRefresh = true
                 self.performLightweightRefresh()
             }
@@ -522,7 +543,11 @@ final class ClipItemStore {
             .publisher(for: Self.itemContentDidUpdateNotification)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                guard let self, self.isActive, !self.isRefreshing else { return }
+                guard let self, !self.isRefreshing else { return }
+                guard self.isActive else {
+                    self.needsRefresh = true
+                    return
+                }
                 self.skipNextThrottledRefresh = true
                 self.performLightweightRefresh()
             }

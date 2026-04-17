@@ -315,6 +315,33 @@ struct PasteMemoTests {
         #expect(QuickLookHelper.shared.canOpenInPreview(item: image))
     }
 
+    /// Regression: when the store is inactive (panel/window hidden), observers used to silently drop
+    /// save notifications, leaving `needsRefresh` false. The next activation would then skip the
+    /// refresh and display stale sort order (e.g. a multi-file paste not bumping to top).
+    /// All four observers (throttled + 3 direct) must mark `needsRefresh = true` when inactive.
+    @Test("Observers mark needsRefresh when store is inactive", .serialized, arguments: [
+        "ClipItemStoreItemDidUpdate",
+        "ClipItemStoreItemLastUsedDidUpdate",
+        "ClipItemStoreItemContentDidUpdate",
+    ])
+    @MainActor func inactiveObserversMarkDirty(notificationName: String) async throws {
+        let container = try ModelContainer(
+            for: ClipItem.self, SmartGroup.self, AutomationRule.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let store = ClipItemStore()
+        store.configure(modelContext: container.mainContext)
+        // configure() consumes the initial dirty flag
+        #expect(store.needsRefresh == false)
+        // Simulate the panel/window being hidden
+        store.isActive = false
+
+        NotificationCenter.default.post(name: Notification.Name(notificationName), object: nil)
+        // Combine's .receive(on: RunLoop.main) delivers on the next runloop tick
+        try await Task.sleep(for: .milliseconds(50))
+
+        #expect(store.needsRefresh == true, "\(notificationName) should mark dirty when inactive")
+    }
 }
 
 @Suite("RelayItem Tests")

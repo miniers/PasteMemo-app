@@ -101,7 +101,7 @@ struct ClipDetailView: View {
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) { contentPreview }
-                    .padding(.leading, 16)
+                    .padding(.horizontal, 16)
                     .padding(.vertical, 16)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
             }
@@ -733,9 +733,17 @@ struct FileRow: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 20, height: 20)
-            Text(URL(fileURLWithPath: path).lastPathComponent)
-                .font(.system(size: 13))
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(URL(fileURLWithPath: path).lastPathComponent)
+                    .font(.system(size: 13))
+                    .lineLimit(1)
+                Text(path)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .textSelection(.enabled)
+            }
             Spacer()
             if isHovered {
                 Button {
@@ -756,7 +764,8 @@ struct FileRow: View {
             }
         }
         .padding(.vertical, 4)
-        .padding(.horizontal, 6)
+        .padding(.leading, 6)
+        .padding(.trailing, 12)
         .contentShape(Rectangle())
         .background(
             RoundedRectangle(cornerRadius: 6)
@@ -791,6 +800,15 @@ struct SingleFilePreview: View {
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
                 .textSelection(.enabled)
+
+            Text(path)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .truncationMode(.middle)
+                .multilineTextAlignment(.center)
+                .textSelection(.enabled)
+                .padding(.horizontal, 24)
 
             Button {
                 onOpenInFinder?()

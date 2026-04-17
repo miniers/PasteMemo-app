@@ -40,8 +40,6 @@ struct ClipRow: View {
                         }
 
                         Spacer()
-
-                        fileCountBadge
                     }
 
                     HStack(spacing: 4) {
@@ -347,16 +345,4 @@ struct ClipRow: View {
             && item.content != "[Image]"
     }
 
-    @ViewBuilder
-    private var fileCountBadge: some View {
-        if isMultiFile {
-            let count = item.content.components(separatedBy: "\n").count
-            Text("\(count)")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(.tertiary)
-                .padding(.horizontal, 5)
-                .padding(.vertical, 1)
-                .background(Color.primary.opacity(0.06), in: Capsule())
-        }
-    }
 }

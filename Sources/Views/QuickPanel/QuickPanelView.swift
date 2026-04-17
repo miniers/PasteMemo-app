@@ -250,11 +250,16 @@ struct QuickPanelView: View {
             // 避免刚 orderFrontRegardless 时显示上一次的 `/` 建议面板。
             // 代价：打开 80ms 内如果立即输入 `/`，这一帧的建议不会渲染，
             // 下次 searchText 变动即会正常显示，实际几乎感知不到。
+            store.isActive = true
+            // Arming the `/` suggestion overlay and consuming any pending dirty flag both
+            // need the UI state reset above to be committed first, otherwise a stale `/`
+            // dropdown can flash through. Serialize them in one Task so refresh happens
+            // strictly after arming.
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(80))
                 suggestionsArmed = true
+                store.refreshIfNeeded()
             }
-            store.isActive = true
             let latestItemID = store.queryFirstItemID()
             if latestItemID != lastSeenFirstItemID {
                 store.resetFilters()
@@ -1378,6 +1383,8 @@ struct QuickPanelView: View {
             return
         }
 
+        bumpLastUsedPreservingOrder(items)
+
         let previousApp = QuickPanelWindowController.shared.previousApp
         dismissAndRestoreApp { _ in
             if asPlainText {
@@ -1388,7 +1395,19 @@ struct QuickPanelView: View {
         }
     }
 
+    /// Bump `lastUsedAt` for multiple items while preserving their current display order.
+    /// `items` are expected to be in display order (top = most recently used); staggered
+    /// sub-millisecond timestamps break the DESC sort tie so the top selection stays on top.
+    private func bumpLastUsedPreservingOrder(_ items: [ClipItem]) {
+        let now = Date()
+        for (index, item) in items.enumerated() {
+            item.lastUsedAt = now.addingTimeInterval(-Double(index) / 1000.0)
+        }
+        ClipItemStore.saveAndNotifyLastUsed(modelContext)
+    }
+
     private func handleMultiPasteToFinder(_ items: [ClipItem]) {
+        bumpLastUsedPreservingOrder(items)
         let fileItems = items.filter { isFileBasedItem($0) }
         let textItems = items.filter { !isFileBasedItem($0) && $0.content != "[Image]" }
         let imageItems = items.filter { isPureImage($0) }
@@ -1452,8 +1471,7 @@ struct QuickPanelView: View {
         let merged = items.map(\.content).joined(separator: "\n")
         pasteboard.setString(merged, forType: .string)
         clipboardManager.lastChangeCount = pasteboard.changeCount
-        items.forEach { $0.lastUsedAt = Date() }
-        ClipItemStore.saveAndNotifyLastUsed(modelContext)
+        bumpLastUsedPreservingOrder(items)
 
         if playSound {
             SoundManager.playCopy()

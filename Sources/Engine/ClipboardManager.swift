@@ -749,6 +749,10 @@ final class ClipboardManager: ObservableObject {
             for (index, group) in groups.enumerated() {
                 if index > 0 {
                     try? await Task.sleep(for: .milliseconds(150))
+                    // Insert a newline between groups so heterogeneous pastes (text + file,
+                    // text + image, etc.) don't glue together on the same line.
+                    simulateReturn()
+                    try? await Task.sleep(for: .milliseconds(80))
                 }
 
                 let pasteboard = NSPasteboard.general
