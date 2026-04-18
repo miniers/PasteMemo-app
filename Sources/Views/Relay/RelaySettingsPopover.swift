@@ -3,6 +3,7 @@ import SwiftData
 
 struct RelaySettingsPopover: View {
     @AppStorage("relayPasteAsPlainText") private var pasteAsPlainText = false
+    @AppStorage("relayAllowRepeatCopy") private var allowRepeatCopy = false
     @AppStorage(RelayPostPasteKey.userDefaultsKey) private var postPasteKeyRaw = RelayPostPasteKey.none.rawValue
     @AppStorage("relayAutomationRuleId") private var automationRuleId = ""
     @AppStorage("relayPreviewEnabled") private var previewEnabled = false
@@ -19,6 +20,19 @@ struct RelaySettingsPopover: View {
                 subtitle: L10n.tr("relay.settings.plainText.desc")
             ) {
                 Toggle("", isOn: $pasteAsPlainText)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .frame(width: 140, alignment: .trailing)
+            }
+
+            Divider().padding(.leading, 12)
+
+            settingRow(
+                title: L10n.tr("relay.settings.allowRepeatCopy"),
+                subtitle: L10n.tr("relay.settings.allowRepeatCopy.desc")
+            ) {
+                Toggle("", isOn: $allowRepeatCopy)
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.small)

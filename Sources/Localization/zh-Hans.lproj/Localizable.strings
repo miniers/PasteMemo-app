@@ -644,6 +644,8 @@
 "relay.settings.resetAlert" = "重新显示开启提示";
 "relay.settings.plainText" = "纯文本粘贴";
 "relay.settings.plainText.desc" = "去除富文本格式";
+"relay.settings.allowRepeatCopy" = "允许重复复制";
+"relay.settings.allowRepeatCopy.desc" = "连续相同内容也入队";
 "relay.settings.automation" = "自动化";
 "relay.settings.automation.desc" = "粘贴时应用所选规则";
 "relay.settings.automation.none" = "无";
