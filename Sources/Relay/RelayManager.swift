@@ -308,8 +308,8 @@ final class RelayManager {
 
     private func startMonitor() {
         let mon = RelayClipboardMonitor()
-        mon.onNewContent = { [weak self] text in
-            self?.enqueue(texts: [text])
+        mon.onNewClip = { [weak self] clip in
+            self?.enqueue(clipItems: [clip])
         }
         mon.start()
         monitor = mon

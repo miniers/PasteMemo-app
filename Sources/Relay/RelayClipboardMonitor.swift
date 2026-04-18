@@ -7,8 +7,8 @@ final class RelayClipboardMonitor {
 
     private var pollTask: Task<Void, Never>?
     private var lastChangeCount: Int = 0
-    private var lastContent: String = ""
-    var onNewContent: (@MainActor (String) -> Void)?
+    private var lastContentKey: String = ""
+    var onNewClip: (@MainActor (ClipItem) -> Void)?
 
     func start() {
         lastChangeCount = NSPasteboard.general.changeCount
@@ -37,11 +37,22 @@ final class RelayClipboardMonitor {
         // Skip copies from PasteMemo itself (e.g. editing in main window)
         if let frontApp = NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
            frontApp.contains("pastememo") { return }
-        guard let text = pasteboard.string(forType: .string),
-              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        // Skip consecutive duplicates (e.g. paste writes back the same content)
-        guard text != lastContent else { return }
-        lastContent = text
-        onNewContent?(text)
+        guard let clip = ClipboardManager.shared.captureCurrentClipboard() else { return }
+        // Opt-in dedup: skip if user hasn't allowed repeats and content matches previous.
+        let allowRepeat = UserDefaults.standard.bool(forKey: "relayAllowRepeatCopy")
+        let key = dedupKey(for: clip)
+        if !allowRepeat, key == lastContentKey { return }
+        lastContentKey = key
+        onNewClip?(clip)
+    }
+
+    /// Identity fingerprint used for consecutive-duplicate detection. Uses text content
+    /// for text-like clips and imageData byte count + prefix for images (avoids hashing
+    /// megabytes on every poll).
+    private func dedupKey(for clip: ClipItem) -> String {
+        if clip.contentType == .image, let data = clip.imageData {
+            return "image:\(data.count):\(data.prefix(32).hashValue)"
+        }
+        return "text:\(clip.content)"
     }
 }
