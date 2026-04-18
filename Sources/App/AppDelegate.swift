@@ -87,6 +87,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         BackupScheduler.shared.stop()
+        // Persist relay queue synchronously before termination — otherwise in-memory
+        // items never reach disk when the user quits while a relay session is active.
+        if RelayManager.shared.isActive {
+            RelayManager.shared.deactivate()
+        }
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
