@@ -30,6 +30,9 @@ struct QuickPanelView: View {
     @State private var pill: PillSelection?
     /// 刚打开面板的前几十毫秒内抑制建议浮层渲染，避免上次残留状态首帧闪现
     @State private var suggestionsArmed = false
+    /// 用户是否主动按过 `/` 键。只有在 keyMonitor 的 case 44 里置 true，
+    /// 避免 searchText 被任何其他路径写成 `/` 时弹出建议浮层。面板每次开/关都重置。
+    @State private var userTypedSlash = false
     @State private var selectedItemIDs: Set<PersistentIdentifier> = []
     @State private var selectedFilter: QuickFilter = .all
     @State private var keyMonitor: Any?
@@ -238,6 +241,12 @@ struct QuickPanelView: View {
             pill = nil
             showCommandPalette = false
             suggestionsArmed = false
+            userTypedSlash = false
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .quickPanelPinnedResignKey)) { _ in
+            // Pinned + user clicked another app: release search focus so the text field
+            // stops dragging key status back to the panel.
+            isSearchFocused = false
         }
         .onReceive(NotificationCenter.default.publisher(for: .quickPanelDidShow)) { _ in
             showCommandPalette = false
@@ -246,6 +255,7 @@ struct QuickPanelView: View {
             selectedFilter = .all
             isPanelPinned = false
             suggestionsArmed = false
+            userTypedSlash = false
             // 延后一小会儿再放开建议浮层，给 SwiftUI 一次 tick 把状态提交到渲染树，
             // 避免刚 orderFrontRegardless 时显示上一次的 `/` 建议面板。
             // 代价：打开 80ms 内如果立即输入 `/`，这一帧的建议不会渲染，
@@ -337,6 +347,7 @@ struct QuickPanelView: View {
 
     private var isShowingSuggestions: Bool {
         guard suggestionsArmed else { return false }
+        guard userTypedSlash else { return false }
         guard pill == nil else { return false }
         guard searchText.hasPrefix(Self.GROUP_SEARCH_PREFIX) else { return false }
         return !currentSuggestionGroups.isEmpty || !currentSuggestionApps.isEmpty || !currentSuggestionTypes.isEmpty
@@ -581,11 +592,15 @@ struct QuickPanelView: View {
                 QuickPanelWindowController.shared.isPinned = isPanelPinned
             } label: {
                 Image(systemName: isPanelPinned ? "pin.fill" : "pin")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
-                    .frame(height: 20)
-                    .padding(.horizontal, 6)
-                    .background(isPanelPinned ? Color.primary.opacity(0.05) : Color.clear, in: RoundedRectangle(cornerRadius: 5))
+                    .font(.system(size: 12))
+                    .foregroundStyle(
+                        isPanelPinned ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(HierarchicalShapeStyle.tertiary)
+                    )
+                    .frame(width: 28, height: 24)
+                    .background(
+                        isPanelPinned ? AnyShapeStyle(Color.accentColor.opacity(0.15)) : AnyShapeStyle(Color.clear),
+                        in: RoundedRectangle(cornerRadius: 5)
+                    )
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -594,7 +609,7 @@ struct QuickPanelView: View {
             Text("\(store.totalCount)")
                 .font(.system(size: 12, weight: .medium).monospacedDigit())
                 .foregroundStyle(.tertiary)
-                .frame(height: 20)
+                .frame(minWidth: 28, minHeight: 24)
                 .padding(.horizontal, 6)
                 .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 5))
         }
@@ -1203,6 +1218,7 @@ struct QuickPanelView: View {
                     return event
                 }
                 searchText = Self.GROUP_SEARCH_PREFIX
+                userTypedSlash = true
                 return nil
             default:
                 if hasCmd, let digit = Self.digitKeyMap[Int(event.keyCode)] {

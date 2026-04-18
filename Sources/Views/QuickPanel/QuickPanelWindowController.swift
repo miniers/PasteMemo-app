@@ -5,6 +5,7 @@ import SwiftData
 extension Notification.Name {
     static let quickPanelDidShow = Notification.Name("quickPanelDidShow")
     static let quickPanelWillDismiss = Notification.Name("quickPanelWillDismiss")
+    static let quickPanelPinnedResignKey = Notification.Name("quickPanelPinnedResignKey")
 }
 
 private let DEFAULT_WIDTH: CGFloat = 750
@@ -17,8 +18,13 @@ private let POSITION_KEY = "quickPanelPosition"
 private let POSITION_SCREEN_KEY = "quickPanelPosition.screenID"
 
 private class KeyablePanel: NSPanel {
-    override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { true }
+    /// When true, the panel refuses to become key — used in pinned mode so the search
+    /// field's FocusState can't drag keyboard focus back to the panel while the user
+    /// types in another app.
+    var refuseKey = false
+
+    override var canBecomeKey: Bool { !refuseKey }
+    override var canBecomeMain: Bool { !refuseKey }
 
     // borderless + titled 混合 styleMask 下系统不强制 minSize，手动 clamp
     override func setFrame(_ frameRect: NSRect, display flag: Bool) {
@@ -49,7 +55,20 @@ final class QuickPanelWindowController {
     private var resizeObserver: Any?
     private(set) var previousApp: NSRunningApplication?
     private var isWarmedUp = false
-    var isPinned = false
+    var isPinned = false {
+        didSet {
+            guard isPinned != oldValue else { return }
+            (panel as? KeyablePanel)?.refuseKey = isPinned
+            if isPinned {
+                // Post notification so SwiftUI view clears FocusState before we resign key.
+                NotificationCenter.default.post(name: .quickPanelPinnedResignKey, object: nil)
+                // Hand key status to the previously-focused app so the user can type there.
+                if panel?.isKeyWindow == true {
+                    previousApp?.activate(options: [])
+                }
+            }
+        }
+    }
     var suppressDismiss = false
     private var snapGuide: SnapGuideWindow?
 
@@ -488,7 +507,13 @@ final class QuickPanelWindowController {
             object: panel,
             queue: nil
         ) { [weak self] _ in
-            guard let self, !self.isPinned, !self.suppressDismiss else { return }
+            guard let self, !self.suppressDismiss else { return }
+            if self.isPinned {
+                // When pinned and panel loses key (user clicked another app), release
+                // the SwiftUI FocusState so it stops fighting to become key again.
+                NotificationCenter.default.post(name: .quickPanelPinnedResignKey, object: nil)
+                return
+            }
             let isMouseDown = NSEvent.pressedMouseButtons != 0
             let mouseInPanel = self.panel?.frame.contains(NSEvent.mouseLocation) ?? false
             if isMouseDown, mouseInPanel { return }
