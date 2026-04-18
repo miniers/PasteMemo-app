@@ -26,8 +26,17 @@ struct RelayQueueView: View {
         guard !settingAutomationRuleId.isEmpty,
               let rule = enabledRules.first(where: { $0.ruleID == settingAutomationRuleId })
         else { return nil }
+        return ruleDisplayNameForBanner(rule)
+    }
+
+    /// Best-effort localized display name for an automation rule.
+    /// Falls back to the raw key when no localization is available for
+    /// `automation.*` keys.
+    private func ruleDisplayNameForBanner(_ rule: AutomationRule) -> String {
         let translated = L10n.tr(rule.name)
-        return translated == rule.name && rule.name.hasPrefix("automation.") ? rule.name : translated
+        return translated == rule.name && rule.name.hasPrefix("automation.")
+            ? rule.name
+            : translated
     }
 
     private var hasActiveSettings: Bool {
@@ -166,24 +175,48 @@ struct RelayQueueView: View {
             }
 
             if let name = activeRuleDisplayName {
-                HStack(spacing: 4) {
-                    Image(systemName: "bolt.fill")
-                        .font(.system(size: 9))
-                    Text(L10n.tr("relay.settings.automation") + ": " + name)
-                        .font(.system(size: 11))
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                    if settingPreviewEnabled {
-                        Text("· " + L10n.tr("relay.settings.preview"))
+                Button {
+                    // Click: clear the active automation rule.
+                    settingAutomationRuleId = ""
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 9))
+                        Text(L10n.tr("relay.settings.automation") + ": " + name)
                             .font(.system(size: 11))
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                        if settingPreviewEnabled {
+                            Text("· " + L10n.tr("relay.settings.preview"))
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 10))
                             .foregroundStyle(.secondary)
                     }
-                    Spacer()
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 5))
+                    .contentShape(Rectangle())
                 }
-                .foregroundStyle(Color.accentColor)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 5))
+                .buttonStyle(.plain)
+                .help(L10n.tr("relay.banner.clickToClear"))
+                .contextMenu {
+                    ForEach(enabledRules) { rule in
+                        Button {
+                            settingAutomationRuleId = rule.ruleID
+                        } label: {
+                            if rule.ruleID == settingAutomationRuleId {
+                                Label(ruleDisplayNameForBanner(rule), systemImage: "checkmark")
+                            } else {
+                                Text(ruleDisplayNameForBanner(rule))
+                            }
+                        }
+                    }
+                }
             }
         }
         .padding(.horizontal, 14)

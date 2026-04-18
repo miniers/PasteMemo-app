@@ -648,6 +648,7 @@
 "relay.settings.completeSound" = "Completion sound";
 "relay.settings.completeSound.desc" = "Play when relay finishes";
 "relay.settings.completeSound.mute" = "Mute";
+"relay.banner.clickToClear" = "Click to clear · right-click to switch";
 "relay.settings.automation" = "Automation";
 "relay.settings.automation.desc" = "Apply rule when pasting";
 "relay.settings.automation.none" = "None";
