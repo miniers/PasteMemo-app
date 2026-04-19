@@ -1,5 +1,6 @@
 import AppKit
 import Observation
+import SwiftData
 
 @MainActor
 @Observable
@@ -10,6 +11,8 @@ final class RelayManager {
 
     var items: [RelayItem] = []
     var currentIndex = 0
+    var lastRecirculation: RelayRecirculation.UndoHandle?
+    private var lastRecirculationExpiry: Task<Void, Never>?
     var isActive = false
     var isPaused = false
     var autoExitOnEmpty = true
@@ -99,16 +102,24 @@ final class RelayManager {
     }
 
     func deleteItem(at index: Int) {
+        guard index >= 0, index < items.count else { return }
+        let removed = items[index]
         items.remove(at: index)
-        windowController?.updateSize(for: items.count)
-        if items.isEmpty {
-            currentIndex = 0
-            return
-        }
-        if currentIndex >= items.count {
+        if index < currentIndex {
+            currentIndex -= 1
+        } else if index == currentIndex, currentIndex >= items.count, !items.isEmpty {
             currentIndex = items.count - 1
         }
         markCurrentIfNeeded()
+        windowController?.updateSize(for: items.count)
+
+        // Recirculate to clipboard history so the clip is not permanently lost. Skip
+        // when inactive (e.g. unit tests, sharedModelContainer may point at user data).
+        guard isActive else { return }
+        let context = ModelContext(PasteMemoApp.sharedModelContainer)
+        let handle = RelayRecirculation.recirculate(removed, originalIndex: index, context: context)
+        try? context.save()
+        scheduleRecirculationExpiry(handle)
     }
 
     func clearAll() {
@@ -402,6 +413,36 @@ final class RelayManager {
     }
 
     // MARK: - Private
+
+    private func scheduleRecirculationExpiry(_ handle: RelayRecirculation.UndoHandle) {
+        lastRecirculation = handle
+        lastRecirculationExpiry?.cancel()
+        lastRecirculationExpiry = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(6))
+            guard !Task.isCancelled, let self else { return }
+            if self.lastRecirculation?.relayItem.id == handle.relayItem.id {
+                self.lastRecirculation = nil
+            }
+        }
+    }
+
+    func undoLastRecirculation() {
+        guard let handle = lastRecirculation else { return }
+        let target = min(handle.originalIndex, items.count)
+        items.insert(handle.relayItem, at: target)
+        if target <= currentIndex {
+            currentIndex += 1
+        }
+        markCurrentIfNeeded()
+        windowController?.updateSize(for: items.count)
+
+        let context = ModelContext(PasteMemoApp.sharedModelContainer)
+        RelayRecirculation.undoClipInsertion(handle, context: context)
+        try? context.save()
+
+        lastRecirculation = nil
+        lastRecirculationExpiry?.cancel()
+    }
 
     private func markCurrentIfNeeded() {
         guard !items.isEmpty else { return }
