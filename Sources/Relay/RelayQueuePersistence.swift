@@ -17,8 +17,9 @@ struct PersistedRelayItem: Codable {
     /// Raw value of RelayItem.ItemState: "pending" / "current" / "done" / "skipped".
     let state: String
     /// Bundle identifier of the app the clip originated from. Optional for backward
-    /// compatibility with queues persisted before this field existed.
-    let sourceAppBundleID: String?
+    /// compatibility with queues persisted before this field existed — default lets
+    /// callers that don't know the source (e.g. old tests, split-item paths) omit it.
+    var sourceAppBundleID: String? = nil
 }
 
 @MainActor
