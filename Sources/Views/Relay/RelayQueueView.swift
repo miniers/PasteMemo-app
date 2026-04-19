@@ -38,7 +38,6 @@ struct RelayQueueView: View {
                 .id(handle.relayItem.id)
             }
         }
-        .animation(.easeOut(duration: 0.18), value: drawerOpen)
         .animation(.easeOut(duration: 0.2), value: manager.lastRecirculation?.relayItem.id)
     }
 

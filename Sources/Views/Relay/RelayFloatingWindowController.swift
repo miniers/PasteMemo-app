@@ -168,15 +168,10 @@ final class RelayFloatingWindowController {
         frame.origin.y -= delta
         frame.size.height = newHeight
 
-        // Wrap in NSAnimationContext so concurrent tiny updates from SwiftUI's
-        // per-frame preferredContentSize churn blend into one smooth transition
-        // instead of snapping the window every frame (the visible "Hero wobble").
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.12
-            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            ctx.allowsImplicitAnimation = true
-            panel.animator().setFrame(frame, display: true)
-        }
+        // AppKit handles smooth frame interpolation natively with animate: true —
+        // one animation source means SwiftUI content stays at its final layout
+        // while NSWindow grows/shrinks around it. Hero (top-anchored) stays put.
+        panel.setFrame(frame, display: true, animate: true)
     }
 
     private func positionTopRight(_ panel: NSPanel, height: CGFloat) {
