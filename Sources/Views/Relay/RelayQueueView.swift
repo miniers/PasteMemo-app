@@ -14,11 +14,12 @@ struct RelayQueueView: View {
     @Query(filter: #Predicate<AutomationRule> { $0.enabled == true })
     private var enabledRules: [AutomationRule]
 
-    /// Actions to apply when previewing / rendering list text. Empty when preview is off
-    /// or no rule is selected.
-    private var previewActions: [RuleAction] {
-        guard settingPreviewEnabled, !settingAutomationRuleId.isEmpty else { return [] }
-        return enabledRules.first(where: { $0.ruleID == settingAutomationRuleId })?.actions ?? []
+    /// Rule selected for in-list preview. `nil` when preview toggle is off or no rule is
+    /// active. Row uses this + the item's content type / source to decide whether to
+    /// actually apply actions, so preview matches runtime paste behavior.
+    private var previewRule: AutomationRule? {
+        guard settingPreviewEnabled, !settingAutomationRuleId.isEmpty else { return nil }
+        return enabledRules.first(where: { $0.ruleID == settingAutomationRuleId })
     }
 
     /// Localized name of the currently selected rule, or nil when none.
@@ -266,7 +267,7 @@ struct RelayQueueView: View {
                 ScrollView {
                     LazyVStack(spacing: 2) {
                         ForEach(Array(manager.items.enumerated()), id: \.element.id) { index, item in
-                            RelayQueueRow(item: item, previewActions: previewActions, onDelete: {
+                            RelayQueueRow(item: item, previewRule: previewRule, onDelete: {
                                 manager.deleteItem(at: index)
                             }, onSplit: {
                                 splitTargetIndex = index
@@ -426,20 +427,39 @@ struct RelayQueueView: View {
 
 private struct RelayQueueRow: View {
     let item: RelayItem
-    let previewActions: [RuleAction]
+    let previewRule: AutomationRule?
     var onDelete: (() -> Void)?
     var onSplit: (() -> Void)?
     var onEdit: ((String) -> Void)?
     @State private var isHovering = false
     @AppStorage(RelayPostPasteKey.userDefaultsKey) private var postPasteKeyRaw = RelayPostPasteKey.none.rawValue
 
+    /// Actions that would actually run for this row. Mirrors the condition check in
+    /// `RelayRuleResolver.actionsApplying(to:)` so the list preview never shows a
+    /// transform that the paste step would skip.
+    private var effectivePreviewActions: [RuleAction] {
+        guard let rule = previewRule, item.contentKind == .text else { return [] }
+        let contentType = ClipboardManager.shared.detectContentType(item.content).type
+        let ok = rule.conditions.isEmpty || AutomationEngine.matchesConditions(
+            rule.conditions,
+            logic: rule.conditionLogic,
+            content: item.content,
+            contentType: contentType,
+            sourceApp: item.sourceAppBundleID
+        )
+        return ok ? rule.actions : []
+    }
+
     private var displayText: String {
-        previewActions.isEmpty ? item.content : AutomationEngine.apply(previewActions, to: item.content)
+        effectivePreviewActions.isEmpty
+            ? item.content
+            : AutomationEngine.apply(effectivePreviewActions, to: item.content)
     }
 
     var body: some View {
         HStack(spacing: 8) {
             stateIndicator
+            sourceAppBadge
             if item.isImage {
                 if let data = item.imageData, let img = NSImage(data: data) {
                     Image(nsImage: img)
@@ -515,6 +535,21 @@ private struct RelayQueueRow: View {
         .background(RoundedRectangle(cornerRadius: 6).fill(rowBackground))
         .onHover { isHovering = $0 }
         .animation(.easeOut(duration: 0.1), value: isHovering)
+    }
+
+    /// Small source-app icon next to the state dot. Helps verify at a glance which
+    /// rule conditions will match (e.g. sourceApp = Word). Renders nothing when the
+    /// item was captured without a bundle ID.
+    @ViewBuilder
+    private var sourceAppBadge: some View {
+        if let bundleID = item.sourceAppBundleID,
+           let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
+            let icon = NSWorkspace.shared.icon(forFile: url.path)
+            Image(nsImage: icon)
+                .resizable()
+                .frame(width: 14, height: 14)
+                .help(bundleID)
+        }
     }
 
     private var postPasteKeyGlyph: String? {

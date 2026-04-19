@@ -10,6 +10,10 @@ struct RelayItem: Identifiable {
     /// targets like Word / Notes / Pages pick their preferred UTI — matches native
     /// Cmd+C → Cmd+V behaviour for rich-text (RTFD/HTML) content.
     var pasteboardSnapshot: Data?
+    /// Bundle identifier of the app the clip was copied from (e.g. `com.microsoft.Word`).
+    /// Carried from `ClipItem.sourceAppBundleID` so relay-paste rule evaluation can honor
+    /// `sourceApp` conditions. `nil` when PasteMemo didn't know the source at capture time.
+    var sourceAppBundleID: String?
 
     enum ContentKind {
         case text
@@ -39,7 +43,8 @@ struct RelayItem: Identifiable {
         content: String,
         imageData: Data? = nil,
         contentKind: ContentKind = .text,
-        pasteboardSnapshot: Data? = nil
+        pasteboardSnapshot: Data? = nil,
+        sourceAppBundleID: String? = nil
     ) {
         self.id = UUID()
         self.content = content
@@ -47,6 +52,7 @@ struct RelayItem: Identifiable {
         self.contentKind = contentKind
         self.state = .pending
         self.pasteboardSnapshot = pasteboardSnapshot
+        self.sourceAppBundleID = sourceAppBundleID
     }
 
     /// Factory converting a ClipItem into a RelayItem. Returns nil for empty content.
@@ -65,7 +71,8 @@ struct RelayItem: Identifiable {
                 content: clip.content,
                 imageData: data,
                 contentKind: .image,
-                pasteboardSnapshot: clip.pasteboardSnapshot
+                pasteboardSnapshot: clip.pasteboardSnapshot,
+                sourceAppBundleID: clip.sourceAppBundleID
             )
         }
 
@@ -78,7 +85,8 @@ struct RelayItem: Identifiable {
                 content: trimmedPath,
                 imageData: clip.imageData,  // nil for non-image files, thumbnail for single image file
                 contentKind: .file,
-                pasteboardSnapshot: clip.pasteboardSnapshot
+                pasteboardSnapshot: clip.pasteboardSnapshot,
+                sourceAppBundleID: clip.sourceAppBundleID
             )
         }
 
@@ -89,7 +97,8 @@ struct RelayItem: Identifiable {
             content: trimmed,
             imageData: clip.imageData,
             contentKind: .text,
-            pasteboardSnapshot: clip.pasteboardSnapshot
+            pasteboardSnapshot: clip.pasteboardSnapshot,
+            sourceAppBundleID: clip.sourceAppBundleID
         )
     }
 }

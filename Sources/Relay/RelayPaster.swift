@@ -6,9 +6,10 @@ private let V_KEY_CODE: UInt16 = 0x09
 @MainActor
 enum RelayPaster {
 
-    /// Write text to system pasteboard and simulate Cmd+V.
-    static func paste(_ text: String, monitor: RelayClipboardMonitor) async {
-        let actions = RelayRuleResolver.currentRuleActions()
+    /// Write text to system pasteboard and simulate Cmd+V. Callers decide whether to
+    /// pass `actions` by checking the active relay rule's conditions first; if the
+    /// conditions don't match, pass an empty array to paste the content verbatim.
+    static func paste(_ text: String, actions: [RuleAction] = [], monitor: RelayClipboardMonitor) async {
         let transformed = actions.isEmpty ? text : AutomationEngine.apply(actions, to: text)
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()

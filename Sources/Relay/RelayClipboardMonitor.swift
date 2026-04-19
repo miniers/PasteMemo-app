@@ -35,9 +35,14 @@ final class RelayClipboardMonitor {
         guard pasteboard.changeCount != lastChangeCount else { return }
         lastChangeCount = pasteboard.changeCount
         // Skip copies from PasteMemo itself (e.g. editing in main window)
-        if let frontApp = NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
-           frontApp.contains("pastememo") { return }
-        guard let clip = ClipboardManager.shared.captureCurrentClipboard() else { return }
+        let frontApp = NSWorkspace.shared.frontmostApplication
+        if let bundleID = frontApp?.bundleIdentifier, bundleID.contains("pastememo") { return }
+        guard let clip = ClipboardManager.shared.captureCurrentClipboard(sourceApp: frontApp?.localizedName) else { return }
+        // captureCurrentClipboard takes `sourceApp` (display name) but not `sourceAppBundleID`.
+        // Without the bundle ID, rule conditions like "sourceApp = Word" can't match on the
+        // relay-paste path (issue #22 follow-up: relay monitor is a separate capture path
+        // from the main ClipboardManager flow that normally sets this field in-line).
+        clip.sourceAppBundleID = frontApp?.bundleIdentifier
         // Opt-in dedup: skip if user hasn't allowed repeats and content matches previous.
         let allowRepeat = UserDefaults.standard.bool(forKey: "relayAllowRepeatCopy")
         let key = dedupKey(for: clip)

@@ -205,7 +205,8 @@ final class RelayManager {
                     content: pItem.content,
                     imageData: pItem.imageData,
                     contentKind: parseContentKind(pItem.contentKind),
-                    pasteboardSnapshot: pItem.pasteboardSnapshot
+                    pasteboardSnapshot: pItem.pasteboardSnapshot,
+                    sourceAppBundleID: pItem.sourceAppBundleID
                 )
                 item.state = parseItemState(pItem.state)
                 items.append(item)
@@ -267,7 +268,8 @@ final class RelayManager {
                     imageData: item.imageData,
                     contentKind: contentKindRawValue(item.contentKind),
                     pasteboardSnapshot: item.pasteboardSnapshot,
-                    state: stateRawValue(item.state)
+                    state: stateRawValue(item.state),
+                    sourceAppBundleID: item.sourceAppBundleID
                 )
             }
             let savedIndex = min(max(currentIndex, 0), max(0, items.count - 1))
@@ -348,9 +350,15 @@ final class RelayManager {
         }
         guard let mon = monitor else { return }
         Task {
+            // Evaluate rule conditions against this specific item. Non-empty only when a
+            // rule is selected AND its conditions match (content type / source app / etc.).
+            // Re-routing rich-text items to the plain-text path so actions can transform
+            // `item.content` — issue #22.
+            let matchedActions = RelayRuleResolver.actionsApplying(to: item)
+
             // Plain-text override takes precedence — user explicitly chose string-only paste.
-            if pasteAsPlainText {
-                await RelayPaster.paste(item.content, monitor: mon)
+            if pasteAsPlainText || !matchedActions.isEmpty {
+                await RelayPaster.paste(item.content, actions: matchedActions, monitor: mon)
             } else if let snapshot = item.pasteboardSnapshot {
                 // Rich-text / native-fidelity path: replay the source's original pasteboard bytes.
                 await RelayPaster.pasteSnapshot(snapshot, monitor: mon)
