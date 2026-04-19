@@ -644,7 +644,7 @@ struct RelayDropDelegate: DropDelegate {
 // MARK: - Window Drag Area
 
 /// An invisible NSView that handles window dragging via mouseDown+mouseDragged.
-private struct WindowDragArea: NSViewRepresentable {
+struct WindowDragArea: NSViewRepresentable {
     func makeNSView(context: Context) -> DraggableView {
         DraggableView()
     }
@@ -652,7 +652,7 @@ private struct WindowDragArea: NSViewRepresentable {
     func updateNSView(_ nsView: DraggableView, context: Context) {}
 }
 
-private final class DraggableView: NSView {
+final class DraggableView: NSView {
     override func mouseDown(with event: NSEvent) {
         window?.performDrag(with: event)
     }

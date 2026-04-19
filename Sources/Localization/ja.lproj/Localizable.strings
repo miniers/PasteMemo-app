@@ -432,6 +432,8 @@
 "relay.deleted.undo" = "元に戻す";
 "relay.queue.heading" = "キュー %d";
 "relay.quickPastePaused" = "リレーモード中はクイックペーストが一時停止しています";
+"relay.expand" = "展開";
+"relay.collapse" = "折りたたむ";
 "relay.alert.title" = "リレーモードが有効になりました";
 "relay.alert.message" = "クイックペーストが一時停止しました。コピーした内容はリレーキューに追加されます。
 

@@ -499,6 +499,8 @@
 "relay.deleted.undo" = "Annulla";
 "relay.queue.heading" = "Coda %d";
 "relay.quickPastePaused" = "Incolla rapido in pausa durante la modalità staffetta";
+"relay.expand" = "Espandi";
+"relay.collapse" = "Comprimi";
 "relay.alert.title" = "Modalità Staffetta attivata";
 "relay.alert.message" = "Incolla rapido in pausa. I contenuti copiati verranno aggiunti alla coda.
 

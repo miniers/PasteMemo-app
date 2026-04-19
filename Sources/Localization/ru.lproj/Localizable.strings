@@ -505,6 +505,8 @@
 "relay.deleted.undo" = "Отменить";
 "relay.queue.heading" = "Очередь %d";
 "relay.quickPastePaused" = "Быстрая вставка приостановлена в режиме эстафеты";
+"relay.expand" = "Развернуть";
+"relay.collapse" = "Свернуть";
 "relay.alert.title" = "Режим Эстафеты активирован";
 "relay.alert.message" = "Быстрая вставка приостановлена. Скопированное содержимое будет добавлено в очередь.
 

@@ -501,6 +501,8 @@
 "relay.deleted.undo" = "撤銷";
 "relay.queue.heading" = "佇列 %d";
 "relay.quickPastePaused" = "接力模式下快捷貼上已暫停";
+"relay.expand" = "展開";
+"relay.collapse" = "收合";
 "relay.alert.title" = "接力模式已開啟";
 "relay.alert.message" = "快捷貼上已暫停，複製的內容將自動加入接力佇列。
 
