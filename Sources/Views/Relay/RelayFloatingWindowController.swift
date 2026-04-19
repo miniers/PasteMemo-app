@@ -160,13 +160,23 @@ final class RelayFloatingWindowController {
     private func resizeToFit(_ contentSize: NSSize) {
         guard let panel = window else { return }
         let newHeight = min(contentSize.height, MAX_HEIGHT)
-        guard abs(newHeight - panel.frame.height) > 1 else { return }
+        let delta = newHeight - panel.frame.height
+        // Ignore sub-pixel noise (SwiftUI reports fractional sizes mid-animation).
+        guard abs(delta) > 1 else { return }
 
         var frame = panel.frame
-        let heightDiff = newHeight - frame.height
-        frame.origin.y -= heightDiff
+        frame.origin.y -= delta
         frame.size.height = newHeight
-        panel.setFrame(frame, display: true, animate: false)
+
+        // Wrap in NSAnimationContext so concurrent tiny updates from SwiftUI's
+        // per-frame preferredContentSize churn blend into one smooth transition
+        // instead of snapping the window every frame (the visible "Hero wobble").
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.12
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            ctx.allowsImplicitAnimation = true
+            panel.animator().setFrame(frame, display: true)
+        }
     }
 
     private func positionTopRight(_ panel: NSPanel, height: CGFloat) {
