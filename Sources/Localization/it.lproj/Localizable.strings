@@ -450,6 +450,7 @@
 "backup.backupNow" = "Esegui backup ora";
 "backup.restore" = "Ripristina…";
 "backup.success" = "Backup completato con successo.";
+"backup.progress.finalizing" = "Salvataggio…";
 "backup.restore.title" = "Ripristina da backup";
 "backup.restore.empty" = "Nessun backup disponibile.";
 "backup.restore.merge" = "Unisci (mantieni dati esistenti)";

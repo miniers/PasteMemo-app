@@ -381,6 +381,7 @@
 "backup.backupNow" = "今すぐバックアップ";
 "backup.restore" = "バックアップから復元…";
 "backup.success" = "バックアップが完了しました。";
+"backup.progress.finalizing" = "保存中…";
 "backup.restore.title" = "バックアップから復元";
 "backup.restore.empty" = "利用可能なバックアップがありません。";
 "backup.restore.merge" = "マージ（既存データを保持）";

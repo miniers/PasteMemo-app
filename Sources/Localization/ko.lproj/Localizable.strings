@@ -367,6 +367,7 @@
 "backup.backupNow" = "지금 백업";
 "backup.restore" = "백업에서 복원…";
 "backup.success" = "백업이 완료되었습니다.";
+"backup.progress.finalizing" = "저장 중…";
 "backup.restore.title" = "백업에서 복원";
 "backup.restore.empty" = "사용 가능한 백업이 없습니다.";
 "backup.restore.merge" = "병합 (기존 데이터 유지)";

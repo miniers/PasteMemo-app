@@ -11,14 +11,49 @@ enum BackupEngine {
     @MainActor
     static func performBackup(
         container: ModelContainer,
-        destination: BackupDestination
+        destination: BackupDestination,
+        progress: @MainActor @escaping (_ current: Int, _ total: Int, _ isFinalizing: Bool) -> Void = { _, _, _ in }
     ) async throws {
         let context = ModelContext(container)
-        let descriptor = FetchDescriptor<ClipItem>()
-        let clipItems = try context.fetch(descriptor)
+        let clipItems = try context.fetch(FetchDescriptor<ClipItem>())
+        let groups = (try? context.fetch(FetchDescriptor<SmartGroup>())) ?? []
+        let rules = (try? context.fetch(FetchDescriptor<AutomationRule>())) ?? []
 
-        let jsonData = try DataPorter.exportItems(clipItems)
-        let fileData = DataPorterCrypto.wrapPlaintext(jsonData)
+        // Build ExportItems in batches on the main thread (SwiftData requires it),
+        // yielding between batches so the UI stays responsive during large backups.
+        let total = clipItems.count
+        var exportItems: [ExportItem] = []
+        exportItems.reserveCapacity(total)
+        let batchSize = 100
+        for i in stride(from: 0, to: total, by: batchSize) {
+            let end = min(i + batchSize, total)
+            for j in i..<end {
+                exportItems.append(DataPorter.buildSingleExportItem(clipItems[j]))
+            }
+            progress(end, total, false)
+            await Task.yield()
+        }
+        // Switch UI to the "finalizing" state: compression + upload run on a
+        // background task but can still take a few seconds for large backups.
+        progress(total, total, true)
+        // Groups / rules are tiny, map in one shot.
+        let exportGroups = groups.map(DataPorter.buildSingleExportGroup)
+        let exportRules = rules.map(DataPorter.buildSingleExportRule)
+
+        let payload = ExportPayload(
+            version: DataPorter.currentVersion,
+            exportDate: Date(),
+            items: exportItems,
+            groups: exportGroups,
+            rules: exportRules
+        )
+
+        // Encode + zlib compression are CPU-heavy for thousands of items (especially with
+        // base64-encoded images) — run them off the main actor.
+        let fileData = try await Task.detached(priority: .userInitiated) {
+            let jsonData = try DataPorter.encodeAndCompress(payload)
+            return DataPorterCrypto.wrapPlaintext(jsonData)
+        }.value
 
         let currentSlot = UserDefaults.standard.integer(forKey: "backupCurrentSlot")
         let nextSlot = (currentSlot % maxSlots) + 1
@@ -72,10 +107,19 @@ enum BackupEngine {
         let context = ModelContext(container)
 
         if strategy == .overwrite {
-            let descriptor = FetchDescriptor<ClipItem>()
-            let allItems = try context.fetch(descriptor)
-            for item in allItems {
+            // Wipe clips and groups entirely; keep built-in rules (owned by BuiltInRules),
+            // wipe user-defined ones.
+            for item in (try? context.fetch(FetchDescriptor<ClipItem>())) ?? [] {
                 context.delete(item)
+            }
+            for group in (try? context.fetch(FetchDescriptor<SmartGroup>())) ?? [] {
+                context.delete(group)
+            }
+            let userRules = (try? context.fetch(
+                FetchDescriptor<AutomationRule>(predicate: #Predicate { !$0.isBuiltIn })
+            )) ?? []
+            for rule in userRules {
+                context.delete(rule)
             }
         }
 

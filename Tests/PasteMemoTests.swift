@@ -224,6 +224,162 @@ struct PasteMemoTests {
         #expect(exported.ocrVersion == 2)
     }
 
+    @Test("DataPorter v2 round-trips groups and user rules, skipping built-in rules")
+    @MainActor func dataPorterRoundTripsGroupsAndRules() throws {
+        let sourceContainer = try ModelContainer(
+            for: ClipItem.self, SmartGroup.self, AutomationRule.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let sourceContext = sourceContainer.mainContext
+
+        let clip = ClipItem(content: "hello", contentType: .text)
+        clip.groupName = "Work"
+        sourceContext.insert(clip)
+
+        let group = SmartGroup(name: "Work", icon: "briefcase", sortOrder: 7, color: "#FF0000")
+        sourceContext.insert(group)
+
+        let userRule = AutomationRule(
+            name: "Lowercase links",
+            enabled: true,
+            isBuiltIn: false,
+            triggerMode: .manual,
+            conditions: [.contentType(.link)],
+            actions: [.lowercased]
+        )
+        sourceContext.insert(userRule)
+
+        let builtInRule = AutomationRule(
+            name: "Clean tracking",
+            enabled: true,
+            isBuiltIn: true,
+            conditions: [.contentType(.link)],
+            actions: [.removeQueryParams(patterns: ["utm_source"])]
+        )
+        sourceContext.insert(builtInRule)
+        try sourceContext.save()
+
+        let items = try sourceContext.fetch(FetchDescriptor<ClipItem>())
+        let groups = try sourceContext.fetch(FetchDescriptor<SmartGroup>())
+        let rules = try sourceContext.fetch(FetchDescriptor<AutomationRule>())
+        let payload = DataPorter.buildExportPayload(items, groups: groups, rules: rules)
+
+        #expect(payload.version == 2)
+        #expect(payload.groups?.count == 1)
+        #expect(payload.rules?.count == 2)
+
+        let data = try DataPorter.encodeAndCompress(payload)
+
+        // Fresh container to import into
+        let destContainer = try ModelContainer(
+            for: ClipItem.self, SmartGroup.self, AutomationRule.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let destContext = destContainer.mainContext
+        let result = try DataPorter.importItems(from: data, into: destContext)
+
+        #expect(result.imported == 1)
+        #expect(result.importedGroups == 1)
+        #expect(result.importedRules == 1) // built-in skipped
+
+        let importedGroups = try destContext.fetch(FetchDescriptor<SmartGroup>())
+        #expect(importedGroups.count == 1)
+        #expect(importedGroups.first?.name == "Work")
+        #expect(importedGroups.first?.icon == "briefcase")
+        #expect(importedGroups.first?.sortOrder == 7)
+        #expect(importedGroups.first?.color == "#FF0000")
+
+        let importedRules = try destContext.fetch(FetchDescriptor<AutomationRule>())
+        #expect(importedRules.count == 1)
+        let rule = try #require(importedRules.first)
+        #expect(rule.name == "Lowercase links")
+        #expect(rule.isBuiltIn == false)
+        #expect(rule.triggerMode == .manual)
+        #expect(rule.conditions == [.contentType(.link)])
+        #expect(rule.actions == [.lowercased])
+    }
+
+    @Test("DataPorter v1 payload imports without groups or rules and raises no error")
+    @MainActor func dataPorterV1BackwardCompatible() throws {
+        let sourceContainer = try ModelContainer(
+            for: ClipItem.self, SmartGroup.self, AutomationRule.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let sourceContext = sourceContainer.mainContext
+        sourceContext.insert(ClipItem(content: "legacy", contentType: .text))
+        try sourceContext.save()
+
+        // Simulate a v1 file: items only, no groups/rules fields.
+        let items = try sourceContext.fetch(FetchDescriptor<ClipItem>())
+        let v1Payload = ExportPayload(
+            version: 1,
+            exportDate: Date(),
+            items: items.map(DataPorter.buildSingleExportItem),
+            groups: nil,
+            rules: nil
+        )
+        let data = try DataPorter.encodeAndCompress(v1Payload)
+
+        let destContainer = try ModelContainer(
+            for: ClipItem.self, SmartGroup.self, AutomationRule.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let result = try DataPorter.importItems(from: data, into: destContainer.mainContext)
+
+        #expect(result.imported == 1)
+        #expect(result.importedGroups == 0)
+        #expect(result.importedRules == 0)
+    }
+
+    @Test("DataPorter v2 merge deduplicates groups by name and rules by ruleID")
+    @MainActor func dataPorterMergeDeduplicates() throws {
+        let container = try ModelContainer(
+            for: ClipItem.self, SmartGroup.self, AutomationRule.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+
+        // Pre-existing group and rule in destination
+        context.insert(SmartGroup(name: "Work", icon: "folder", sortOrder: 0))
+        let existingRule = AutomationRule(name: "Existing", isBuiltIn: false)
+        context.insert(existingRule)
+        try context.save()
+        let existingRuleID = existingRule.ruleID
+
+        // Backup payload contains a group with the same name (should be skipped)
+        // and a rule with the same ruleID (should be skipped),
+        // plus a new group and new rule.
+        let incomingGroup1 = ExportGroup(name: "Work", icon: "briefcase", sortOrder: 9, color: nil)
+        let incomingGroup2 = ExportGroup(name: "Personal", icon: "house", sortOrder: 1, color: nil)
+        let incomingRule1 = DataPorter.buildSingleExportRule(existingRule) // same ruleID
+        let newRule = AutomationRule(name: "Brand new", isBuiltIn: false)
+        let incomingRule2 = DataPorter.buildSingleExportRule(newRule)
+
+        let payload = ExportPayload(
+            version: 2,
+            exportDate: Date(),
+            items: [],
+            groups: [incomingGroup1, incomingGroup2],
+            rules: [incomingRule1, incomingRule2]
+        )
+        let data = try DataPorter.encodeAndCompress(payload)
+
+        let result = try DataPorter.importItems(from: data, into: context)
+        #expect(result.importedGroups == 1) // only Personal added
+        #expect(result.importedRules == 1)  // only new rule added
+
+        let allGroups = try context.fetch(FetchDescriptor<SmartGroup>())
+        #expect(Set(allGroups.map(\.name)) == ["Work", "Personal"])
+        let workGroup = try #require(allGroups.first { $0.name == "Work" })
+        #expect(workGroup.icon == "folder") // existing not overwritten
+        #expect(workGroup.sortOrder == 0)
+
+        let allRules = try context.fetch(FetchDescriptor<AutomationRule>())
+        #expect(allRules.count == 2)
+        #expect(allRules.contains { $0.ruleID == existingRuleID })
+        #expect(allRules.contains { $0.name == "Brand new" })
+    }
+
     @Test("OCR-only match ignores title/content hits")
     @MainActor func ocrOnlyMatchDetection() {
         let item = ClipItem(content: "[Image]", contentType: .image, imageData: Data([1]))

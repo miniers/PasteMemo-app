@@ -4,6 +4,8 @@ import SwiftData
 struct DataPorterSection: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var clipItems: [ClipItem]
+    @Query private var groups: [SmartGroup]
+    @Query private var rules: [AutomationRule]
 
     @State private var isEncryptExport = false
     @State private var exportPassword = ""
@@ -110,6 +112,8 @@ struct DataPorterSection: View {
         progressValue = 0
         let encrypt = isEncryptExport
         let password = exportPassword
+        let snapshotGroups = groups
+        let snapshotRules = rules
         Task { @MainActor in
             let total = clipItems.count
             var exportItems: [ExportItem] = []
@@ -124,7 +128,13 @@ struct DataPorterSection: View {
                 progressValue = Double(end) / Double(max(total, 1))
                 await Task.yield()
             }
-            let payload = ExportPayload(version: 1, exportDate: Date(), items: exportItems)
+            let payload = ExportPayload(
+                version: DataPorter.currentVersion,
+                exportDate: Date(),
+                items: exportItems,
+                groups: snapshotGroups.map(DataPorter.buildSingleExportGroup),
+                rules: snapshotRules.map(DataPorter.buildSingleExportRule)
+            )
             importProgress = L10n.tr("dataPorter.compressing")
             await Task.yield()
             Task.detached {
@@ -205,7 +215,11 @@ struct DataPorterSection: View {
                     progressValue = Double(current) / Double(max(total, 1))
                 }
                 ClipItemStore.isBulkOperation = false
-                showAlert(L10n.tr("dataPorter.importSuccess") + " (\(result.imported) imported, \(result.skipped) skipped)")
+                var extras: [String] = []
+                if result.importedGroups > 0 { extras.append("+\(result.importedGroups) groups") }
+                if result.importedRules > 0 { extras.append("+\(result.importedRules) rules") }
+                let extrasText = extras.isEmpty ? "" : ", " + extras.joined(separator: ", ")
+                showAlert(L10n.tr("dataPorter.importSuccess") + " (\(result.imported) imported, \(result.skipped) skipped\(extrasText))")
             } catch let error as CryptoError where error == .wrongPassword {
                 showAlert(L10n.tr("dataPorter.wrongPassword"))
             } catch {

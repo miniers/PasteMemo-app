@@ -367,6 +367,7 @@
 "backup.backupNow" = "Copiar ahora";
 "backup.restore" = "Restaurar…";
 "backup.success" = "Copia de seguridad completada.";
+"backup.progress.finalizing" = "Guardando…";
 "backup.restore.title" = "Restaurar desde copia";
 "backup.restore.empty" = "No hay copias disponibles.";
 "backup.restore.merge" = "Fusionar (mantener datos existentes)";

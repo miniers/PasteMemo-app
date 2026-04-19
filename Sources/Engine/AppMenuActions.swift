@@ -15,11 +15,12 @@ enum AppMenuActions {
 
         let container = PasteMemoApp.sharedModelContainer
         let context = container.mainContext
-        let descriptor = FetchDescriptor<ClipItem>()
-        guard let items = try? context.fetch(descriptor) else { return }
+        guard let items = try? context.fetch(FetchDescriptor<ClipItem>()) else { return }
+        let groups = (try? context.fetch(FetchDescriptor<SmartGroup>())) ?? []
+        let rules = (try? context.fetch(FetchDescriptor<AutomationRule>())) ?? []
 
         // Step 1: extract on main thread (SwiftData objects)
-        let payload = DataPorter.buildExportPayload(items)
+        let payload = DataPorter.buildExportPayload(items, groups: groups, rules: rules)
         // Step 2: encode + compress + write on background thread
         Task.detached {
             do {
@@ -76,7 +77,11 @@ enum AppMenuActions {
             do {
                 let jsonData = try DataPorterCrypto.decrypt(fileData: fileData, password: password ?? "")
                 let result = try DataPorter.importItems(from: jsonData, into: context)
-                showAlert(L10n.tr("dataPorter.importSuccess") + " (\(result.imported) imported, \(result.skipped) skipped)")
+                var extras: [String] = []
+                if result.importedGroups > 0 { extras.append("+\(result.importedGroups) groups") }
+                if result.importedRules > 0 { extras.append("+\(result.importedRules) rules") }
+                let extrasText = extras.isEmpty ? "" : ", " + extras.joined(separator: ", ")
+                showAlert(L10n.tr("dataPorter.importSuccess") + " (\(result.imported) imported, \(result.skipped) skipped\(extrasText))")
             } catch {
                 showAlert(L10n.tr("dataPorter.wrongPassword"))
             }

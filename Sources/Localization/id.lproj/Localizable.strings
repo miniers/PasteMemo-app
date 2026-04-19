@@ -450,6 +450,7 @@
 "backup.backupNow" = "Cadangkan sekarang";
 "backup.restore" = "Pulihkan…";
 "backup.success" = "Pencadangan berhasil.";
+"backup.progress.finalizing" = "Menyimpan…";
 "backup.restore.title" = "Pulihkan dari cadangan";
 "backup.restore.empty" = "Tidak ada cadangan tersedia.";
 "backup.restore.merge" = "Gabung (pertahankan data yang ada)";

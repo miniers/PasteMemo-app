@@ -452,6 +452,7 @@
 "backup.backupNow" = "立即備份";
 "backup.restore" = "從備份還原…";
 "backup.success" = "備份成功。";
+"backup.progress.finalizing" = "正在儲存…";
 "backup.restore.title" = "從備份還原";
 "backup.restore.empty" = "暫無可用備份。";
 "backup.restore.merge" = "合併（保留現有資料）";

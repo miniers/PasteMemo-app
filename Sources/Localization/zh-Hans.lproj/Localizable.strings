@@ -588,6 +588,7 @@
 "backup.backupNow" = "立即备份";
 "backup.restore" = "从备份恢复…";
 "backup.success" = "备份成功。";
+"backup.progress.finalizing" = "正在保存…";
 "backup.restore.title" = "从备份恢复";
 "backup.restore.empty" = "暂无可用备份。";
 "backup.restore.merge" = "合并（保留现有数据）";

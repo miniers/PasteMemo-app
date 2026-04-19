@@ -367,6 +367,7 @@
 "backup.backupNow" = "Jetzt sichern";
 "backup.restore" = "Aus Backup wiederherstellen…";
 "backup.success" = "Backup erfolgreich abgeschlossen.";
+"backup.progress.finalizing" = "Wird gespeichert…";
 "backup.restore.title" = "Aus Backup wiederherstellen";
 "backup.restore.empty" = "Keine Backups verfügbar.";
 "backup.restore.merge" = "Zusammenführen (Bestehende behalten)";

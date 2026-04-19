@@ -587,6 +587,7 @@
 "backup.backupNow" = "Backup Now";
 "backup.restore" = "Restore…";
 "backup.success" = "Backup completed successfully.";
+"backup.progress.finalizing" = "Saving…";
 "backup.restore.title" = "Restore from Backup";
 "backup.restore.empty" = "No backups available.";
 "backup.restore.merge" = "Merge (keep existing)";

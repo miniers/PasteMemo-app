@@ -450,6 +450,7 @@
 "backup.backupNow" = "Создать копию сейчас";
 "backup.restore" = "Восстановить…";
 "backup.success" = "Резервное копирование завершено.";
+"backup.progress.finalizing" = "Сохранение…";
 "backup.restore.title" = "Восстановить из копии";
 "backup.restore.empty" = "Нет доступных резервных копий.";
 "backup.restore.merge" = "Объединить (сохранить существующие)";
