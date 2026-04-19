@@ -507,6 +507,7 @@
 "relay.quickPastePaused" = "Tempel cepat dijeda selama mode relay";
 "relay.expand" = "Buka";
 "relay.collapse" = "Tutup";
+"relay.content.truncated" = "…(konten terlalu besar, dipotong)";
 "relay.alert.title" = "Mode Relay diaktifkan";
 "relay.alert.message" = "Tempel cepat dijeda. Konten yang disalin akan ditambahkan ke antrian relay.
 

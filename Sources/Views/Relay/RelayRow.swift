@@ -15,6 +15,7 @@ struct RelayRow: View {
     /// 仅在规则条件匹配时返回 actions（和 `RelayRuleResolver.actionsApplying` 对齐）。
     private var effectivePreviewActions: [RuleAction] {
         guard let rule = previewRule, item.contentKind == .text else { return [] }
+        guard item.content.utf8.count <= 64 * 1024 else { return [] }
         let contentType = ClipboardManager.shared.detectContentType(item.content).type
         let ok = rule.conditions.isEmpty || AutomationEngine.matchesConditions(
             rule.conditions,
@@ -27,7 +28,10 @@ struct RelayRow: View {
     }
 
     private var primaryText: String {
-        item.isFile ? item.displayName : item.content.replacingOccurrences(of: "\n", with: " ↵ ")
+        if item.isFile { return item.displayName }
+        let cap = 500
+        let sample = item.content.count > cap ? String(item.content.prefix(cap)) + "…" : item.content
+        return sample.replacingOccurrences(of: "\n", with: " ↵ ")
     }
 
     private var previewText: String? {

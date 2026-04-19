@@ -418,6 +418,7 @@
 "relay.quickPastePaused" = "Schnelles Einfügen ist im Relay-Modus pausiert";
 "relay.expand" = "Einblenden";
 "relay.collapse" = "Ausblenden";
+"relay.content.truncated" = "…(Inhalt zu groß, gekürzt)";
 "relay.alert.title" = "Relay-Modus aktiviert";
 "relay.alert.message" = "Schnelles Einfügen ist pausiert. Kopierte Inhalte werden der Relay-Warteschlange hinzugefügt.
 

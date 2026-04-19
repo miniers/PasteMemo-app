@@ -652,6 +652,7 @@
 "relay.quickPastePaused" = "Quick Paste is paused during Relay Mode";
 "relay.expand" = "Expand";
 "relay.collapse" = "Collapse";
+"relay.content.truncated" = "…(content too large, truncated)";
 "relay.alert.title" = "Relay Mode Activated";
 "relay.alert.message" = "Quick Paste is now paused. Copied content will be added to the relay queue.\n\nUse %@ to paste items one by one.";
 "relay.alert.ok" = "Got it";

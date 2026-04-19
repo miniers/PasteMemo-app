@@ -501,6 +501,7 @@
 "relay.quickPastePaused" = "Incolla rapido in pausa durante la modalità staffetta";
 "relay.expand" = "Espandi";
 "relay.collapse" = "Comprimi";
+"relay.content.truncated" = "…(contenuto troppo grande, troncato)";
 "relay.alert.title" = "Modalità Staffetta attivata";
 "relay.alert.message" = "Incolla rapido in pausa. I contenuti copiati verranno aggiunti alla coda.
 

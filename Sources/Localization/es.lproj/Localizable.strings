@@ -418,6 +418,7 @@
 "relay.quickPastePaused" = "Pegado rápido pausado durante el modo relevo";
 "relay.expand" = "Expandir";
 "relay.collapse" = "Contraer";
+"relay.content.truncated" = "…(contenido demasiado grande, truncado)";
 "relay.alert.title" = "Modo Relevo activado";
 "relay.alert.message" = "El pegado rápido está en pausa. El contenido copiado se añadirá a la cola.
 

@@ -109,7 +109,7 @@ struct RelayHeroCard: View {
         if let item = manager.currentItem {
             VStack(alignment: .leading, spacing: 6) {
                 sourceBadge(for: item)
-                Text(item.isFile ? item.displayName : item.content)
+                Text(item.isFile ? item.displayName : heroDisplayText(item.content))
                     .font(.system(size: 14))
                     .lineLimit(3)
                     .truncationMode(.tail)
@@ -157,8 +157,14 @@ struct RelayHeroCard: View {
         }
     }
 
+    private func heroDisplayText(_ s: String) -> String {
+        let cap = 2_000
+        return s.count <= cap ? s : String(s.prefix(cap)) + "…"
+    }
+
     private func previewDiff(for item: RelayItem) -> String? {
         guard let rule = activeRule, settingPreviewEnabled, item.contentKind == .text else { return nil }
+        guard item.content.utf8.count <= 64 * 1024 else { return nil }
         let contentType = ClipboardManager.shared.detectContentType(item.content).type
         let ok = rule.conditions.isEmpty || AutomationEngine.matchesConditions(
             rule.conditions,

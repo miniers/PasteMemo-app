@@ -434,6 +434,7 @@
 "relay.quickPastePaused" = "リレーモード中はクイックペーストが一時停止しています";
 "relay.expand" = "展開";
 "relay.collapse" = "折りたたむ";
+"relay.content.truncated" = "…（内容が大きすぎるため切り詰めました）";
 "relay.alert.title" = "リレーモードが有効になりました";
 "relay.alert.message" = "クイックペーストが一時停止しました。コピーした内容はリレーキューに追加されます。
 

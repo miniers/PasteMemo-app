@@ -93,8 +93,22 @@ struct RelayItem: Identifiable {
         // Text / code / link / color / etc.
         let trimmed = clip.content.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
+        // Hard cap at 2MB for text content. Pathological pastes (entire terminal buffer,
+        // giant log dump) otherwise freeze UI + engine. Images/files are unaffected —
+        // they go through the branches above with no content truncation.
+        let MAX_TEXT_BYTES = 2 * 1024 * 1024
+        let safeContent: String
+        if trimmed.utf8.count > MAX_TEXT_BYTES {
+            // Truncate by character count since utf8 byte index can slice a scalar.
+            // 2M characters is a comfortable approximation of 2MB for most scripts.
+            let approxCharCap = 2_000_000
+            let head = String(trimmed.prefix(approxCharCap))
+            safeContent = head + "\n" + L10n.tr("relay.content.truncated")
+        } else {
+            safeContent = trimmed
+        }
         return RelayItem(
-            content: trimmed,
+            content: safeContent,
             imageData: clip.imageData,
             contentKind: .text,
             pasteboardSnapshot: clip.pasteboardSnapshot,

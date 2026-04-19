@@ -653,6 +653,7 @@
 "relay.quickPastePaused" = "接力模式下快捷粘贴已暂停";
 "relay.expand" = "展开";
 "relay.collapse" = "收起";
+"relay.content.truncated" = "…（内容过大，已截断）";
 "relay.alert.title" = "接力模式已开启";
 "relay.alert.message" = "快捷粘贴已暂停，复制的内容将自动加入接力队列。\n\n使用 %@ 逐条粘贴队列内容。";
 "relay.alert.ok" = "知道了";

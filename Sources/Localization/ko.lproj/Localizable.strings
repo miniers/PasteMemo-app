@@ -418,6 +418,7 @@
 "relay.quickPastePaused" = "릴레이 모드에서는 빠른 붙여넣기가 일시 정지됩니다";
 "relay.expand" = "확장";
 "relay.collapse" = "접기";
+"relay.content.truncated" = "…(내용이 너무 커서 잘렸습니다)";
 "relay.alert.title" = "릴레이 모드 활성화됨";
 "relay.alert.message" = "빠른 붙여넣기가 일시 정지되었습니다. 복사한 내용은 릴레이 대기열에 추가됩니다.
 
