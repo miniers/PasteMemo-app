@@ -283,11 +283,16 @@ struct RelayHeroCard: View {
             Button {
                 withAnimation(.easeOut(duration: 0.2)) { drawerOpen.toggle() }
             } label: {
-                Image(systemName: drawerOpen ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 2)
+                HStack(spacing: 3) {
+                    Image(systemName: drawerOpen ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9))
+                    Text(drawerOpen ? L10n.tr("relay.collapse") : L10n.tr("relay.expand"))
+                        .font(.system(size: 10))
+                }
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Color.primary.opacity(0.06), in: Capsule())
             }
             .buttonStyle(.plain)
             .help(drawerOpen ? L10n.tr("relay.collapse") : L10n.tr("relay.expand"))

@@ -33,7 +33,7 @@ enum RelayRecirculation {
     ) -> UndoHandle {
         let staging = ClipItem(
             content: item.content,
-            contentType: clipContentType(for: item.contentKind),
+            contentType: clipContentType(for: item),
             imageData: item.imageData,
             sourceAppBundleID: item.sourceAppBundleID,
             pasteboardSnapshot: item.pasteboardSnapshot
@@ -72,11 +72,25 @@ enum RelayRecirculation {
 
     // MARK: - Helpers
 
-    private static func clipContentType(for kind: RelayItem.ContentKind) -> ClipContentType {
-        switch kind {
+    /// Recognized image file extensions for recirculation. Keep lowercase.
+    private static let imageExtensions: Set<String> = [
+        "png", "jpg", "jpeg", "gif", "heic", "heif", "webp", "tiff", "bmp"
+    ]
+
+    private static func clipContentType(for item: RelayItem) -> ClipContentType {
+        switch item.contentKind {
         case .image: return .image
-        case .file:  return .file
         case .text:  return .text
+        case .file:
+            // File-kind may wrap an image file (Finder-copied PNG/JPEG). Restore as .image
+            // so clipboard history shows a thumbnail instead of a generic doc icon.
+            if item.imageData != nil {
+                let ext = (item.content as NSString).pathExtension.lowercased()
+                if imageExtensions.contains(ext) {
+                    return .image
+                }
+            }
+            return .file
         }
     }
 }

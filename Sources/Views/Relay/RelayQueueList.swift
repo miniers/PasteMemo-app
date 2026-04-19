@@ -81,7 +81,7 @@ struct RelayQueueList: View {
                 .padding(.horizontal, 6)
                 .padding(.vertical, 4)
             }
-            .frame(maxHeight: 260)
+            .frame(maxHeight: 400)
             .onChange(of: manager.currentIndex) {
                 if let current = manager.currentItem {
                     withAnimation(.easeOut(duration: 0.2)) {

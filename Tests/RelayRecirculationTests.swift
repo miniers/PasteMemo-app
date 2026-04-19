@@ -102,6 +102,45 @@ struct RelayRecirculationTests {
         #expect(clips[0].content == "/Users/foo/bar.txt")
     }
 
+    @Test("File-kind item with image extension and imageData recirculates as .image")
+    @MainActor func recirculateImageFileAsImage() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let thumb = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+        let item = RelayItem(
+            content: "/tmp/CleanShot.png",
+            imageData: thumb,
+            contentKind: .file
+        )
+
+        _ = RelayRecirculation.recirculate(item, originalIndex: 0, context: context)
+        try context.save()
+
+        let clips = try context.fetch(FetchDescriptor<ClipItem>())
+        #expect(clips.count == 1)
+        #expect(clips[0].contentType == .image)
+        #expect(clips[0].imageData == thumb)
+    }
+
+    @Test("File-kind item with non-image extension stays as .file")
+    @MainActor func recirculateNonImageFileStaysFile() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let item = RelayItem(
+            content: "/tmp/report.pdf",
+            contentKind: .file
+        )
+
+        _ = RelayRecirculation.recirculate(item, originalIndex: 0, context: context)
+        try context.save()
+
+        let clips = try context.fetch(FetchDescriptor<ClipItem>())
+        #expect(clips.count == 1)
+        #expect(clips[0].contentType == .file)
+    }
+
     @Test("Undo removes newly-inserted clip")
     @MainActor func undoRemovesInsertedClip() throws {
         let container = try makeContainer()
