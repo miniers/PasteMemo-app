@@ -236,13 +236,26 @@ struct RelayHeroCard: View {
     // MARK: - Mode row
 
     private var modeRow: some View {
-        HStack(spacing: 14) {
-            Toggle(isOn: $settingLoopEnabled) {
-                Label(L10n.tr("relay.loop"), systemImage: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 11))
+        HStack(spacing: 10) {
+            Button {
+                settingLoopEnabled.toggle()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 10))
+                    Text(L10n.tr("relay.loop"))
+                        .font(.system(size: 11))
+                }
+                .foregroundStyle(settingLoopEnabled ? Color.accentColor : .secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(
+                    (settingLoopEnabled ? Color.accentColor.opacity(0.15) : Color.primary.opacity(0.05)),
+                    in: Capsule()
+                )
             }
-            .toggleStyle(.checkbox)
-            .controlSize(.small)
+            .buttonStyle(.plain)
+            .help(L10n.tr("relay.loop"))
 
             Toggle(isOn: $manager.autoExitOnEmpty) {
                 Text(L10n.tr("relay.autoExit.short"))
