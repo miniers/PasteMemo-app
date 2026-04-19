@@ -621,7 +621,7 @@ private struct RelayQueueRow: View {
 
 // MARK: - Drag & Drop
 
-private struct RelayDropDelegate: DropDelegate {
+struct RelayDropDelegate: DropDelegate {
     let targetIndex: Int
     let manager: RelayManager
     @Binding var draggingItem: RelayItem?
