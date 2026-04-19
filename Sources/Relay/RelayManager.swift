@@ -160,7 +160,8 @@ final class RelayManager {
             return false
         }
         let wasCurrent = items[index].state == .current
-        let newItems = parts.map { RelayItem(content: $0) }
+        let sourceBundle = items[index].sourceAppBundleID
+        let newItems = parts.map { RelayItem(content: $0, sourceAppBundleID: sourceBundle) }
         let newCount = items.count + newItems.count - 1
         windowController?.updateSize(for: newCount)
         items.replaceSubrange(index...index, with: newItems)

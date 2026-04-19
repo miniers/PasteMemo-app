@@ -117,17 +117,17 @@ struct RelayHeroCard: View {
                 if let preview = previewDiff(for: item) {
                     Text("→ " + preview)
                         .font(.system(size: 12))
-                        .foregroundStyle(.green.opacity(0.85))
+                        .foregroundStyle(.secondary)
                         .padding(.vertical, 4)
                         .padding(.horizontal, 8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.green.opacity(0.08))
+                                .fill(Color.primary.opacity(0.05))
                         )
                         .overlay(
                             Rectangle()
-                                .fill(Color.green.opacity(0.4))
+                                .fill(Color.primary.opacity(0.2))
                                 .frame(width: 2),
                             alignment: .leading
                         )

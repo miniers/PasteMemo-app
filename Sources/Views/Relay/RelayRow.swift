@@ -106,7 +106,7 @@ struct RelayRow: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .font(.system(size: 11))
-                    .foregroundStyle(.green.opacity(0.85))
+                    .foregroundStyle(.secondary)
             }
         }
     }
