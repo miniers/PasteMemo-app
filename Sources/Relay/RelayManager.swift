@@ -123,6 +123,9 @@ final class RelayManager {
     }
 
     func clearAll() {
+        lastRecirculation = nil
+        lastRecirculationExpiry?.cancel()
+        lastRecirculationExpiry = nil
         items.removeAll()
         currentIndex = 0
         windowController?.updateSize(for: 0)
@@ -261,6 +264,9 @@ final class RelayManager {
     }
 
     func deactivate(clearQueue: Bool = false) {
+        lastRecirculation = nil
+        lastRecirculationExpiry?.cancel()
+        lastRecirculationExpiry = nil
         guard isActive else { return }
         isActive = false
         isPaused = false
