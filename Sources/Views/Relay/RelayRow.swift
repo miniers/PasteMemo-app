@@ -64,19 +64,19 @@ struct RelayRow: View {
         switch item.state {
         case .done:
             Image(systemName: "checkmark")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(.green.opacity(0.8))
         case .current:
             Image(systemName: "play.fill")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
         case .skipped:
             Image(systemName: "forward.end")
-                .font(.system(size: 9))
+                .font(.system(size: 10))
                 .foregroundStyle(.secondary.opacity(0.6))
         case .pending:
             Image(systemName: "circle")
-                .font(.system(size: 8))
+                .font(.system(size: 9))
                 .foregroundStyle(.secondary.opacity(0.5))
         }
     }
@@ -98,14 +98,14 @@ struct RelayRow: View {
             Text(primaryText)
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .font(.system(size: 12))
+                .font(.system(size: 13))
                 .foregroundStyle(textColor)
                 .strikethrough(item.state == .skipped, color: .secondary)
             if let preview = previewText {
                 Text("→ " + preview)
                     .lineLimit(1)
                     .truncationMode(.middle)
-                    .font(.system(size: 10))
+                    .font(.system(size: 11))
                     .foregroundStyle(.green.opacity(0.85))
             }
         }
@@ -116,7 +116,7 @@ struct RelayRow: View {
             HStack(spacing: 6) {
                 if !item.isImage, !item.isFile, item.content.count > 1 {
                     Button { onSplit?() } label: {
-                        Image(systemName: "scissors").font(.system(size: 10))
+                        Image(systemName: "scissors").font(.system(size: 11))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
@@ -124,7 +124,7 @@ struct RelayRow: View {
                     .accessibilityLabel(L10n.tr("relay.split"))
                 }
                 Button { onDelete?() } label: {
-                    Image(systemName: "trash").font(.system(size: 10))
+                    Image(systemName: "trash").font(.system(size: 11))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.red.opacity(0.8))
@@ -133,7 +133,7 @@ struct RelayRow: View {
             }
         } else if item.state == .current, let glyph = postPasteKeyGlyph {
             Text(glyph)
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 5)
                 .padding(.vertical, 1)

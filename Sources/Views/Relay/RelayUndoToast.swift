@@ -11,15 +11,15 @@ struct RelayUndoToast: View {
         HStack(spacing: 10) {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(.green.opacity(0.85))
-                .font(.system(size: 12))
+                .font(.system(size: 13))
             Text(message)
-                .font(.system(size: 11))
+                .font(.system(size: 12))
                 .foregroundStyle(.primary)
                 .lineLimit(2)
             Spacer()
             Button(action: onAction) {
                 Text(actionTitle)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color.accentColor)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)

@@ -33,7 +33,7 @@ struct RelayHeroCard: View {
     private var topBar: some View {
         HStack(spacing: 6) {
             Text(manager.progressText)
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundStyle(.secondary)
             if let rule = activeRule {
                 rulePill(rule)
@@ -43,7 +43,7 @@ struct RelayHeroCard: View {
             }
             Button { showSettingsPopover.toggle() } label: {
                 Image(systemName: "gearshape")
-                    .font(.system(size: 12))
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
@@ -67,17 +67,17 @@ struct RelayHeroCard: View {
             settingAutomationRuleId = ""
         } label: {
             HStack(spacing: 4) {
-                Image(systemName: "bolt.fill").font(.system(size: 9))
-                Text(ruleDisplayName(rule)).font(.system(size: 10))
+                Image(systemName: "bolt.fill").font(.system(size: 10))
+                Text(ruleDisplayName(rule)).font(.system(size: 11))
                     .lineLimit(1)
                     .truncationMode(.tail)
                 if settingPreviewEnabled {
                     Text("· " + L10n.tr("relay.settings.preview"))
-                        .font(.system(size: 9))
+                        .font(.system(size: 10))
                         .foregroundStyle(.secondary)
                 }
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 10))
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
             .foregroundStyle(Color.accentColor)
@@ -109,13 +109,13 @@ struct RelayHeroCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 sourceBadge(for: item)
                 Text(item.isFile ? item.displayName : item.content)
-                    .font(.system(size: 13))
+                    .font(.system(size: 14))
                     .lineLimit(3)
                     .truncationMode(.tail)
                     .fixedSize(horizontal: false, vertical: true)
                 if let preview = previewDiff(for: item) {
                     Text("→ " + preview)
-                        .font(.system(size: 11))
+                        .font(.system(size: 12))
                         .foregroundStyle(.green.opacity(0.85))
                         .padding(.vertical, 4)
                         .padding(.horizontal, 8)
@@ -150,7 +150,7 @@ struct RelayHeroCard: View {
                     .resizable()
                     .frame(width: 11, height: 11)
                 Text(FileManager.default.displayName(atPath: url.path))
-                    .font(.system(size: 9))
+                    .font(.system(size: 10))
                     .foregroundStyle(.secondary)
             }
         }
@@ -203,7 +203,7 @@ struct RelayHeroCard: View {
         HStack(spacing: 8) {
             Button { manager.rollback() } label: {
                 Label(L10n.tr("relay.previous"), systemImage: "chevron.left")
-                    .font(.system(size: 10))
+                    .font(.system(size: 11))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
                     .background(Color.primary.opacity(0.06), in: Capsule())
@@ -219,7 +219,7 @@ struct RelayHeroCard: View {
                     Text(L10n.tr("relay.skip"))
                     Image(systemName: "chevron.right")
                 }
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 12, weight: .semibold))
                 .padding(.horizontal, 14)
                 .padding(.vertical, 5)
                 .foregroundStyle(Color.accentColor)
@@ -239,14 +239,14 @@ struct RelayHeroCard: View {
         HStack(spacing: 14) {
             Toggle(isOn: $settingLoopEnabled) {
                 Label(L10n.tr("relay.loop"), systemImage: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 10))
+                    .font(.system(size: 11))
             }
             .toggleStyle(.checkbox)
             .controlSize(.small)
 
             Toggle(isOn: $manager.autoExitOnEmpty) {
                 Text(L10n.tr("relay.autoExit.short"))
-                    .font(.system(size: 10))
+                    .font(.system(size: 11))
             }
             .toggleStyle(.checkbox)
             .controlSize(.small)
@@ -285,9 +285,9 @@ struct RelayHeroCard: View {
             } label: {
                 HStack(spacing: 3) {
                     Image(systemName: drawerOpen ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 9))
-                    Text(drawerOpen ? L10n.tr("relay.collapse") : L10n.tr("relay.expand"))
                         .font(.system(size: 10))
+                    Text(drawerOpen ? L10n.tr("relay.collapse") : L10n.tr("relay.expand"))
+                        .font(.system(size: 11))
                 }
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 8)
@@ -304,8 +304,8 @@ struct RelayHeroCard: View {
     private func pillButton(icon: String, title: String, tint: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 3) {
-                Image(systemName: icon).font(.system(size: 8))
-                Text(title).font(.system(size: 10))
+                Image(systemName: icon).font(.system(size: 9))
+                Text(title).font(.system(size: 11))
             }
             .foregroundStyle(tint)
             .padding(.horizontal, 8)

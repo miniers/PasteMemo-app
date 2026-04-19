@@ -28,7 +28,7 @@ struct RelayQueueList: View {
     private var header: some View {
         HStack {
             Text(String(format: L10n.tr("relay.queue.heading"), manager.items.count))
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
             Spacer()
@@ -103,8 +103,8 @@ struct RelayQueueList: View {
     private func headerButton(icon: String, title: String, tint: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 3) {
-                Image(systemName: icon).font(.system(size: 9))
-                Text(title).font(.system(size: 10))
+                Image(systemName: icon).font(.system(size: 10))
+                Text(title).font(.system(size: 11))
             }
             .foregroundStyle(tint)
             .padding(.horizontal, 7)
