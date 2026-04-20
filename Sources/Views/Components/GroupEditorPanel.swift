@@ -26,15 +26,51 @@ final class GroupEditorPanel {
         panel.center()
         panel.isFloatingPanel = true
         panel.level = .modalPanel
+        let session = ModalSession(panel: panel)
+        panel.delegate = session
 
-        viewModel.onDismiss = { panel.close(); NSApp.stopModal(withCode: .cancel) }
-        viewModel.onConfirm = { panel.close(); NSApp.stopModal(withCode: .OK) }
+        viewModel.onDismiss = { session.cancel() }
+        viewModel.onConfirm = { session.confirm() }
 
         let response = NSApp.runModal(for: panel)
         guard response == .OK else { return nil }
         let resultName = viewModel.name.trimmingCharacters(in: .whitespaces)
         guard !resultName.isEmpty else { return nil }
         return Result(name: resultName, icon: viewModel.selectedIcon)
+    }
+}
+
+@MainActor
+private final class ModalSession: NSObject, NSWindowDelegate {
+    private weak var panel: NSPanel?
+    private var response: NSApplication.ModalResponse?
+
+    init(panel: NSPanel) {
+        self.panel = panel
+    }
+
+    func confirm() {
+        finish(.OK)
+    }
+
+    func cancel() {
+        finish(.cancel)
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        let finalResponse = response ?? .cancel
+        response = finalResponse
+        NSApp.stopModal(withCode: finalResponse)
+    }
+
+    private func finish(_ modalResponse: NSApplication.ModalResponse) {
+        guard response == nil else { return }
+        response = modalResponse
+        guard let panel else {
+            NSApp.stopModal(withCode: modalResponse)
+            return
+        }
+        panel.close()
     }
 }
 
