@@ -669,7 +669,7 @@
 "relay.settings.completeSound" = "完成提示音";
 "relay.settings.completeSound.desc" = "接力完成时播放";
 "relay.settings.completeSound.mute" = "静音";
-"relay.banner.clickToClear" = "点击关闭自动化 · 右键切换规则";
+"relay.banner.clickToClear" = "单击切换规则 · 点 ✕ 关闭自动化";
 "relay.settings.automation" = "自动化";
 "relay.settings.automation.desc" = "粘贴时应用所选规则";
 "relay.settings.automation.none" = "无";

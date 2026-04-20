@@ -436,7 +436,7 @@ Usa %@ para pegar uno por uno.";
 "relay.settings.completeSound" = "Sonido de finalización";
 "relay.settings.completeSound.desc" = "Reproducir al finalizar el relevo";
 "relay.settings.completeSound.mute" = "Silencio";
-"relay.banner.clickToClear" = "Clic para borrar · clic derecho para cambiar";
+"relay.banner.clickToClear" = "Clic para cambiar · ✕ para borrar";
 "relay.settings.automation" = "Automatización";
 "relay.settings.automation.desc" = "Aplicar regla al pegar";
 "relay.settings.automation.none" = "Ninguna";

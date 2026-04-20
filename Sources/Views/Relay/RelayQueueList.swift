@@ -41,9 +41,8 @@ struct RelayQueueList: View {
             }
             .disabled(manager.items.isEmpty)
         }
-        .padding(.horizontal, 10)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
     }
 
     @ViewBuilder private var list: some View {
@@ -79,7 +78,8 @@ struct RelayQueueList: View {
                     }
                 }
                 .padding(.horizontal, 6)
-                .padding(.vertical, 4)
+                .padding(.top, 4)
+                .padding(.bottom, 10)
             }
             .frame(maxHeight: 400)
             .onChange(of: manager.currentIndex) {

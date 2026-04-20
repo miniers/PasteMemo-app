@@ -452,7 +452,7 @@
 "relay.settings.completeSound" = "完了音";
 "relay.settings.completeSound.desc" = "リレー完了時に再生";
 "relay.settings.completeSound.mute" = "ミュート";
-"relay.banner.clickToClear" = "クリックで解除・右クリックで切替";
+"relay.banner.clickToClear" = "クリックで切替・✕ で解除";
 "relay.settings.automation" = "自動化";
 "relay.settings.automation.desc" = "ペースト時にルールを適用";
 "relay.settings.automation.none" = "なし";

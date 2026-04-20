@@ -524,7 +524,7 @@ Gunakan %@ untuk menempel satu per satu.";
 "relay.settings.completeSound" = "Suara selesai";
 "relay.settings.completeSound.desc" = "Putar saat relay selesai";
 "relay.settings.completeSound.mute" = "Bisu";
-"relay.banner.clickToClear" = "Klik untuk hapus · klik kanan untuk ganti";
+"relay.banner.clickToClear" = "Klik untuk ganti · ✕ untuk hapus";
 "relay.settings.automation" = "Otomatisasi";
 "relay.settings.automation.desc" = "Terapkan aturan saat menempel";
 "relay.settings.automation.none" = "Tidak ada";

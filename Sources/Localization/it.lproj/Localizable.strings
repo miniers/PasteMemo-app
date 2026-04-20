@@ -519,7 +519,7 @@ Usa %@ per incollare uno per uno.";
 "relay.settings.completeSound" = "Suono di completamento";
 "relay.settings.completeSound.desc" = "Riproduci al termine del relay";
 "relay.settings.completeSound.mute" = "Silenzio";
-"relay.banner.clickToClear" = "Clic per cancellare · clic destro per cambiare";
+"relay.banner.clickToClear" = "Clic per cambiare · ✕ per cancellare";
 "relay.settings.automation" = "Automazione";
 "relay.settings.automation.desc" = "Applica regola all'incolla";
 "relay.settings.automation.none" = "Nessuna";

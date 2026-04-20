@@ -436,7 +436,7 @@ Verwenden Sie %@ zum Einfügen.";
 "relay.settings.completeSound" = "Abschlussklang";
 "relay.settings.completeSound.desc" = "Beim Beenden des Relays abspielen";
 "relay.settings.completeSound.mute" = "Stumm";
-"relay.banner.clickToClear" = "Klicken zum Deaktivieren · Rechtsklick zum Wechseln";
+"relay.banner.clickToClear" = "Klicken zum Wechseln · ✕ zum Deaktivieren";
 "relay.settings.automation" = "Automatisierung";
 "relay.settings.automation.desc" = "Regel beim Einfügen anwenden";
 "relay.settings.automation.none" = "Keine";

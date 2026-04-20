@@ -521,7 +521,7 @@
 "relay.settings.completeSound" = "完成提示音";
 "relay.settings.completeSound.desc" = "接力完成時播放";
 "relay.settings.completeSound.mute" = "靜音";
-"relay.banner.clickToClear" = "點擊關閉自動化 · 右鍵切換規則";
+"relay.banner.clickToClear" = "單擊切換規則 · 點 ✕ 關閉自動化";
 "relay.settings.automation" = "自動化";
 "relay.settings.automation.desc" = "貼上時套用所選規則";
 "relay.settings.automation.none" = "無";

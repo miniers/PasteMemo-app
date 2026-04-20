@@ -436,7 +436,7 @@
 "relay.settings.completeSound" = "완료음";
 "relay.settings.completeSound.desc" = "릴레이 완료 시 재생";
 "relay.settings.completeSound.mute" = "음소거";
-"relay.banner.clickToClear" = "클릭하여 해제 · 우클릭으로 전환";
+"relay.banner.clickToClear" = "클릭하여 전환 · ✕ 클릭으로 해제";
 "relay.settings.automation" = "자동화";
 "relay.settings.automation.desc" = "붙여넣을 때 규칙 적용";
 "relay.settings.automation.none" = "없음";

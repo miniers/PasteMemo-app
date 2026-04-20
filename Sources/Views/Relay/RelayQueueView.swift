@@ -41,18 +41,20 @@ struct RelayQueueView: View {
                 .fill(.regularMaterial)
         )
         .overlay(alignment: .top) {
-            if let handle = manager.lastRecirculation {
-                RelayUndoToast(
-                    message: L10n.tr("relay.deleted.recirculated"),
-                    actionTitle: L10n.tr("relay.deleted.undo")
-                ) {
-                    manager.undoLastRecirculation()
+            Group {
+                if let handle = manager.lastRecirculation {
+                    RelayUndoToast(
+                        message: L10n.tr("relay.deleted.recirculated"),
+                        actionTitle: L10n.tr("relay.deleted.undo")
+                    ) {
+                        manager.undoLastRecirculation()
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .id(handle.relayItem.id)
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
-                .id(handle.relayItem.id)
             }
+            .animation(.easeOut(duration: 0.2), value: manager.lastRecirculation?.relayItem.id)
         }
-        .animation(.easeOut(duration: 0.2), value: manager.lastRecirculation?.relayItem.id)
     }
 
     /// Drawer stays in the view tree always; its height collapses to 0 when closed.

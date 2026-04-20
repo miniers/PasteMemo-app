@@ -67,15 +67,15 @@ struct RelayRow: View {
     @ViewBuilder private var stateIndicator: some View {
         switch item.state {
         case .done:
-            Image(systemName: "checkmark")
-                .font(.system(size: 10, weight: .semibold))
+            Image(systemName: "circle.fill")
+                .font(.system(size: 8))
                 .foregroundStyle(.green.opacity(0.8))
         case .current:
             Image(systemName: "play.fill")
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
         case .skipped:
-            Image(systemName: "forward.end")
+            Image(systemName: "circle.slash")
                 .font(.system(size: 10))
                 .foregroundStyle(.secondary.opacity(0.6))
         case .pending:

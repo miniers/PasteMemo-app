@@ -36,11 +36,12 @@ struct RelayHeroCard: View {
             Text(manager.progressText)
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundStyle(.secondary)
+            Spacer()
             if let rule = activeRule {
                 rulePill(rule)
+                Spacer()
             } else {
                 Color.clear.frame(height: 16)
-                Spacer()
             }
             Button { showSettingsPopover.toggle() } label: {
                 Image(systemName: "gearshape")
@@ -53,8 +54,8 @@ struct RelayHeroCard: View {
                     .modelContainer(PasteMemoApp.sharedModelContainer)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
         .background(WindowDragArea())
     }
 
@@ -64,29 +65,50 @@ struct RelayHeroCard: View {
     }
 
     private func rulePill(_ rule: AutomationRule) -> some View {
-        Button {
-            settingAutomationRuleId = ""
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "bolt.fill").font(.system(size: 10))
-                Text(ruleDisplayName(rule)).font(.system(size: 11))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                if settingPreviewEnabled {
-                    Text("· " + L10n.tr("relay.settings.preview"))
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
+        HStack(spacing: 4) {
+            Menu {
+                ForEach(enabledRules) { r in
+                    Button {
+                        settingAutomationRuleId = r.ruleID
+                    } label: {
+                        if r.ruleID == settingAutomationRuleId {
+                            Label(ruleDisplayName(r), systemImage: "checkmark")
+                        } else {
+                            Text(ruleDisplayName(r))
+                        }
+                    }
                 }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "bolt.fill").font(.system(size: 10))
+                    Text(ruleDisplayName(rule)).font(.system(size: 11))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    if settingPreviewEnabled {
+                        Text("· " + L10n.tr("relay.settings.preview"))
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .foregroundStyle(Color.accentColor)
+            }
+            .menuStyle(.button)
+            .buttonStyle(.plain)
+            .menuIndicator(.hidden)
+            .fixedSize()
+
+            Button {
+                settingAutomationRuleId = ""
+            } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
-            .foregroundStyle(Color.accentColor)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(Color.accentColor.opacity(0.15), in: Capsule())
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(Color.accentColor.opacity(0.15), in: Capsule())
         .help(L10n.tr("relay.banner.clickToClear"))
         .contextMenu {
             ForEach(enabledRules) { r in
@@ -199,7 +221,7 @@ struct RelayHeroCard: View {
         switch item.state {
         case .done: return .green.opacity(0.5)
         case .current: return Color.accentColor
-        case .skipped: return .secondary.opacity(0.3)
+        case .skipped: return .secondary.opacity(0.5)
         case .pending: return .secondary.opacity(0.15)
         }
     }
@@ -273,8 +295,8 @@ struct RelayHeroCard: View {
 
             Spacer()
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
     }
 
     // MARK: - Bottom bar
@@ -289,7 +311,7 @@ struct RelayHeroCard: View {
                 if manager.isPaused { manager.resume() } else { manager.pause() }
             }
 
-            pillButton(icon: "xmark", title: L10n.tr("relay.exit"), tint: .secondary) {
+            pillButton(icon: "rectangle.portrait.and.arrow.right", title: L10n.tr("relay.exit"), tint: .secondary) {
                 manager.deactivate()
             }
 
@@ -317,8 +339,8 @@ struct RelayHeroCard: View {
             .buttonStyle(.plain)
             .help(drawerOpen ? L10n.tr("relay.collapse") : L10n.tr("relay.expand"))
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
     }
 
     private func pillButton(icon: String, title: String, tint: Color, action: @escaping () -> Void) -> some View {
