@@ -1426,11 +1426,10 @@ struct QuickPanelView: View {
         Menu(L10n.tr("action.assignGroup")) {
             ForEach(store.sidebarCounts.byGroup, id: \.name) { group in
                 if group.name == currentGroup {
-                    Button {
-                        // Already in this group — no-op
-                    } label: {
+                    Button {} label: {
                         Label(group.name, systemImage: "checkmark")
                     }
+                    .disabled(true)
                 } else {
                     Button(group.name) {
                         assignToGroup(items: items, name: group.name)
