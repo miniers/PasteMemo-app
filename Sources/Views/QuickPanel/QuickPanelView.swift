@@ -1616,8 +1616,7 @@ struct QuickPanelView: View {
                 ClipboardManager.shared.decrementSmartGroup(name: oldGroup, context: modelContext)
             }
         }
-        try? modelContext.save()
-        store.refreshSidebarCounts()
+        ClipItemStore.saveAndNotify(modelContext)
     }
 
     private func removeFromGroup(items: [ClipItem]) {
@@ -1626,8 +1625,7 @@ struct QuickPanelView: View {
             item.groupName = nil
             ClipboardManager.shared.decrementSmartGroup(name: name, context: modelContext)
         }
-        try? modelContext.save()
-        store.refreshSidebarCounts()
+        ClipItemStore.saveAndNotify(modelContext)
     }
 
     private func showNewGroupAlert(for items: [ClipItem]) {
