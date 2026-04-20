@@ -915,7 +915,15 @@ struct QuickPanelView: View {
                     footerKey("←→", L10n.tr("quick.switchType"))
                     footerKey("↑↓", L10n.tr("quick.navigate"))
                     footerKey("⌘O", currentItem?.contentType == .link ? L10n.tr("quick.openLink") : L10n.tr("quick.preview"))
-                    footerKey("⌘M", L10n.tr("menu.openMain"))
+                    if !HotkeyManager.shared.isManagerCleared {
+                        footerKey(
+                            shortcutDisplayString(
+                                keyCode: HotkeyManager.shared.managerKeyCode,
+                                modifiers: HotkeyManager.shared.managerModifiers
+                            ),
+                            L10n.tr("menu.openMain")
+                        )
+                    }
                     footerKey("⌘⌫", L10n.tr("quick.delete"))
                 }
                 .padding(.horizontal, 16)
@@ -1131,6 +1139,19 @@ struct QuickPanelView: View {
                 }
             }
 
+            // Open main window with the user-configured manager shortcut.
+            // Placed after group suggestion navigation so bare-key shortcuts
+            // (rare but possible) don't steal Enter/arrows from the suggestion UI.
+            if eventMatchesShortcut(
+                event: event,
+                keyCode: HotkeyManager.shared.managerKeyCode,
+                modifiers: HotkeyManager.shared.managerModifiers
+            ) {
+                handleDismiss()
+                AppAction.shared.openMainWindow?()
+                return nil
+            }
+
             switch Int(event.keyCode) {
             case 126: moveSelection(-1, extendSelection: hasShift); return nil
             case 125: moveSelection(1, extendSelection: hasShift); return nil
@@ -1152,13 +1173,6 @@ struct QuickPanelView: View {
                 if hasCmd {
                     showCommandPalette.toggle()
                     if showCommandPalette { isSearchFocused = false }
-                    return nil
-                }
-                return event
-            case 46: // Cmd+M
-                if hasCmd && !hasControl {
-                    handleDismiss()
-                    AppAction.shared.openMainWindow?()
                     return nil
                 }
                 return event

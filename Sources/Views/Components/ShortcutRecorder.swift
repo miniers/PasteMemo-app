@@ -116,6 +116,18 @@ class ShortcutRecorderField: NSTextField {
     }
 }
 
+/// True if `event` matches the given Carbon-style shortcut (keyCode + modifier mask).
+/// Returns false if the shortcut is cleared (keyCode < 0).
+func eventMatchesShortcut(event: NSEvent, keyCode: Int, modifiers: Int) -> Bool {
+    guard keyCode >= 0, Int(event.keyCode) == keyCode else { return false }
+    var pressed = 0
+    if event.modifierFlags.contains(.command) { pressed |= cmdKey }
+    if event.modifierFlags.contains(.shift) { pressed |= shiftKey }
+    if event.modifierFlags.contains(.option) { pressed |= optionKey }
+    if event.modifierFlags.contains(.control) { pressed |= controlKey }
+    return pressed == modifiers
+}
+
 func shortcutDisplayString(keyCode: Int, modifiers: Int) -> String {
     guard keyCode >= 0 && modifiers >= 0 else { return "" }
     var parts: [String] = []
