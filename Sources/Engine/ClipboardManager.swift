@@ -311,6 +311,19 @@ final class ClipboardManager: ObservableObject {
     /// Mail, browsers, Notes) that pick UTIs outside the small set we decode ourselves.
     private func capturePasteboardSnapshot(from pasteboard: NSPasteboard) -> Data? {
         guard let types = pasteboard.types, !types.isEmpty else { return nil }
+        // When Word exposes a cross-reference or bookmark on the pasteboard it advertises
+        // both `com.microsoft.LinkSource` and `com.microsoft.ObjectLink`, plus a `.pdf`
+        // representation that is NOT the paragraph content but a bookmark-link PDF.
+        // Targets that pick PDF first (Word itself, Pages, Preview) would paste that link
+        // image instead of the actual text. Drop all three when the bookmark pair is
+        // present; the regular public.rtf / public.html representations survive and carry
+        // the real content.
+        let msLinkSource = NSPasteboard.PasteboardType("com.microsoft.LinkSource")
+        let msObjectLink = NSPasteboard.PasteboardType("com.microsoft.ObjectLink")
+        let isWordBookmarkCopy = types.contains(msLinkSource) && types.contains(msObjectLink)
+        let droppedTypes: Set<NSPasteboard.PasteboardType> = isWordBookmarkCopy
+            ? [msLinkSource, msObjectLink, .pdf]
+            : []
         var dict: [String: Data] = [:]
         var totalBytes = 0
         for type in types {
@@ -320,6 +333,7 @@ final class ClipboardManager: ObservableObject {
             // benefit: the original legacy name is already in the `types` list and is what
             // source apps read back during paste.
             if type.rawValue.hasPrefix("dyn.") { continue }
+            if droppedTypes.contains(type) { continue }
             guard let data = pasteboard.data(forType: type) else { continue }
             totalBytes += data.count
             if totalBytes > Self.MAX_SNAPSHOT_BYTES { return nil }
