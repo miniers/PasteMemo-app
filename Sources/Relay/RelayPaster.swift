@@ -107,7 +107,13 @@ enum RelayPaster {
     }
 
     private static func simulateCommandV() {
-        let source = CGEventSource(stateID: .hidSystemState)
+        // Use privateState source so the event doesn't inherit currently-held
+        // physical modifiers (e.g. user holding Ctrl during Ctrl+V relay paste).
+        // Without this, the synthesized ⌘V would carry the Ctrl bit and target
+        // apps would see Ctrl+⌘V — which opens "Paste Special" in Word and is
+        // unbound (silent no-op) in many editors. Same strategy as
+        // `simulatePostPasteKey` below.
+        let source = CGEventSource(stateID: .privateState)
         guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: true),
               let keyUp = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: false) else { return }
         keyDown.flags = .maskCommand

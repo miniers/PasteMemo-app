@@ -1175,8 +1175,10 @@ final class ClipboardManager: ObservableObject {
     }
 
     private func simulateCommandV() {
-        let source = CGEventSource(stateID: .combinedSessionState)
-        source?.localEventsSuppressionInterval = 0.0
+        // privateState: event carries no inherited physical modifier state, so
+        // ⌘V stays exactly ⌘V even if the user is still holding other keys
+        // (global hotkey release timing, Ctrl-based relay triggers, etc.).
+        let source = CGEventSource(stateID: .privateState)
         let keyDown = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: true)
         let keyUp = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: false)
         keyDown?.flags = .maskCommand
