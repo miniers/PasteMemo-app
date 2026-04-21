@@ -377,14 +377,35 @@ final class QuickPanelWindowController {
         panel.setFrameOrigin(NSPoint(x: x, y: y))
     }
 
+    /// IME-style placement: anchor the panel to whichever corner of the cursor
+    /// has the most room, so the panel never spills off-screen and never sits
+    /// directly on top of where the user was just looking. Picks horizontal
+    /// side (right vs left of cursor) and vertical side (below vs above)
+    /// independently — the 4 combinations cover any cursor location.
     private func positionAtCursor(_ panel: NSPanel) {
         guard let screen = NSScreen.screenWithMouse ?? resolveTargetScreen() else { return }
         let mouse = NSEvent.mouseLocation
-        let origin = CGPoint(
-            x: mouse.x - panel.frame.width / 2,
-            y: mouse.y - panel.frame.height / 2
-        )
-        setClampedOrigin(origin, for: panel, on: screen)
+        let visibleFrame = screen.visibleFrame
+        let panelSize = panel.frame.size
+        let gap: CGFloat = 8
+
+        // Cocoa coords: origin = bottom-left of screen, y grows upward.
+        let spaceRight = visibleFrame.maxX - mouse.x
+        let spaceLeft = mouse.x - visibleFrame.minX
+        let placeRight = spaceRight >= panelSize.width + gap || spaceRight >= spaceLeft
+
+        let spaceBelow = mouse.y - visibleFrame.minY
+        let spaceAbove = visibleFrame.maxY - mouse.y
+        let placeBelow = spaceBelow >= panelSize.height + gap || spaceBelow >= spaceAbove
+
+        let originX = placeRight
+            ? mouse.x + gap
+            : mouse.x - gap - panelSize.width
+        let originY = placeBelow
+            ? mouse.y - gap - panelSize.height
+            : mouse.y + gap
+
+        setClampedOrigin(CGPoint(x: originX, y: originY), for: panel, on: screen)
     }
 
     private func positionAtMenuBarIcon(_ panel: NSPanel) {
