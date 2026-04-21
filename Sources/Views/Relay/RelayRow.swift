@@ -42,11 +42,9 @@ struct RelayRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 6) {
+        HStack(alignment: .center, spacing: 6) {
             stateIndicator
-                .padding(.top, 2)
             sourceAppBadge
-                .padding(.top, 1)
             contentColumn
             Spacer(minLength: 0)
             trailingColumn
