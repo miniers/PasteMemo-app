@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import Testing
+import AppKit
 @testable import PasteMemo
 
 @Suite("PasteMemo Tests")
@@ -9,6 +10,26 @@ struct PasteMemoTests {
     @MainActor func detectText() {
         let result = ClipboardManager.shared.detectContentType("Hello world")
         #expect(result.type == .text)
+    }
+
+    @Test("Third-party pasteboard UTI triggers snapshot capture (issue #29 — Telegram custom emoji)")
+    @MainActor func thirdPartyTypesDetected() {
+        let pb = NSPasteboard(name: NSPasteboard.Name("pastememo-test-thirdparty-\(UUID().uuidString)"))
+        pb.clearContents()
+        pb.setString("🧡", forType: .string)
+        pb.setData(Data([0x01, 0x02, 0x03]), forType: NSPasteboard.PasteboardType("com.trolltech.anymime.application--x-td-field-tags"))
+        #expect(ClipboardManager.shared.pasteboardHasThirdPartyTypes(pb) == true)
+    }
+
+    @Test("Apple-standard UTIs only do not trigger snapshot")
+    @MainActor func standardTypesOnlyDoNotTriggerSnapshot() {
+        let pb = NSPasteboard(name: NSPasteboard.Name("pastememo-test-standard-\(UUID().uuidString)"))
+        pb.clearContents()
+        pb.setString("hello", forType: .string)
+        pb.setData(Data([0x68, 0x69]), forType: NSPasteboard.PasteboardType("public.utf16-plain-text"))
+        pb.setData(Data([0x01]), forType: NSPasteboard.PasteboardType("com.apple.traditional-mac-plain-text"))
+        pb.setData(Data([0x01]), forType: NSPasteboard.PasteboardType("CorePasteboardFlavorType 0x54455854"))
+        #expect(ClipboardManager.shared.pasteboardHasThirdPartyTypes(pb) == false)
     }
 
     @Test("Detect link content type")

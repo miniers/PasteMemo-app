@@ -213,12 +213,14 @@ final class ClipboardManager: ObservableObject {
         let rawHasImage = rawImageData != nil
         let hasRawText = rawText != nil && !(rawText!.isEmpty)
 
-        // Take a full pasteboard snapshot whenever the source exposed rich content. This lets
-        // us replay the exact bytes the origin app put on the pasteboard, so Word / Mail /
-        // Notes / browsers pick their preferred UTI exactly like with a native Cmd+C → Cmd+V.
-        // Plain-text / plain-image / plain-file clips don't need it — the legacy path is fine
-        // and skipping the snapshot keeps the database lean.
-        let snapshot: Data? = richText.data != nil
+        // Take a full pasteboard snapshot whenever the source exposed rich content OR any
+        // third-party custom UTI (e.g. Telegram's `com.trolltech.anymime.*` which carries
+        // custom-emoji metadata that is invisible to the plain-text path). Replaying these
+        // bytes via `restorePasteboardSnapshot` is the only way the origin app can decode
+        // its own custom payload after PasteMemo hands the clip back. Plain-text /
+        // plain-image / plain-file clips skip this to keep the database lean.
+        let hasCustomTypes = pasteboardHasThirdPartyTypes(pasteboard)
+        let snapshot: Data? = (richText.data != nil || hasCustomTypes)
             ? capturePasteboardSnapshot(from: pasteboard)
             : nil
 
@@ -263,13 +265,32 @@ final class ClipboardManager: ObservableObject {
             return ClipItem(content: "[Image]", contentType: .image, imageData: rawImageData, sourceApp: sourceApp)
         }
 
-        // Plain text (no rich formatting)
+        // Plain text (no rich formatting). Still attach the snapshot when the source wrote
+        // custom UTIs alongside (Telegram custom emoji, Qt-based apps, etc.) so paste-back
+        // to the origin restores the hidden payload.
         guard let content = rawText, !content.isEmpty else { return nil }
         let detected = detectContentType(content)
         return ClipItem(
             content: content, contentType: detected.type,
-            sourceApp: sourceApp, codeLanguage: detected.language
+            sourceApp: sourceApp, codeLanguage: detected.language,
+            pasteboardSnapshot: snapshot
         )
+    }
+
+    /// Returns true if the pasteboard carries at least one UTI whose prefix isn't in the
+    /// Apple-standard set (`public.*`, `com.apple.*`, `NS*`, `CorePasteboardFlavorType`).
+    /// Those third-party types are where apps like Telegram, Sketch, Figma stash custom
+    /// payloads (emoji IDs, shape metadata, etc.) that only the origin can decode.
+    func pasteboardHasThirdPartyTypes(_ pasteboard: NSPasteboard) -> Bool {
+        guard let types = pasteboard.types else { return false }
+        return types.contains { type in
+            let raw = type.rawValue
+            if raw.hasPrefix("public.") { return false }
+            if raw.hasPrefix("com.apple.") { return false }
+            if raw.hasPrefix("NS") { return false }
+            if raw.hasPrefix("CorePasteboardFlavorType") { return false }
+            return true
+        }
     }
 
     private static let FLAT_RTFD_TYPE = NSPasteboard.PasteboardType("com.apple.flat-rtfd")
