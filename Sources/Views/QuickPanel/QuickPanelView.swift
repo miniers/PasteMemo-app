@@ -1394,15 +1394,25 @@ struct QuickPanelView: View {
     }
 
     private func handleCommandAction(_ action: CommandAction) {
+        // paste-and-destroy dismisses the whole Quick Panel instantly inside
+        // its own handler. Setting `showCommandPalette = false` beforehand queues
+        // a SwiftUI overlay dismiss that the subsequent panel.dismiss() then
+        // forces to flush (via layoutSubtreeIfNeeded), stalling the close for
+        // a frame. Skipping the state change here lets the panel go down in one
+        // tick; onDismiss re-asserts the state after the fact as a safety net.
+        if case .pasteAndDestroy = action {
+            if let item = currentItem, canPasteAndDestroy(item) {
+                handlePasteAndDestroy(item: item)
+            }
+            return
+        }
         showCommandPalette = false
         isSearchFocused = true
         switch action {
         case .paste:
             handlePaste(respectAutoPaste: false)
         case .pasteAndDestroy:
-            if let item = currentItem, canPasteAndDestroy(item) {
-                handlePasteAndDestroy(item: item)
-            }
+            break  // handled above
         case .cmdEnter:
             if isMultiSelected {
                 handleMultiPaste(asPlainText: true, forceNewLine: false, respectAutoPaste: false)
