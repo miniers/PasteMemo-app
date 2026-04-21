@@ -2124,16 +2124,29 @@ struct QuickPanelView: View {
     /// a beat later. The delay gives the simulated ⌘V time to land in the target
     /// app (around 200–300ms in practice) before we queue deletion — undo
     /// restores the history entry but does not undo the paste itself.
+    ///
+    /// Dismiss is split out from the paste machinery (rather than going through
+    /// `dismissAndPaste`) so the panel disappears in its own runloop tick before
+    /// the `app.activate()` + simulated ⌘V chain hogs the main actor. Otherwise
+    /// the panel visibly lingers for a beat while the paste is dispatched.
     private func handlePasteAndDestroy(item: ClipItem) {
-        QuickPanelWindowController.shared.dismissAndPaste(
-            item,
-            clipboardManager: clipboardManager,
-            addNewLine: false
-        )
-        let context = modelContext
+        let panelController = QuickPanelWindowController.shared
+        let targetApp = panelController.previousApp
+        panelController.dismiss()
+
+        clipboardManager.writeToPasteboard(item, targetApp: targetApp)
+        item.lastUsedAt = Date()
+        if let ctx = item.modelContext {
+            ClipItemStore.saveAndNotifyLastUsed(ctx)
+        }
+        SoundManager.playPaste()
+        targetApp?.activate()
+        clipboardManager.simulatePaste()
+
+        let modelCtx = modelContext
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(500))
-            DeleteUndoCoordinator.shared.scheduleUndoableDelete(items: [item], context: context)
+            DeleteUndoCoordinator.shared.scheduleUndoableDelete(items: [item], context: modelCtx)
         }
     }
 
