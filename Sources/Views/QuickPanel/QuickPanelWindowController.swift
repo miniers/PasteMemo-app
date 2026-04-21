@@ -10,8 +10,21 @@ extension Notification.Name {
 
 private let DEFAULT_WIDTH: CGFloat = 750
 private let DEFAULT_HEIGHT: CGFloat = 510
-private let MIN_WIDTH: CGFloat = 800
-private let MIN_HEIGHT: CGFloat = 555
+private let MIN_WIDTH: CGFloat = 360
+private let MIN_HEIGHT: CGFloat = 420
+
+/// Below this width the preview pane is hidden and the list fills the full width.
+let QUICK_PANEL_PREVIEW_BREAKPOINT: CGFloat = 620
+
+/// Observable state shared between QuickPanelWindowController (AppKit) and
+/// QuickPanelView (SwiftUI). The controller updates `width` on NSWindow resize;
+/// SwiftUI re-renders the layout reactively.
+@MainActor
+final class QuickPanelLayoutState: ObservableObject {
+    @Published var width: CGFloat
+    init(width: CGFloat) { self.width = width }
+    var shouldShowPreview: Bool { width >= QUICK_PANEL_PREVIEW_BREAKPOINT }
+}
 private let TOP_INSET_RATIO: CGFloat = 0.15
 private let SIZE_KEY = "quickPanelSize"
 private let POSITION_KEY = "quickPanelPosition"
@@ -49,6 +62,7 @@ final class QuickPanelWindowController {
     static let shared = QuickPanelWindowController()
 
     private var panel: NSPanel?
+    private var layoutState: QuickPanelLayoutState?
     private var clickOutsideMonitor: Any?
     private var deactivationObserver: Any?
     private var resignKeyObserver: Any?
@@ -240,8 +254,13 @@ final class QuickPanelWindowController {
     // MARK: - Panel Construction
 
     private func buildPanel(clipboardManager: ClipboardManager, modelContainer: ModelContainer) -> NSPanel {
+        let initialWidth = panelWidth
+        let state = QuickPanelLayoutState(width: initialWidth)
+        self.layoutState = state
+
         let content = QuickPanelView()
             .environmentObject(clipboardManager)
+            .environmentObject(state)
             .modelContainer(modelContainer)
 
         let hosting = NSHostingController(rootView: content.ignoresSafeArea())
@@ -310,11 +329,12 @@ final class QuickPanelWindowController {
             forName: NSWindow.didResizeNotification,
             object: panel,
             queue: .main
-        ) { [weak panel] _ in
+        ) { [weak panel, weak state] _ in
             Task { @MainActor in
                 guard let size = panel?.frame.size else { return }
                 UserDefaults.standard.set(Double(size.width), forKey: "\(SIZE_KEY).width")
                 UserDefaults.standard.set(Double(size.height), forKey: "\(SIZE_KEY).height")
+                state?.width = size.width
             }
         }
 

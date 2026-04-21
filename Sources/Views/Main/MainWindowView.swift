@@ -1631,7 +1631,7 @@ extension NSView {
 /// Flow layout that wraps children onto additional lines when they don't fit
 /// on one row. Used by the multi-select type chips so 10+ types don't get
 /// squeezed into vertical single-glyph columns.
-fileprivate struct WrappingHStack: Layout {
+struct WrappingHStack: Layout {
     var spacing: CGFloat = 6
     var lineSpacing: CGFloat = 6
     var alignment: HorizontalAlignment = .center

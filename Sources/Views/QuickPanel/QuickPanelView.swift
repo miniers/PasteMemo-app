@@ -23,6 +23,7 @@ private let LIST_WIDTH: CGFloat = 340
 
 struct QuickPanelView: View {
     @EnvironmentObject var clipboardManager: ClipboardManager
+    @EnvironmentObject private var layoutState: QuickPanelLayoutState
     @Environment(\.modelContext) private var modelContext
     @State private var store = ClipItemStore()
     @State private var searchText = ""
@@ -198,15 +199,21 @@ struct QuickPanelView: View {
                 emptyStateView
             } else {
                 HStack(spacing: 0) {
-                    clipList
-                    Divider().opacity(0.3)
-                    previewPane
+                    if layoutState.shouldShowPreview {
+                        clipList
+                            .frame(width: LIST_WIDTH)
+                        Divider().opacity(0.3)
+                        previewPane
+                    } else {
+                        clipList
+                            .frame(maxWidth: .infinity)
+                    }
                 }
             }
             Divider().opacity(0.3)
             footerBar
         }
-        .frame(minWidth: 800, minHeight: 555)
+        .frame(minWidth: 360, minHeight: 420)
         .overlay {
             if showCopiedToast {
                 VStack {
@@ -773,7 +780,6 @@ struct QuickPanelView: View {
         )
         // 过滤条件切换时需要整棵列表重建，避免旧的 NSTableView 选择/滚动状态残留。
         .id(scrollResetToken)
-        .frame(width: LIST_WIDTH)
     }
 
     // MARK: - Empty State
@@ -838,7 +844,7 @@ struct QuickPanelView: View {
         VStack(spacing: 0) {
             // Expandable shortcuts panel
             if showAllShortcuts {
-                HStack(spacing: 12) {
+                WrappingHStack(spacing: 12, lineSpacing: 6, alignment: .trailing) {
                     footerKey("←→", L10n.tr("quick.switchType"))
                     footerKey("↑↓", L10n.tr("quick.navigate"))
                     footerKey("⌘O", currentItem?.contentType == .link ? L10n.tr("quick.openLink") : L10n.tr("quick.preview"))
@@ -855,7 +861,7 @@ struct QuickPanelView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 6)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                .frame(maxWidth: .infinity)
                 .background(Color.primary.opacity(0.02))
             }
 
@@ -884,29 +890,34 @@ struct QuickPanelView: View {
                 }
                 Spacer()
                 HStack(spacing: 12) {
+                    let compact = !layoutState.shouldShowPreview
                     if isMultiSelected {
                         footerKey("↵", quickPanelAutoPaste ? (isTargetFinder ? L10n.tr("quick.saveToFolder") : L10n.tr("quick.batchPaste")) : L10n.tr("action.copy"))
-                        if quickPanelAutoPaste, !isTargetFinder {
+                        if !compact, quickPanelAutoPaste, !isTargetFinder {
                             footerKey("⇧↵", L10n.tr("quick.pasteNewLine"))
                         }
-                        footerKey("⌘↵", quickPanelAutoPaste ? L10n.tr("action.pasteAsPlainText") : L10n.tr("cmd.copyAsPlainText"))
+                        if !compact {
+                            footerKey("⌘↵", quickPanelAutoPaste ? L10n.tr("action.pasteAsPlainText") : L10n.tr("cmd.copyAsPlainText"))
+                        }
                     } else {
                         if let cur = currentItem {
                             footerKey("↵", primaryFooterLabel(for: cur))
-                            if quickPanelAutoPaste {
+                            if !compact, quickPanelAutoPaste {
                                 if !(cur.imageData != nil && canPasteToFinderFolder), !canSaveTextToFolder {
                                     footerKey("⇧↵", L10n.tr("quick.pasteNewLine"))
                                 }
                             }
-                            if let cmdEnterLabel = cmdEnterFooterLabel(for: cur) {
+                            if !compact, let cmdEnterLabel = cmdEnterFooterLabel(for: cur) {
                                 footerKey("⌘↵", cmdEnterLabel)
                             }
                         }
                     }
-                    if let cur = currentItem, cur.isSensitive, !isMultiSelected {
+                    if !compact, let cur = currentItem, cur.isSensitive, !isMultiSelected {
                         footerKey("⌥", L10n.tr("sensitive.peek"))
                     }
-                    footerKey("⌘K", L10n.tr("cmd.title"))
+                    if !compact {
+                        footerKey("⌘K", L10n.tr("cmd.title"))
+                    }
                     footerKey("esc", L10n.tr("quick.close"))
 
                     Button {
@@ -1003,7 +1014,9 @@ struct QuickPanelView: View {
             Text(label)
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
+                .lineLimit(1)
         }
+        .fixedSize(horizontal: true, vertical: false)
     }
 
     @ViewBuilder

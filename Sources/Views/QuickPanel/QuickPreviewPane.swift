@@ -805,7 +805,7 @@ struct QuickPreviewPane: View {
             NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: path)
             QuickPanelWindowController.shared.dismiss()
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 20)
         .padding(.vertical, 6)
     }
 }
