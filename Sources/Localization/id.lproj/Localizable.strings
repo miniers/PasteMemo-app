@@ -212,6 +212,12 @@
 "group.preserveItems.badge" = "Permanen";
 "action.changeIcon" = "Ubah Ikon…";
 "action.clearConfirm" = "Ini akan menghapus semua item kecuali yang disematkan.";
+"action.clearScope.type" = "Hapus Semua Item dari Tipe Ini";
+"action.clearScope.group" = "Hapus Semua Item dalam Grup Ini";
+"action.clearScope.app" = "Hapus Semua Item dari App Ini";
+"action.clearScope.title" = "Hapus \"%@\"";
+"action.clearScope.confirm" = "Ini akan menghapus %d item (item yang disematkan dan item dalam grup permanen akan dipertahankan).";
+"action.clearScope.empty" = "Tidak ada yang bisa dihapus dengan filter ini (item yang disematkan dan item dalam grup permanen diabaikan).";
 "action.copy" = "Salin";
 "action.copied" = "Disalin ke papan klip";
 

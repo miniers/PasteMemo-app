@@ -127,6 +127,12 @@
 "group.preserveItems.badge" = "永久保存";
 "action.changeIcon" = "アイコンを変更…";
 "action.clearConfirm" = "お気に入りとピン留めを除くすべてのアイテムが削除されます。";
+"action.clearScope.type" = "この種類のアイテムをすべて削除";
+"action.clearScope.group" = "このグループ内のアイテムをすべて削除";
+"action.clearScope.app" = "このアプリからのアイテムをすべて削除";
+"action.clearScope.title" = "「%@」を削除";
+"action.clearScope.confirm" = "ピン留めされていない %d 件のアイテムが削除されます。永久保存グループ内のアイテムは削除されません。";
+"action.clearScope.empty" = "現在のフィルターには削除可能なアイテムがありません（ピン留めと永久保存グループのアイテムは除外されます）。";
 
 /* Stats */
 "stats.total" = "クリップ合計";

@@ -119,6 +119,12 @@
 "group.preserveItems.badge" = "Dauerhaft";
 "action.changeIcon" = "Symbol ändern…";
 "action.clearConfirm" = "Alle Elemente außer Favoriten und angehefteten Elementen werden gelöscht.";
+"action.clearScope.type" = "Alle Elemente dieses Typs löschen";
+"action.clearScope.group" = "Alle Elemente in dieser Gruppe löschen";
+"action.clearScope.app" = "Alle Elemente aus dieser App löschen";
+"action.clearScope.title" = "„%@“ leeren";
+"action.clearScope.confirm" = "%d Elemente werden gelöscht (angeheftete Elemente sowie Elemente in dauerhaften Gruppen bleiben erhalten).";
+"action.clearScope.empty" = "Unter diesem Filter gibt es nichts zu löschen (angeheftete Elemente sowie Elemente in dauerhaften Gruppen werden übersprungen).";
 
 /* Stats */
 "stats.total" = "Clips gesamt";

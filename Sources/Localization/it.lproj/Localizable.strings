@@ -212,6 +212,12 @@
 "group.preserveItems.badge" = "Permanente";
 "action.changeIcon" = "Cambia icona…";
 "action.clearConfirm" = "Verranno eliminati tutti gli elementi tranne quelli fissati.";
+"action.clearScope.type" = "Svuota gli elementi di questo tipo";
+"action.clearScope.group" = "Svuota gli elementi di questo gruppo";
+"action.clearScope.app" = "Svuota gli elementi di questa app";
+"action.clearScope.title" = "Svuota «%@»";
+"action.clearScope.confirm" = "Verranno eliminati %d elementi non fissati. Gli elementi nei gruppi con conservazione permanente non verranno rimossi.";
+"action.clearScope.empty" = "Nessun elemento da svuotare con questo filtro (gli elementi fissati e quelli nei gruppi con conservazione permanente vengono ignorati).";
 "action.copy" = "Copia";
 "action.copied" = "Copiato negli appunti";
 

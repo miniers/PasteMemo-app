@@ -246,7 +246,6 @@ struct QuickPanelView: View {
         }
         } // ZStack
         .onAppear {
-            store.sortPinnedFirst = true
             store.configure(modelContext: modelContext)
             rebuildGroupedItems()
             selectDefaultHistoryItem()
@@ -1794,14 +1793,7 @@ struct QuickPanelView: View {
         let items = filteredItems
         let idsToDelete = Set(itemsToDelete.map(\.persistentModelID))
         let firstIdx = items.firstIndex { idsToDelete.contains($0.persistentModelID) }
-        for del in itemsToDelete {
-            if let groupName = del.groupName, !groupName.isEmpty {
-                ClipboardManager.shared.decrementSmartGroup(name: groupName, context: modelContext)
-            }
-            modelContext.delete(del)
-        }
-        ClipItemStore.saveAndNotify(modelContext)
-        store.removeItems(matching: idsToDelete)
+        ClipItemStore.deleteAndNotify(itemsToDelete, from: modelContext)
         let remaining = filteredItems
         if let idx = firstIdx, !remaining.isEmpty {
             let nextIdx = min(idx, remaining.count - 1)

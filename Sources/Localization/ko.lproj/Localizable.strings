@@ -119,6 +119,12 @@
 "group.preserveItems.badge" = "영구 보관";
 "action.changeIcon" = "아이콘 변경…";
 "action.clearConfirm" = "즐겨찾기와 고정된 항목을 제외한 모든 항목이 삭제됩니다.";
+"action.clearScope.type" = "이 유형의 항목 모두 지우기";
+"action.clearScope.group" = "이 그룹의 항목 모두 지우기";
+"action.clearScope.app" = "이 앱의 항목 모두 지우기";
+"action.clearScope.title" = "「%@」 지우기";
+"action.clearScope.confirm" = "고정되지 않은 %d개의 항목이 삭제됩니다. 영구 보관 그룹의 항목은 삭제되지 않습니다.";
+"action.clearScope.empty" = "현재 필터에서 지울 수 있는 항목이 없습니다 (고정된 항목과 영구 보관 그룹의 항목은 제외됨).";
 
 /* Stats */
 "stats.total" = "전체 클립";

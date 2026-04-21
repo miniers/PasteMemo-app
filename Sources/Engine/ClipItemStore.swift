@@ -496,10 +496,14 @@ final class ClipItemStore {
     /// Post this notification after `lastUsedAt` updates to trigger a lightweight reorder refresh
     static let itemLastUsedDidUpdateNotification = Notification.Name("ClipItemStoreItemLastUsedDidUpdate")
 
-    /// Remove items from store, delete from context, save, and notify.
-    /// This is the ONLY safe way to delete ClipItems — ensures store.items
-    /// is updated before context.save() triggers SwiftUI re-render.
+    /// Remove items from store, delete from context, rebuild group counts,
+    /// save, and notify. This is the ONLY safe way to delete ClipItems —
+    /// ensures store.items is updated before context.save() triggers SwiftUI
+    /// re-render, and that SmartGroup.count badges stay accurate without each
+    /// caller having to remember to recalculate.
     static func deleteAndNotify(_ itemsToDelete: [ClipItem], from context: ModelContext) {
+        guard !itemsToDelete.isEmpty else { return }
+
         // Pause clipboard monitoring to prevent cleanExpiredItems from firing
         // during deletion (nested RunLoops can trigger the timer's Task)
         let wasPaused = ClipboardManager.shared.isPaused
@@ -510,12 +514,65 @@ final class ClipItemStore {
         for case let store as ClipItemStore in activeStores.allObjects {
             store.items.removeAll { idsToDelete.contains($0.persistentModelID) }
         }
-        // Suppress observer reloads during bulk deletion
+        let touchesGroups = itemsToDelete.contains { ($0.groupName ?? "").isEmpty == false }
+
+        // Preserve any caller-set bulk-operation flag (e.g. settings clear data)
+        // so we don't toggle it off while a larger transaction is still running.
+        let wasBulk = isBulkOperation
         isBulkOperation = true
         for item in itemsToDelete {
             context.delete(item)
         }
-        isBulkOperation = false
+        if touchesGroups {
+            ClipboardManager.shared.recalculateAllGroupCounts(context: context)
+        }
+        isBulkOperation = wasBulk
+        saveAndNotify(context)
+
+        if !wasPaused { ClipboardManager.shared.resumeMonitoring() }
+    }
+
+    /// Async batched variant of `deleteAndNotify` for large deletions. Yields
+    /// between batches so the UI stays responsive; callers typically show a
+    /// progress sheet and forward the `(done, total)` callback to it.
+    @MainActor
+    static func deleteAndNotifyBatched(
+        _ itemsToDelete: [ClipItem],
+        from context: ModelContext,
+        batchSize: Int = 200,
+        progress: ((Int, Int) -> Void)? = nil
+    ) async {
+        guard !itemsToDelete.isEmpty else { return }
+
+        let wasPaused = ClipboardManager.shared.isPaused
+        if !wasPaused { ClipboardManager.shared.pauseMonitoring() }
+
+        let idsToDelete = Set(itemsToDelete.map(\.persistentModelID))
+        for case let store as ClipItemStore in activeStores.allObjects {
+            store.items.removeAll { idsToDelete.contains($0.persistentModelID) }
+        }
+        let touchesGroups = itemsToDelete.contains { ($0.groupName ?? "").isEmpty == false }
+
+        let wasBulk = isBulkOperation
+        isBulkOperation = true
+
+        let total = itemsToDelete.count
+        var done = 0
+        progress?(0, total)
+        for batchStart in stride(from: 0, to: total, by: batchSize) {
+            let batchEnd = min(batchStart + batchSize, total)
+            for idx in batchStart..<batchEnd {
+                context.delete(itemsToDelete[idx])
+            }
+            try? context.save()
+            done = batchEnd
+            progress?(done, total)
+            await Task.yield()
+        }
+        if touchesGroups {
+            ClipboardManager.shared.recalculateAllGroupCounts(context: context)
+        }
+        isBulkOperation = wasBulk
         saveAndNotify(context)
 
         if !wasPaused { ClipboardManager.shared.resumeMonitoring() }

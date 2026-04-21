@@ -236,6 +236,12 @@
 "group.preserveItems.badge" = "Permanent";
 "action.changeIcon" = "Change Icon…";
 "action.clearConfirm" = "This will delete all items except pinned items.";
+"action.clearScope.type" = "Clear All Items of This Type";
+"action.clearScope.group" = "Clear All Items in This Group";
+"action.clearScope.app" = "Clear All Items from This App";
+"action.clearScope.title" = "Clear \"%@\"";
+"action.clearScope.confirm" = "This will delete %d items (pinned items and items in permanent groups will be kept).";
+"action.clearScope.empty" = "Nothing to clear under this filter (pinned items and items in permanent groups are skipped).";
 "action.copy" = "Copy";
 "action.copied" = "Copied to clipboard";
 

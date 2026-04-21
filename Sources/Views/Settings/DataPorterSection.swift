@@ -294,9 +294,7 @@ struct DataPorterSection: View {
             defer {
                 isProcessing = false
                 importProgress = ""
-                ClipItemStore.isBulkOperation = false
             }
-            ClipItemStore.isBulkOperation = true
 
             let preservedGroupNames = SmartGroupRetention.preservedGroupNames(in: modelContext)
             let descriptor: FetchDescriptor<ClipItem>
@@ -313,20 +311,12 @@ struct DataPorterSection: View {
             guard let fetchedItems = try? modelContext.fetch(descriptor) else { return }
             let items = SmartGroupRetention.filterDeletableItems(fetchedItems, preservedGroupNames: preservedGroupNames)
             let total = items.count
-            let batchSize = 100
 
-            for i in stride(from: 0, to: total, by: batchSize) {
-                let end = min(i + batchSize, total)
-                for j in i..<end {
-                    modelContext.delete(items[j])
-                }
-                try? modelContext.save()
-                importProgress = "\(end) / \(total)"
-                progressValue = Double(end) / Double(max(total, 1))
-                await Task.yield()
+            await ClipItemStore.deleteAndNotifyBatched(items, from: modelContext) { done, total in
+                importProgress = "\(done) / \(total)"
+                progressValue = Double(done) / Double(max(total, 1))
             }
 
-            ClipboardManager.shared.recalculateAllGroupCounts(context: modelContext)
             alertMessage = L10n.tr("settings.clearData.result", total)
             showClearResult = true
         }

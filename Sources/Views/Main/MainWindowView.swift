@@ -40,6 +40,10 @@ struct MainWindowView: View {
     }
     @Environment(\.openWindow) private var openWindow
     @State private var showDeleteConfirm = false
+    @State private var isClearing = false
+    @State private var clearTitle = ""
+    @State private var clearProgress: Double = 0
+    @State private var clearProgressText = ""
     @State private var showCopiedToast = false
     @State private var toastMessage = ""
     @State private var keyMonitor: Any?
@@ -284,6 +288,20 @@ struct MainWindowView: View {
             }
         }
         .localized()
+        .sheet(isPresented: $isClearing) {
+            VStack(spacing: 16) {
+                Text(clearTitle)
+                    .font(.headline)
+                ProgressView(value: clearProgress, total: 1.0)
+                    .progressViewStyle(.linear)
+                Text(clearProgressText)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(30)
+            .frame(width: 300)
+            .interactiveDismissDisabled()
+        }
         .alert(L10n.tr("action.clearAll"), isPresented: $showDeleteConfirm) {
             Button(L10n.tr("action.delete"), role: .destructive) {
                 let descriptor = FetchDescriptor<ClipItem>(
@@ -292,9 +310,8 @@ struct MainWindowView: View {
                 if let items = try? modelContext.fetch(descriptor) {
                     let preserved = SmartGroupRetention.preservedGroupNames(in: modelContext)
                     let deletable = SmartGroupRetention.filterDeletableItems(items, preservedGroupNames: preserved)
-                    ClipItemStore.deleteAndNotify(deletable, from: modelContext)
+                    runBulkClear(title: L10n.tr("action.clearAll"), items: deletable)
                 }
-                ClipboardManager.shared.recalculateAllGroupCounts(context: modelContext)
             }
             Button(L10n.tr("action.cancel"), role: .cancel) {}
         } message: {
@@ -370,6 +387,11 @@ struct MainWindowView: View {
                         sidebarRow(type.label, icon: type.icon, badge: count, isActive: selectedFilter == .type(type)) {
                             selectedFilter = .type(type)
                         }
+                        .contextMenu {
+                            Button(L10n.tr("action.clearScope.type"), role: .destructive) {
+                                clearItems(inScope: .type(type))
+                            }
+                        }
                         .onDrag {
                             draggingType = type
                             return NSItemProvider(object: type.rawValue as NSString)
@@ -397,6 +419,9 @@ struct MainWindowView: View {
                                 changeGroupIcon(name: group.name)
                             }
                             Divider()
+                            Button(L10n.tr("action.clearScope.group"), role: .destructive) {
+                                clearItems(inScope: .group(group.name))
+                            }
                             Button(L10n.tr("action.deleteGroup"), role: .destructive) {
                                 let alert = NSAlert()
                                 alert.messageText = L10n.tr("action.deleteGroup")
@@ -432,6 +457,11 @@ struct MainWindowView: View {
                     let displayName = isUnknown ? L10n.tr("filter.other") : appName
                     appSidebarRow(displayName, badge: count, isActive: selectedFilter == .app(appName)) {
                         selectedFilter = .app(appName)
+                    }
+                    .contextMenu {
+                        Button(L10n.tr("action.clearScope.app"), role: .destructive) {
+                            clearItems(inScope: .app(appName))
+                        }
                     }
                 }
             }
@@ -818,8 +848,7 @@ struct MainWindowView: View {
         let merged = items.map(\.content).joined(separator: "\n")
         let newItem = ClipItem(content: merged, contentType: .text)
         modelContext.insert(newItem)
-        for old in items { modelContext.delete(old) }
-        try? modelContext.save()
+        ClipItemStore.deleteAndNotify(items, from: modelContext)
         let newID = newItem.persistentModelID
         selectedItems = [newID]
         navigationCursor = newID
@@ -1118,6 +1147,86 @@ struct MainWindowView: View {
         assignToGroup(items: items, name: result.name)
     }
 
+    /// Right-click "Clear items under this filter" handler. Honors the same
+    /// safety rules as global Clear All: skips pinned items and items in groups
+    /// flagged as `preservesItems`.
+    private func clearItems(inScope scope: SidebarFilter) {
+        let preserved = SmartGroupRetention.preservedGroupNames(in: modelContext)
+        let descriptor: FetchDescriptor<ClipItem>
+        switch scope {
+        case .type(let type):
+            let raw = type.rawValue
+            descriptor = FetchDescriptor<ClipItem>(
+                predicate: #Predicate { !$0.isPinned && $0.contentTypeRaw == raw }
+            )
+        case .group(let name):
+            descriptor = FetchDescriptor<ClipItem>(
+                predicate: #Predicate { !$0.isPinned && $0.groupName == name }
+            )
+        case .app(let appName):
+            if appName.isEmpty {
+                descriptor = FetchDescriptor<ClipItem>(
+                    predicate: #Predicate { !$0.isPinned && $0.sourceApp == nil }
+                )
+            } else {
+                descriptor = FetchDescriptor<ClipItem>(
+                    predicate: #Predicate { !$0.isPinned && $0.sourceApp == appName }
+                )
+            }
+        case .all, .pinned, .sensitive:
+            return
+        }
+
+        guard let fetched = try? modelContext.fetch(descriptor) else { return }
+        let deletable = SmartGroupRetention.filterDeletableItems(fetched, preservedGroupNames: preserved)
+        guard !deletable.isEmpty else {
+            let info = NSAlert()
+            info.messageText = L10n.tr("action.clearScope.empty")
+            info.alertStyle = .informational
+            info.addButton(withTitle: L10n.tr("action.confirm"))
+            info.runModal()
+            return
+        }
+
+        let alert = NSAlert()
+        alert.messageText = L10n.tr("action.clearScope.title", scope.title)
+        alert.informativeText = L10n.tr("action.clearScope.confirm", deletable.count)
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: L10n.tr("action.delete"))
+        alert.addButton(withTitle: L10n.tr("action.cancel"))
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+
+        if selectedFilter == scope {
+            selectedFilter = .all
+        }
+        runBulkClear(title: L10n.tr("action.clearScope.title", scope.title), items: deletable)
+    }
+
+    /// Show a non-blocking progress sheet (when the set is large enough to feel
+    /// laggy) and dispatch deletion through the batched async path. Smaller sets
+    /// fall through to the synchronous path so the sheet doesn't flash.
+    private func runBulkClear(title: String, items: [ClipItem]) {
+        guard !items.isEmpty else { return }
+        let total = items.count
+        if total < Self.bulkClearProgressThreshold {
+            ClipItemStore.deleteAndNotify(items, from: modelContext)
+            return
+        }
+        clearTitle = title
+        clearProgress = 0
+        clearProgressText = "0 / \(total)"
+        isClearing = true
+        Task { @MainActor in
+            await ClipItemStore.deleteAndNotifyBatched(items, from: modelContext) { done, total in
+                clearProgress = Double(done) / Double(max(total, 1))
+                clearProgressText = "\(done) / \(total)"
+            }
+            isClearing = false
+        }
+    }
+
+    private static let bulkClearProgressThreshold = 200
+
     private func deleteSelectedItems() {
         let items = visualOrderedItems
         let visibleIDs = Set(items.map(\.persistentModelID))
@@ -1135,12 +1244,7 @@ struct MainWindowView: View {
         let firstDeletedIdx = items.firstIndex { idsToDelete.contains($0.persistentModelID) }
 
         let itemsToDelete = items.filter { idsToDelete.contains($0.persistentModelID) }
-        for item in itemsToDelete {
-            if let groupName = item.groupName, !groupName.isEmpty {
-                ClipboardManager.shared.decrementSmartGroup(name: groupName, context: modelContext)
-            }
-        }
-        ClipItemStore.deleteAndNotify(itemsToDelete, from: modelContext)
+        runBulkClear(title: L10n.tr("action.deleteSelected.confirm", itemsToDelete.count), items: itemsToDelete)
 
         // Select next item after deletion
         let remaining = items.filter { !idsToDelete.contains($0.persistentModelID) }
@@ -1156,8 +1260,6 @@ struct MainWindowView: View {
             navigationCursor = nil
             selectionAnchor = nil
         }
-
-        store.refreshSidebarCounts()
     }
 
     // MARK: - Detail
@@ -1328,7 +1430,7 @@ struct MainWindowView: View {
         let counts = items.reduce(into: [ClipContentType: Int]()) { $0[$1.contentType, default: 0] += 1 }
         let sorted = counts.sorted { $0.value > $1.value }
 
-        HStack(spacing: 6) {
+        WrappingHStack(spacing: 6, lineSpacing: 6) {
             ForEach(sorted, id: \.key) { type, count in
                 HStack(spacing: 4) {
                     Image(systemName: type.icon)
@@ -1339,12 +1441,14 @@ struct MainWindowView: View {
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
                 }
+                .fixedSize()
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 5))
                 .foregroundStyle(.secondary)
             }
         }
+        .padding(.horizontal, 12)
     }
 
     private func multiSelectCard(item: ClipItem) -> some View {
@@ -1519,5 +1623,82 @@ extension NSView {
             if let match = sub.findSubview(ofType: type) { return match }
         }
         return nil
+    }
+}
+
+// MARK: - WrappingHStack
+
+/// Flow layout that wraps children onto additional lines when they don't fit
+/// on one row. Used by the multi-select type chips so 10+ types don't get
+/// squeezed into vertical single-glyph columns.
+fileprivate struct WrappingHStack: Layout {
+    var spacing: CGFloat = 6
+    var lineSpacing: CGFloat = 6
+    var alignment: HorizontalAlignment = .center
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        return computeLayout(maxWidth: maxWidth, subviews: subviews).size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = computeLayout(maxWidth: bounds.width, subviews: subviews)
+        for (idx, frame) in result.frames.enumerated() {
+            subviews[idx].place(
+                at: CGPoint(x: bounds.minX + frame.origin.x, y: bounds.minY + frame.origin.y),
+                proposal: ProposedViewSize(width: frame.size.width, height: frame.size.height)
+            )
+        }
+    }
+
+    private func computeLayout(maxWidth: CGFloat, subviews: Subviews) -> (size: CGSize, frames: [CGRect]) {
+        var rows: [[(index: Int, size: CGSize)]] = [[]]
+        var rowWidth: CGFloat = 0
+        var totalHeight: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        var contentWidth: CGFloat = 0
+
+        for (idx, sub) in subviews.enumerated() {
+            let size = sub.sizeThatFits(.unspecified)
+            let needsNewRow = !rows.last!.isEmpty && rowWidth + spacing + size.width > maxWidth
+            if needsNewRow {
+                totalHeight += rowHeight + lineSpacing
+                rows.append([])
+                rowWidth = 0
+                rowHeight = 0
+            }
+            rows[rows.count - 1].append((idx, size))
+            rowWidth += (rows.last!.count == 1 ? 0 : spacing) + size.width
+            rowHeight = max(rowHeight, size.height)
+            contentWidth = max(contentWidth, rowWidth)
+        }
+        totalHeight += rowHeight
+
+        var frames = Array(repeating: CGRect.zero, count: subviews.count)
+        var y: CGFloat = 0
+        for row in rows {
+            let rowTotalWidth = row.reduce(CGFloat(0)) { $0 + $1.size.width } + spacing * CGFloat(max(row.count - 1, 0))
+            let rowRowHeight = row.map(\.size.height).max() ?? 0
+            var x: CGFloat
+            switch alignment {
+            case .leading:
+                x = 0
+            case .trailing:
+                x = max(0, maxWidth - rowTotalWidth)
+            default:
+                x = max(0, (maxWidth - rowTotalWidth) / 2)
+            }
+            for entry in row {
+                frames[entry.index] = CGRect(
+                    x: x,
+                    y: y + (rowRowHeight - entry.size.height) / 2,
+                    width: entry.size.width,
+                    height: entry.size.height
+                )
+                x += entry.size.width + spacing
+            }
+            y += rowRowHeight + lineSpacing
+        }
+        return (CGSize(width: contentWidth, height: totalHeight), frames)
     }
 }

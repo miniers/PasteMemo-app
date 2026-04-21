@@ -236,6 +236,12 @@
 "group.preserveItems.badge" = "永久保存";
 "action.changeIcon" = "修改图标…";
 "action.clearConfirm" = "将删除所有未置顶的条目。";
+"action.clearScope.type" = "清空此类型下的条目";
+"action.clearScope.group" = "清空此分组下的条目";
+"action.clearScope.app" = "清空此 App 下的条目";
+"action.clearScope.title" = "清空「%@」";
+"action.clearScope.confirm" = "将删除 %d 条未置顶的条目，永久保存分组中的条目不会被清除。";
+"action.clearScope.empty" = "当前筛选下没有可清空的条目（已忽略置顶和永久保存分组的条目）。";
 "action.copy" = "复制";
 "action.copied" = "已复制到剪贴板";
 

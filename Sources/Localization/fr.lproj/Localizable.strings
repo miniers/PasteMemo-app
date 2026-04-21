@@ -119,6 +119,12 @@
 "group.preserveItems.badge" = "Permanent";
 "action.changeIcon" = "Changer l'icône…";
 "action.clearConfirm" = "Tous les éléments seront supprimés, sauf les favoris et les éléments épinglés.";
+"action.clearScope.type" = "Effacer tous les éléments de ce type";
+"action.clearScope.group" = "Effacer tous les éléments de ce groupe";
+"action.clearScope.app" = "Effacer tous les éléments de cette app";
+"action.clearScope.title" = "Effacer « %@ »";
+"action.clearScope.confirm" = "Cette action supprimera %d éléments (les éléments épinglés et ceux des groupes permanents seront conservés).";
+"action.clearScope.empty" = "Rien à effacer avec ce filtre (les éléments épinglés et ceux des groupes permanents sont ignorés).";
 
 /* Stats */
 "stats.total" = "Total des clips";
