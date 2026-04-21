@@ -314,6 +314,12 @@ final class ClipboardManager: ObservableObject {
         var dict: [String: Data] = [:]
         var totalBytes = 0
         for type in types {
+            // Skip `dyn.*` aliases — macOS auto-generates them for legacy pasteboard
+            // type names (e.g. `TelegramTextPboardType` also surfaces as `dyn.ah62d4rv4gu8...`).
+            // Both point to identical bytes, so keeping them doubles the stored size with no
+            // benefit: the original legacy name is already in the `types` list and is what
+            // source apps read back during paste.
+            if type.rawValue.hasPrefix("dyn.") { continue }
             guard let data = pasteboard.data(forType: type) else { continue }
             totalBytes += data.count
             if totalBytes > Self.MAX_SNAPSHOT_BYTES { return nil }
