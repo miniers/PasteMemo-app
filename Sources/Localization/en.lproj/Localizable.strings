@@ -244,6 +244,8 @@
 "action.clearScope.empty" = "Nothing to clear under this filter (pinned items and items in permanent groups are skipped).";
 "action.copy" = "Copy";
 "action.copied" = "Copied to clipboard";
+"action.undo" = "Undo";
+"delete.undo.toast" = "Deleted %d item(s)";
 
 /* Stats */
 "stats.total" = "Total Clips";

@@ -220,6 +220,8 @@
 "action.clearScope.empty" = "Tidak ada yang bisa dihapus dengan filter ini (item yang disematkan dan item dalam grup permanen diabaikan).";
 "action.copy" = "Salin";
 "action.copied" = "Disalin ke papan klip";
+"action.undo" = "Urungkan";
+"delete.undo.toast" = "%d item dihapus";
 
 /* Stats */
 "stats.total" = "Total Klip";

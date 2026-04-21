@@ -220,6 +220,8 @@
 "action.clearScope.empty" = "Nessun elemento da svuotare con questo filtro (gli elementi fissati e quelli nei gruppi con conservazione permanente vengono ignorati).";
 "action.copy" = "Copia";
 "action.copied" = "Copiato negli appunti";
+"action.undo" = "Annulla";
+"delete.undo.toast" = "%d elementi eliminati";
 
 /* Stats */
 "stats.total" = "Totale elementi";

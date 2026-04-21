@@ -517,6 +517,8 @@
 /* Actions - Additional */
 "action.copy" = "복사";
 "action.copied" = "클립보드에 복사됨";
+"action.undo" = "실행 취소";
+"delete.undo.toast" = "%d개 항목 삭제됨";
 "action.deleteSelected" = "%d개 항목 삭제";
 "action.deleteSelected.confirm" = "Delete %d items?";
 

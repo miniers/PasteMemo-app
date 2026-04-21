@@ -517,6 +517,8 @@ Usa %@ para pegar uno por uno.";
 /* Actions - Additional */
 "action.copy" = "Copiar";
 "action.copied" = "Copiado al portapapeles";
+"action.undo" = "Deshacer";
+"delete.undo.toast" = "%d elemento(s) eliminado(s)";
 "action.deleteSelected" = "Eliminar %d elementos";
 "action.deleteSelected.confirm" = "Delete %d items?";
 

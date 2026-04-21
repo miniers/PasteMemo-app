@@ -533,6 +533,8 @@
 /* Actions - Additional */
 "action.copy" = "コピー";
 "action.copied" = "クリップボードにコピーしました";
+"action.undo" = "元に戻す";
+"delete.undo.toast" = "%d 件を削除しました";
 "action.deleteSelected" = "%d 件を削除";
 "action.deleteSelected.confirm" = "Delete %d items?";
 

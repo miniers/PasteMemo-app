@@ -517,6 +517,8 @@ Utilisez %@ pour coller un par un.";
 /* Actions */
 "action.copy" = "Copier";
 "action.copied" = "Copié dans le presse-papiers";
+"action.undo" = "Annuler";
+"delete.undo.toast" = "%d élément(s) supprimé(s)";
 "action.deleteSelected" = "Supprimer %d éléments";
 "action.deleteSelected.confirm" = "Delete %d items?";
 

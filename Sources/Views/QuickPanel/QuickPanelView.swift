@@ -231,6 +231,11 @@ struct QuickPanelView: View {
             }
             // Command palette is now shown via popover on the selected row
         }
+        .overlay(alignment: .bottom) {
+            ClipItemUndoToast()
+                .padding(.bottom, 58)
+                .animation(.easeOut(duration: 0.2), value: DeleteUndoCoordinator.shared.pending?.expiresAt)
+        }
         // Floating group suggestions overlay
         if isShowingSuggestions {
             VStack(spacing: 0) {
@@ -1806,7 +1811,7 @@ struct QuickPanelView: View {
         let items = filteredItems
         let idsToDelete = Set(itemsToDelete.map(\.persistentModelID))
         let firstIdx = items.firstIndex { idsToDelete.contains($0.persistentModelID) }
-        ClipItemStore.deleteAndNotify(itemsToDelete, from: modelContext)
+        DeleteUndoCoordinator.shared.scheduleUndoableDelete(items: itemsToDelete, context: modelContext)
         let remaining = filteredItems
         if let idx = firstIdx, !remaining.isEmpty {
             let nextIdx = min(idx, remaining.count - 1)

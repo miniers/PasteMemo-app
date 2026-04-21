@@ -244,6 +244,8 @@
 "action.clearScope.empty" = "当前筛选下没有可清空的条目（已忽略置顶和永久保存分组的条目）。";
 "action.copy" = "复制";
 "action.copied" = "已复制到剪贴板";
+"action.undo" = "撤销";
+"delete.undo.toast" = "已删除 %d 条";
 
 /* Stats */
 "stats.total" = "总记录数";

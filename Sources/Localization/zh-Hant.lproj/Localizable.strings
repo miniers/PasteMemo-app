@@ -221,6 +221,8 @@
 "action.clearScope.empty" = "目前篩選下沒有可清空的條目（已忽略置頂和永久保留分組的條目）。";
 "action.copy" = "複製";
 "action.copied" = "已複製到剪貼簿";
+"action.undo" = "撤銷";
+"delete.undo.toast" = "已刪除 %d 條";
 
 /* Stats */
 "stats.total" = "總記錄數";

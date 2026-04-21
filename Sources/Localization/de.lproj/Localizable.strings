@@ -517,6 +517,8 @@ Verwenden Sie %@ zum Einfügen.";
 /* Actions (additional) */
 "action.copy" = "Kopieren";
 "action.copied" = "In die Zwischenablage kopiert";
+"action.undo" = "Rückgängig";
+"delete.undo.toast" = "%d Einträge gelöscht";
 "action.deleteSelected" = "%d Elemente löschen";
 "action.deleteSelected.confirm" = "Delete %d items?";
 

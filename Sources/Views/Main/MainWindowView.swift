@@ -287,6 +287,11 @@ struct MainWindowView: View {
                 .animation(.easeInOut(duration: 0.2), value: showCopiedToast)
             }
         }
+        .overlay(alignment: .bottom) {
+            ClipItemUndoToast()
+                .padding(.bottom, 20)
+                .animation(.easeOut(duration: 0.2), value: DeleteUndoCoordinator.shared.pending?.expiresAt)
+        }
         .localized()
         .sheet(isPresented: $isClearing) {
             VStack(spacing: 16) {
@@ -1233,18 +1238,11 @@ struct MainWindowView: View {
         let idsToDelete = selectedItems.intersection(visibleIDs)
         guard !idsToDelete.isEmpty else { return }
 
-        let alert = NSAlert()
-        alert.messageText = L10n.tr("action.deleteSelected.confirm", idsToDelete.count)
-        alert.alertStyle = .warning
-        alert.addButton(withTitle: L10n.tr("action.delete"))
-        alert.addButton(withTitle: L10n.tr("action.cancel"))
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-
         // Find the lowest index among deleted items for successor selection
         let firstDeletedIdx = items.firstIndex { idsToDelete.contains($0.persistentModelID) }
 
         let itemsToDelete = items.filter { idsToDelete.contains($0.persistentModelID) }
-        runBulkClear(title: L10n.tr("action.deleteSelected.confirm", itemsToDelete.count), items: itemsToDelete)
+        DeleteUndoCoordinator.shared.scheduleUndoableDelete(items: itemsToDelete, context: modelContext)
 
         // Select next item after deletion
         let remaining = items.filter { !idsToDelete.contains($0.persistentModelID) }
