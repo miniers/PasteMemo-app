@@ -4,7 +4,6 @@ import SwiftData
 
 private let CLIPBOARD_POLL_INTERVAL: TimeInterval = 0.5
 private let PASTE_SIMULATION_DELAY: Duration = .milliseconds(30)
-private let V_KEY_CODE: UInt16 = 0x09
 
 @MainActor
 final class ClipboardManager: ObservableObject {
@@ -1205,8 +1204,12 @@ final class ClipboardManager: ObservableObject {
         // ⌘V stays exactly ⌘V even if the user is still holding other keys
         // (global hotkey release timing, Ctrl-based relay triggers, etc.).
         let source = CGEventSource(stateID: .privateState)
-        let keyDown = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: true)
-        let keyUp = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: false)
+        // Resolve the V keycode for the current keyboard layout so pure Dvorak /
+        // Colemak / AZERTY users also get ⌘V instead of whatever character sits
+        // at the ANSI V slot in their layout.
+        let vKeyCode = KeyboardLayout.virtualKeyForV()
+        let keyDown = CGEvent(keyboardEventSource: source, virtualKey: vKeyCode, keyDown: true)
+        let keyUp = CGEvent(keyboardEventSource: source, virtualKey: vKeyCode, keyDown: false)
         keyDown?.flags = .maskCommand
         keyUp?.flags = .maskCommand
         keyDown?.post(tap: .cgAnnotatedSessionEventTap)

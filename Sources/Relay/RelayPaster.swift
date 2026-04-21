@@ -1,7 +1,6 @@
 import AppKit
 
 private let PASTE_DELAY: Duration = .milliseconds(100)
-private let V_KEY_CODE: UInt16 = 0x09
 
 /// Apps that hijack `com.microsoft.*` pasteboard types into an internal clipboard
 /// cache, making NSPasteboard writes invisible to them. See issue #28 for the
@@ -114,8 +113,12 @@ enum RelayPaster {
         // unbound (silent no-op) in many editors. Same strategy as
         // `simulatePostPasteKey` below.
         let source = CGEventSource(stateID: .privateState)
-        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: true),
-              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: V_KEY_CODE, keyDown: false) else { return }
+        // Resolve the V keycode for the current keyboard layout so pure Dvorak /
+        // Colemak / AZERTY users also get ⌘V instead of whatever character sits
+        // at the ANSI V slot in their layout.
+        let vKeyCode = KeyboardLayout.virtualKeyForV()
+        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: vKeyCode, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: vKeyCode, keyDown: false) else { return }
         keyDown.flags = .maskCommand
         keyUp.flags = .maskCommand
         keyDown.post(tap: .cgAnnotatedSessionEventTap)
