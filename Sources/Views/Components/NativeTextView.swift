@@ -13,10 +13,12 @@ struct NativeTextView: NSViewRepresentable {
     /// When provided, decoded NSAttributedString is keyed on `(itemID, dataHash, width)`.
     var itemID: String? = nil
     var isEditable: Bool = false
+    var autoFocus: Bool = false
     var onTextChange: ((String) -> Void)?
+    var onEscape: (() -> Void)?
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onTextChange: onTextChange)
+        Coordinator(onTextChange: onTextChange, onEscape: onEscape)
     }
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -37,6 +39,12 @@ struct NativeTextView: NSViewRepresentable {
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
+        if autoFocus {
+            DispatchQueue.main.async { [weak textView] in
+                guard let textView, let window = textView.window else { return }
+                window.makeFirstResponder(textView)
+            }
+        }
         return scrollView
     }
 
@@ -44,6 +52,7 @@ struct NativeTextView: NSViewRepresentable {
         let textView = scrollView.documentView as! NSTextView
         textView.isEditable = isEditable
         context.coordinator.onTextChange = onTextChange
+        context.coordinator.onEscape = onEscape
 
         let isFirstResponder = textView.window?.firstResponder == textView
         guard !isFirstResponder else { return }
@@ -205,12 +214,22 @@ struct NativeTextView: NSViewRepresentable {
 
     class Coordinator: NSObject, NSTextViewDelegate {
         var onTextChange: ((String) -> Void)?
+        var onEscape: (() -> Void)?
         var lastRichTextData: Data?
         var lastLayoutWidth: CGFloat = 0
         private var decodeToken: Int = 0
 
-        init(onTextChange: ((String) -> Void)?) {
+        init(onTextChange: ((String) -> Void)?, onEscape: (() -> Void)? = nil) {
             self.onTextChange = onTextChange
+            self.onEscape = onEscape
+        }
+
+        func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            if commandSelector == #selector(NSResponder.cancelOperation(_:)), let onEscape {
+                onEscape()
+                return true
+            }
+            return false
         }
 
         /// Increment-and-return used to invalidate in-flight decodes when selection changes.

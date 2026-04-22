@@ -820,3 +820,6 @@
 "onboarding.analytics.title" = "使用統計";
 "onboarding.analytics.desc" = "匿名の使用データ（アプリバージョン、システム言語、macOS バージョン）を送信して PasteMemo の改善にご協力ください。個人情報は収集されません。";
 "onboarding.analytics.hint" = "設定 → プライバシーでいつでも変更できます。";
+
+/* Edit */
+"detail.richText.editWarning" = "編集するとリッチテキストはプレーンテキストに変換されます。";

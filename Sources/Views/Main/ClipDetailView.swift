@@ -13,8 +13,7 @@ struct ClipDetailView: View {
     @AppStorage(OCRTaskCoordinator.enableOCRKey) private var ocrEnabled = true
 
     private var isEditableType: Bool {
-        (item.contentType == .text || item.contentType == .code)
-            && item.richTextData == nil
+        item.contentType == .text || item.contentType == .code
     }
 
     @ViewBuilder
@@ -59,7 +58,9 @@ struct ClipDetailView: View {
     private var contentArea: some View {
         if isEditing {
             editableTextPreview
-                .padding(16)
+                .padding(.horizontal, 16)
+                .padding(.top, 10)
+                .padding(.bottom, 16)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         } else if item.contentType == .link {
             VStack(alignment: .leading, spacing: 0) {
@@ -119,12 +120,16 @@ struct ClipDetailView: View {
 
             HStack {
                 Spacer()
-                copyButton
-                if isEditableType { editButtons }
-                sensitiveButton
-                pinButton
-                if !item.content.isEmpty { relayButton }
-                deleteButton
+                if isEditing {
+                    editButtons
+                } else {
+                    copyButton
+                    if isEditableType { editButtons }
+                    sensitiveButton
+                    pinButton
+                    if !item.content.isEmpty { relayButton }
+                    deleteButton
+                }
             }
         }
     }
@@ -235,6 +240,10 @@ struct ClipDetailView: View {
 
     private func saveEdit() {
         item.content = editingContent
+        if item.richTextData != nil {
+            item.richTextData = nil
+            item.richTextType = nil
+        }
         item.displayTitle = ClipItem.buildTitle(
             content: item.content,
             contentType: item.contentType,
@@ -245,6 +254,7 @@ struct ClipDetailView: View {
             sourceAppBundleID: nil,
             contentType: item.contentType
         )
+        ClipItemStore.saveAndNotifyContent(modelContext)
         isEditing = false
         textRefreshID = UUID()
     }
@@ -316,12 +326,37 @@ struct ClipDetailView: View {
     }
 
     private var editableTextPreview: some View {
-        NativeTextView(
-            text: editingContent,
-            isEditable: true,
-            onTextChange: { editingContent = $0 }
-        )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        VStack(alignment: .leading, spacing: 10) {
+            if item.richTextData != nil {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                    Text(L10n.tr("detail.richText.editWarning"))
+                        .foregroundStyle(.secondary)
+                }
+                .font(.system(size: 11))
+                .padding(.horizontal, 11)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.orange.opacity(0.08))
+                )
+            }
+            NativeTextView(
+                text: editingContent,
+                isEditable: true,
+                autoFocus: true,
+                onTextChange: { editingContent = $0 },
+                onEscape: { cancelEdit() }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.primary.opacity(0.08))
+            )
+        }
     }
 
     @State private var textRefreshID = UUID()
