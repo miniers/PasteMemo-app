@@ -26,7 +26,6 @@ struct ClipItemSnapshot {
     let richTextType: String?
     let filePaths: String?
     let pasteboardSnapshot: Data?
-    let review: String?
     let groupName: String?
     let ocrText: String?
     let ocrStatus: String
@@ -55,7 +54,6 @@ struct ClipItemSnapshot {
         richTextType = item.richTextType
         filePaths = item.filePaths
         pasteboardSnapshot = item.pasteboardSnapshot
-        review = item.review
         groupName = item.groupName
         ocrText = item.ocrText
         ocrStatus = item.ocrStatus
@@ -81,8 +79,7 @@ struct ClipItemSnapshot {
             richTextData: richTextData,
             richTextType: richTextType,
             filePaths: filePaths,
-            pasteboardSnapshot: pasteboardSnapshot,
-            review: review
+            pasteboardSnapshot: pasteboardSnapshot
         )
         item.itemID = itemID
         item.isSensitive = isSensitive
