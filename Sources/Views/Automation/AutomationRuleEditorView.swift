@@ -139,10 +139,12 @@ struct AutomationRuleEditorView: View {
             }
             .disabled(isBuiltIn)
 
-            Toggle(L10n.tr("automation.rule.notifyBeforeApply"), isOn: Binding(
-                get: { rule.notifyBeforeApply },
-                set: { rule.notifyBeforeApply = $0; saveSettings() }
-            ))
+            if rule.triggerMode != .manual {
+                Toggle(L10n.tr("automation.rule.notifyBeforeApply"), isOn: Binding(
+                    get: { rule.notifyBeforeApply },
+                    set: { rule.notifyBeforeApply = $0; saveSettings() }
+                ))
+            }
 
             Toggle(L10n.tr("automation.rule.notifyOnTrigger"), isOn: Binding(
                 get: { rule.notifyOnTrigger },
