@@ -22,14 +22,6 @@ func showHelpWindow() {
 
 @MainActor
 func showAccessibilityPrompt() {
-    // Pre-1.6 users who upgraded via the buggy in-app updater are missing
-    // PermissionFlow_PermissionFlow.bundle — accessing it via Bundle.module
-    // would SIGTRAP. Degrade to a reinstall prompt instead. (issue #38)
-    guard permissionFlowBundleAvailable() else {
-        showReinstallRequiredAlert()
-        return
-    }
-
     let alert = NSAlert()
     alert.messageText = L10n.tr("accessibility.lost.title")
     alert.informativeText = L10n.tr("accessibility.lost.message")
@@ -37,29 +29,11 @@ func showAccessibilityPrompt() {
     alert.addButton(withTitle: L10n.tr("onboarding.accessibility.grant"))
     alert.addButton(withTitle: L10n.tr("accessibility.lost.later"))
 
+    // The bundle-missing fallback lives inside `openAccessibilitySettings`
+    // itself so every entry point (this alert, the menu bar item, the
+    // onboarding screen) is covered by a single guard. (issue #38)
     if alert.runModal() == .alertFirstButtonReturn {
         AccessibilityMonitor.shared.openAccessibilitySettings()
-    }
-}
-
-private func permissionFlowBundleAvailable() -> Bool {
-    let path = Bundle.main.bundleURL
-        .appendingPathComponent("PermissionFlow_PermissionFlow.bundle").path
-    return FileManager.default.fileExists(atPath: path)
-}
-
-@MainActor
-private func showReinstallRequiredAlert() {
-    let alert = NSAlert()
-    alert.messageText = L10n.tr("reinstall.required.title")
-    alert.informativeText = L10n.tr("reinstall.required.message")
-    alert.alertStyle = .warning
-    alert.addButton(withTitle: L10n.tr("reinstall.required.action"))
-    alert.addButton(withTitle: L10n.tr("accessibility.lost.later"))
-
-    if alert.runModal() == .alertFirstButtonReturn,
-       let url = URL(string: "https://www.lifedever.com/PasteMemo/download") {
-        NSWorkspace.shared.open(url)
     }
 }
 

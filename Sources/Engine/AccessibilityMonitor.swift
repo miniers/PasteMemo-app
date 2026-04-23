@@ -37,6 +37,15 @@ final class AccessibilityMonitor: ObservableObject {
     }
 
     func openAccessibilitySettings(sourceFrameInScreen: CGRect? = nil) {
+        // Pre-1.6 → 1.6.x users may have arrived here without PermissionFlow's
+        // resource bundle (the buggy in-app updater never copied it). Touching
+        // the floating panel below would SIGTRAP at `Bundle.module` (issue #38).
+        // Detect the missing bundle and degrade to a guided-reinstall alert,
+        // keeping every entry point (menu bar, onboarding, alert) safe.
+        guard Self.permissionFlowBundleAvailable() else {
+            Self.showReinstallRequiredAlert()
+            return
+        }
         let frame = sourceFrameInScreen ?? defaultSourceFrame()
         permissionController.authorize(
             pane: .accessibility,
@@ -50,5 +59,25 @@ final class AccessibilityMonitor: ObservableObject {
     private func defaultSourceFrame() -> CGRect {
         let location = NSEvent.mouseLocation
         return CGRect(x: location.x - 16, y: location.y - 16, width: 32, height: 32)
+    }
+
+    private static func permissionFlowBundleAvailable() -> Bool {
+        let path = Bundle.main.bundleURL
+            .appendingPathComponent("PermissionFlow_PermissionFlow.bundle").path
+        return FileManager.default.fileExists(atPath: path)
+    }
+
+    private static func showReinstallRequiredAlert() {
+        let alert = NSAlert()
+        alert.messageText = L10n.tr("reinstall.required.title")
+        alert.informativeText = L10n.tr("reinstall.required.message")
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: L10n.tr("reinstall.required.action"))
+        alert.addButton(withTitle: L10n.tr("accessibility.lost.later"))
+
+        if alert.runModal() == .alertFirstButtonReturn,
+           let url = URL(string: "https://www.lifedever.com/PasteMemo/download") {
+            NSWorkspace.shared.open(url)
+        }
     }
 }
