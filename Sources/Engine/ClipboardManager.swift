@@ -1,9 +1,23 @@
 import AppKit
+import ImageIO
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 private let CLIPBOARD_POLL_INTERVAL: TimeInterval = 0.5
 private let PASTE_SIMULATION_DELAY: Duration = .milliseconds(30)
+/// Long edge of the thumbnail we generate for file-based image clips. Stored
+/// in `imageData` for UI preview only; paste writes the original file URL so
+/// target apps read full-resolution from disk. 1024 keeps the detail-view
+/// preview sharp on Retina without storing the full original (which can be
+/// hundreds of MB for RAW/TIFF). JPEG @ 0.85 typically lands at 200–800 KB
+/// per clip — 1000 such clips ≈ 500 MB of blob storage, manageable.
+private let FILE_THUMBNAIL_MAX_PIXELS: Int = 1024
+/// Largest source-file size we'll re-read at paste time to provide image bytes
+/// to targets that can't follow a file URL (Claude Code, Electron apps, Slack,
+/// etc.). Beyond this, paste only delivers the file URL — file-savvy targets
+/// still work, pixel-only targets get nothing rather than triggering OOM.
+private let MAX_PASTE_FILE_BYTES: Int = 200 * 1024 * 1024
 
 @MainActor
 final class ClipboardManager: ObservableObject {
@@ -212,10 +226,7 @@ final class ClipboardManager: ObservableObject {
         // Cover the four standard image UTIs so iPhone photos (HEIC), Safari drags
         // (often JPEG), and classic screenshots (PNG/TIFF) all get recognised as
         // images rather than falling through to the file / unknown path.
-        let rawImageData = pasteboard.data(forType: .png)
-            ?? pasteboard.data(forType: NSPasteboard.PasteboardType("public.jpeg"))
-            ?? pasteboard.data(forType: NSPasteboard.PasteboardType("public.heic"))
-            ?? pasteboard.data(forType: .tiff)
+        let rawImageData = capturePasteboardImage(from: pasteboard)
         let rawText = pasteboard.string(forType: .string)?.trimmingCharacters(in: .whitespacesAndNewlines)
         let richText = captureRichTextData(from: pasteboard)
 
@@ -239,12 +250,13 @@ final class ClipboardManager: ObservableObject {
             let paths = fileURLs.map(\.path)
             let content = paths.joined(separator: "\n")
             let fileType = detectFileType(paths)
-            // For single image files, load thumbnail data for preview (not a pasteboard-level image).
+            // For single image files, generate a small thumbnail for UI preview only.
+            // Paste writes the original file URL — target apps read full resolution
+            // from disk, so storing the original bytes here would just bloat the DB
+            // (RAW exports / TIFFs can be GBs) and the next backup encode pass.
             var imageData: Data?
-            if fileType == .image, paths.count == 1,
-               let data = try? Data(contentsOf: fileURLs[0]),
-               NSImage(data: data) != nil {
-                imageData = data
+            if fileType == .image, paths.count == 1 {
+                imageData = Self.generateImageFileThumbnail(at: fileURLs[0])
             }
             return ClipItem(content: content, contentType: fileType, imageData: imageData, sourceApp: sourceApp)
         }
@@ -307,6 +319,17 @@ final class ClipboardManager: ObservableObject {
     /// Upper bound on the total bytes we'll persist in a single pasteboard snapshot.
     /// Protects the database from pathological clipboards (huge embedded PDFs, etc.).
     private static let MAX_SNAPSHOT_BYTES = 50 * 1024 * 1024
+    /// Skip raw image clips above this size (un-encoded pasteboard PNG/JPEG/HEIC/TIFF bytes).
+    /// 20 MB covers any reasonable screenshot or app-rendered image; pathologically large
+    /// clipboards (Photoshop selections, RAW exports) get dropped to keep DB and backup
+    /// memory bounded.
+    private static let MAX_IMAGE_BYTES = 20 * 1024 * 1024
+    /// Skip rich-text clips above this size. RTFD with embedded images can balloon to GBs.
+    private static let MAX_RICHTEXT_BYTES = 50 * 1024 * 1024
+    // MAX_PASTE_FILE_BYTES lives at file scope (see top of file) so the nonisolated
+    // helper that re-reads originals can use it without crossing actors.
+    // FILE_THUMBNAIL_MAX_PIXELS lives at file scope (see top of file) so the
+    // nonisolated thumbnail helper can read it without crossing actors.
 
     /// Office-internal UTI prefixes that we never want on the pasteboard when PasteMemo
     /// writes back. Word paste hijacks into its private internal clipboard whenever any
@@ -333,6 +356,63 @@ final class ClipboardManager: ObservableObject {
     /// verbatim — that's how we achieve system-native paste in rich-content apps (Word,
     /// Mail, browsers, Notes) that pick UTIs outside the small set we decode ourselves.
     ///
+    /// Loads the full-resolution bytes of an image file at paste time so targets
+    /// that don't follow file URLs still get the original quality. Returns nil
+    /// when the file is missing or larger than `MAX_PASTE_FILE_BYTES` — callers
+    /// then fall back to file URL only (file-savvy apps still work).
+    nonisolated static func loadOriginalImageData(at path: String) -> Data? {
+        let url = URL(fileURLWithPath: path)
+        guard FileManager.default.fileExists(atPath: path),
+              let attrs = try? FileManager.default.attributesOfItem(atPath: path),
+              let size = (attrs[.size] as? NSNumber)?.intValue,
+              size <= MAX_PASTE_FILE_BYTES else {
+            return nil
+        }
+        return try? Data(contentsOf: url)
+    }
+
+    /// Generates a JPEG thumbnail (long edge `FILE_THUMBNAIL_MAX_PIXELS`) for an
+    /// image file copied from Finder. Uses ImageIO so the source file is streamed,
+    /// not fully decoded into memory — works fine for multi-GB RAW/TIFF originals.
+    /// Returns nil if the file can't be read as an image.
+    nonisolated static func generateImageFileThumbnail(at fileURL: URL) -> Data? {
+        guard let source = CGImageSourceCreateWithURL(fileURL as CFURL, [
+            kCGImageSourceShouldCache: false
+        ] as CFDictionary) else {
+            return nil
+        }
+        let options: [CFString: Any] = [
+            kCGImageSourceShouldCache: false,
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: FILE_THUMBNAIL_MAX_PIXELS
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return nil
+        }
+        let bitmap = NSBitmapImageRep(cgImage: cgImage)
+        return bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.85])
+    }
+
+    /// Pulls the first available raw image representation off the pasteboard, but
+    /// drops it when the bytes exceed `MAX_IMAGE_BYTES`. Without the cap a single
+    /// pathological clip (Photoshop selection, RAW export) can blow up both the
+    /// SwiftData store and downstream backup encoding.
+    private func capturePasteboardImage(from pasteboard: NSPasteboard) -> Data? {
+        let imageTypes: [NSPasteboard.PasteboardType] = [
+            .png,
+            NSPasteboard.PasteboardType("public.jpeg"),
+            NSPasteboard.PasteboardType("public.heic"),
+            .tiff
+        ]
+        for type in imageTypes {
+            guard let data = pasteboard.data(forType: type) else { continue }
+            if data.count > Self.MAX_IMAGE_BYTES { return nil }
+            return data
+        }
+        return nil
+    }
+
     /// Office-private types are dropped at capture time so they never land in the
     /// database; see `OFFICE_PRIVATE_TYPE_PREFIXES` for rationale.
     private func capturePasteboardSnapshot(from pasteboard: NSPasteboard) -> Data? {
@@ -401,13 +481,18 @@ final class ClipboardManager: ObservableObject {
         //           HTML (browsers, most modern apps) > RTF (legacy, no images).
         // Capturing the richest container and writing it back verbatim gives native pasting
         // behaviour: the destination app decodes whatever it prefers.
-        if let rtfdData = pasteboard.data(forType: Self.FLAT_RTFD_TYPE) {
+        // Each candidate is rejected if it exceeds MAX_RICHTEXT_BYTES so a single hot
+        // RTFD with hundreds of inline images can't bloat the store / backup.
+        if let rtfdData = pasteboard.data(forType: Self.FLAT_RTFD_TYPE),
+           rtfdData.count <= Self.MAX_RICHTEXT_BYTES {
             return (rtfdData, "rtfd")
         }
-        if let htmlData = pasteboard.data(forType: .html) {
+        if let htmlData = pasteboard.data(forType: .html),
+           htmlData.count <= Self.MAX_RICHTEXT_BYTES {
             return (htmlData, "html")
         }
-        if let rtfData = pasteboard.data(forType: .rtf) {
+        if let rtfData = pasteboard.data(forType: .rtf),
+           rtfData.count <= Self.MAX_RICHTEXT_BYTES {
             return (rtfData, "rtf")
         }
         return (nil, nil)
@@ -850,9 +935,17 @@ final class ClipboardManager: ObservableObject {
                 let paths: [String] = item.content == "[Image]"
                     ? []
                     : item.content.components(separatedBy: "\n").filter { !$0.isEmpty }
+                let hasFiles = !paths.isEmpty
+
+                // For file-backed clips we re-read the original file at paste time so
+                // pixel-only targets (Claude Code, Slack, browsers, Electron apps that
+                // can't follow a file URL) get the full original image rather than the
+                // small thumbnail kept in storage. Falls back to the stored bytes if
+                // the source file is gone or oversized.
+                let pasteImageData = item.imageBytesForExport()
 
                 var writables: [NSPasteboardWriting] = paths.map { URL(fileURLWithPath: $0) as NSURL }
-                if let data = item.imageData, let image = NSImage(data: data) {
+                if let data = pasteImageData, let image = NSImage(data: data) {
                     writables.append(image)
                 }
                 if !writables.isEmpty {
@@ -860,17 +953,17 @@ final class ClipboardManager: ObservableObject {
                 }
 
                 // Legacy file-names pboard type for apps that still read it.
-                if !paths.isEmpty {
+                if hasFiles {
                     let pboardType = NSPasteboard.PasteboardType("NSFilenamesPboardType")
                     pasteboard.setPropertyList(paths, forType: pboardType)
                 }
                 // Raw bytes for apps that don't read NSImage.
                 if writables.first(where: { $0 is NSImage }) == nil,
-                   let data = item.imageData {
+                   let data = pasteImageData {
                     pasteboard.setData(data, forType: .png)
                 }
                 // Text fallback filename for unknown apps.
-                if !paths.isEmpty, let names = filenamesFromContent(item.content) {
+                if hasFiles, let names = filenamesFromContent(item.content) {
                     pasteboard.setString(names, forType: .string)
                 }
             }
@@ -1319,6 +1412,20 @@ final class ClipboardManager: ObservableObject {
         do {
             try imageData.write(to: fileURL)
             return fileURL
+        } catch {
+            return nil
+        }
+    }
+
+    /// Copies an existing image file to `folder` byte-for-byte. Used by the
+    /// "save to Finder folder" smart paste for file-backed clips so the user
+    /// gets the original file (correct dimensions, format, EXIF), not a
+    /// re-encoded copy of the stored thumbnail.
+    func copyImageFileToFolder(sourceURL: URL, folder: URL) -> URL? {
+        let destURL = Self.uniqueDestination(folder.appendingPathComponent(sourceURL.lastPathComponent))
+        do {
+            try FileManager.default.copyItem(at: sourceURL, to: destURL)
+            return destURL
         } catch {
             return nil
         }

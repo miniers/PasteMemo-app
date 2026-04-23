@@ -206,6 +206,38 @@ final class ClipItem {
         return raw.components(separatedBy: "\n").filter { !$0.isEmpty }
     }
 
+    /// Source file URL for a file-backed image clip if the original file is still
+    /// on disk. Returns nil for raw-pasteboard image clips (`content == "[Image]"`)
+    /// and for file-backed clips whose source has been deleted/moved.
+    ///
+    /// File-backed image clips store only a small thumbnail in `imageData` — anything
+    /// that wants the original (paste, save-to-folder, OCR) reads from this URL.
+    var sourceImageFileURL: URL? {
+        guard contentType == .image, content != "[Image]" else { return nil }
+        let firstPath = content
+            .components(separatedBy: "\n")
+            .first(where: { !$0.isEmpty })
+        guard let path = firstPath, FileManager.default.fileExists(atPath: path) else { return nil }
+        return URL(fileURLWithPath: path)
+    }
+
+    /// Best image bytes to put on the pasteboard or write out as a new file.
+    /// File-backed clip with original on disk → reads the original (capped at
+    /// `MAX_PASTE_FILE_BYTES`); raw clips and file-backed clips whose source is
+    /// gone/oversized → falls back to stored `imageData` (full bytes for raw,
+    /// thumbnail for file-backed).
+    ///
+    /// Use this — never `imageData` directly — anywhere bytes are leaving the
+    /// app for paste, save-as, or relay. `imageData` is reserved for in-app UI
+    /// preview where the small/cheap version is what we want.
+    func imageBytesForExport() -> Data? {
+        if let url = sourceImageFileURL,
+           let original = ClipboardManager.loadOriginalImageData(at: url.path) {
+            return original
+        }
+        return imageData
+    }
+
     /// Computed enum accessor — never crashes because contentTypeRaw is a plain String.
     var contentType: ClipContentType {
         get { ClipContentType(rawValue: contentTypeRaw) ?? .text }

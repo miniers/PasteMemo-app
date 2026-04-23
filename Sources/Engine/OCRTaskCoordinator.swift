@@ -81,7 +81,7 @@ final class OCRTaskCoordinator: ObservableObject {
             }
             let context = container.mainContext
             guard let item = Self.fetchItem(id: itemID, context: context) else { return }
-            guard item.contentType == .image, let imageData = item.imageData else {
+            guard item.contentType == .image, item.imageData != nil else {
                 item.ocrStatus = OCRStatus.skipped.rawValue
                 item.ocrErrorMessage = nil
                 item.ocrUpdatedAt = Date()
@@ -89,12 +89,33 @@ final class OCRTaskCoordinator: ObservableObject {
                 return
             }
 
+            // For file-backed image clips, `imageData` only holds a small thumbnail —
+            // OCR'ing it would miss small text. Prefer the original file when it still
+            // exists; Vision's URL handler streams the image without loading it whole.
+            let originalURL: URL? = {
+                let firstPath = item.content
+                    .components(separatedBy: "\n")
+                    .first(where: { !$0.isEmpty })
+                guard let path = firstPath, FileManager.default.fileExists(atPath: path) else {
+                    return nil
+                }
+                return URL(fileURLWithPath: path)
+            }()
+            let imageData = item.imageData
+
             item.ocrStatus = OCRStatus.processing.rawValue
             item.ocrErrorMessage = nil
             ClipItemStore.saveAndNotifyContent(context)
 
             do {
-                let result = try await ImageOCRService.shared.recognizeText(from: imageData)
+                let result: OCRRecognitionResult
+                if let url = originalURL {
+                    result = try await ImageOCRService.shared.recognizeText(fileURL: url)
+                } else if let data = imageData {
+                    result = try await ImageOCRService.shared.recognizeText(from: data)
+                } else {
+                    throw ImageOCRError.invalidImage
+                }
                 await MainActor.run {
                     guard let refreshed = Self.fetchItem(id: itemID, context: context) else { return }
                     refreshed.ocrText = result.text.isEmpty ? nil : result.text

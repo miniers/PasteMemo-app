@@ -151,21 +151,54 @@ struct ClipPropertiesView: View {
 
     @ViewBuilder
     private var imageProperties: some View {
-        if let data = item.imageData, let dimensions = ImageCache.shared.imageDimensions(for: data) {
+        // For file-backed clips, read dimensions / size / format from the original
+        // file on disk so the panel reports the real picture stats — not the small
+        // thumbnail we keep in `imageData` for in-app preview.
+        if let sourceURL = item.sourceImageFileURL {
+            let dimensions = ImageCache.shared.imageDimensions(at: sourceURL)
+            let fileSize = (try? sourceURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+            if let dimensions {
+                propDivider
+                propRow(L10n.tr("detail.dimensions"), "\(Int(dimensions.width))×\(Int(dimensions.height))")
+            }
+            if fileSize > 0 {
+                propDivider
+                propRow(L10n.tr("detail.size"), formatFileSize(fileSize))
+            }
+            propDivider
+            propRow(L10n.tr("detail.format"), formatFromExtension(sourceURL))
+            let location = sourceURL.deletingLastPathComponent().path
+            if !location.isEmpty {
+                propDivider
+                locationRow(location)
+            }
+        } else if let data = item.imageData, let dimensions = ImageCache.shared.imageDimensions(for: data) {
+            // Raw pasteboard image (screenshot etc.) — `imageData` holds the originals.
             propDivider
             propRow(L10n.tr("detail.dimensions"), "\(Int(dimensions.width))×\(Int(dimensions.height))")
             propDivider
             propRow(L10n.tr("detail.size"), formatFileSize(data.count))
             propDivider
             propRow(L10n.tr("detail.format"), detectImageFormat(data))
-            if item.content != "[Image]" {
-                let location = URL(fileURLWithPath: item.content.components(separatedBy: "\n").first ?? "")
-                    .deletingLastPathComponent().path
-                if !location.isEmpty {
-                    propDivider
-                    locationRow(location)
-                }
-            }
+        }
+    }
+
+    /// Best-effort image format label from a file extension. Used for file-backed
+    /// clips where reading the magic bytes would require loading the original
+    /// (potentially large) bytes; the extension is a reliable indicator for the
+    /// formats Finder produces.
+    private func formatFromExtension(_ url: URL) -> String {
+        let ext = url.pathExtension.lowercased()
+        switch ext {
+        case "png": return "PNG"
+        case "jpg", "jpeg": return "JPEG"
+        case "gif": return "GIF"
+        case "webp": return "WebP"
+        case "heic", "heif": return "HEIC"
+        case "tiff", "tif": return "TIFF"
+        case "bmp": return "BMP"
+        case "svg": return "SVG"
+        default: return ext.isEmpty ? "—" : ext.uppercased()
         }
     }
 

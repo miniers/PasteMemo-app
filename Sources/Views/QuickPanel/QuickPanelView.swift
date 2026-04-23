@@ -2043,10 +2043,17 @@ struct QuickPanelView: View {
     }
 
     private func handlePasteImage() {
-        guard let item = currentItem, let imageData = item.imageData else { return }
+        // Use exportable bytes — file-backed clips re-read the original from disk
+        // so this stays at full resolution rather than the stored thumbnail.
+        guard let item = currentItem,
+              let imageData = item.imageBytesForExport(),
+              let image = NSImage(data: imageData) else { return }
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setData(imageData, forType: .tiff)
+        // writeObjects gives the receiving app multiple representations to pick
+        // from (TIFF/PNG/etc); plain setData(.tiff) skips that negotiation and
+        // some targets only read PNG.
+        pasteboard.writeObjects([image])
         pasteboard.markAsPasteMemoWrite()
         clipboardManager.lastChangeCount = pasteboard.changeCount
         SoundManager.playPaste()
@@ -2162,8 +2169,8 @@ struct QuickPanelView: View {
     }
 
     private func handlePasteImageToFolder() {
-        guard let item = currentItem, let imageData = item.imageData else {
-            // No image data, fallback to normal paste
+        guard let item = currentItem, item.imageData != nil else {
+            // No image at all, fallback to normal paste
             if let item = currentItem {
                 QuickPanelWindowController.shared.dismissAndPaste(item, clipboardManager: clipboardManager)
             }
@@ -2176,19 +2183,22 @@ struct QuickPanelView: View {
             return
         }
 
-        // If the clip carries an original file path, reuse its filename so the
-        // saved file keeps its real extension (e.g. `.jpg` stays `.jpg`).
-        // Otherwise saveImageToFolder sniffs the bytes and picks an extension.
-        let preferredName: String? = {
-            guard item.content != "[Image]",
-                  let firstPath = item.content
-                    .components(separatedBy: "\n")
-                    .first(where: { !$0.isEmpty }) else { return nil }
-            return (firstPath as NSString).lastPathComponent
-        }()
-        guard let savedURL = clipboardManager.saveImageToFolder(
-            imageData, folder: folder, preferredFilename: preferredName
-        ) else {
+        // For file-backed clips, copy the original file directly. This preserves
+        // its exact bytes / format / metadata — re-encoding from `imageData`
+        // would only have given the small thumbnail.
+        let savedURL: URL?
+        if let sourceURL = item.sourceImageFileURL {
+            savedURL = clipboardManager.copyImageFileToFolder(sourceURL: sourceURL, folder: folder)
+        } else {
+            // Raw pasteboard image — write the stored bytes (which are the originals
+            // for raw clips) as a new file in the target folder.
+            savedURL = clipboardManager.saveImageToFolder(
+                item.imageBytesForExport() ?? Data(),
+                folder: folder,
+                preferredFilename: nil
+            )
+        }
+        guard let savedURL else {
             // Save failed, fallback to paste image
             handlePasteImage()
             return

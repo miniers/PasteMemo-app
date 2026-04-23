@@ -165,8 +165,24 @@ final class ImageCache: @unchecked Sendable {
     }
 
     func imageDimensions(for data: Data) -> NSSize? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
-              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            return nil
+        }
+        return Self.dimensions(from: source)
+    }
+
+    /// Read pixel dimensions straight from a file URL without decoding the
+    /// whole image. Used for file-backed clips so the property panel shows
+    /// the original's pixel size, not the stored thumbnail's.
+    func imageDimensions(at url: URL) -> NSSize? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+            return nil
+        }
+        return Self.dimensions(from: source)
+    }
+
+    private static func dimensions(from source: CGImageSource) -> NSSize? {
+        guard let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
               let width = properties[kCGImagePropertyPixelWidth] as? CGFloat,
               let height = properties[kCGImagePropertyPixelHeight] as? CGFloat else {
             return nil

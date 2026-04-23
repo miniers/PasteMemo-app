@@ -426,13 +426,13 @@ final class RelayManager {
         } else {
             switch item.contentKind {
             case .image:
-                if let imageData = item.imageData {
+                if let imageData = item.imageBytesForExport() {
                     await RelayPaster.pasteImage(imageData, monitor: mon)
                 } else {
                     await RelayPaster.paste(item.content, monitor: mon)
                 }
             case .file:
-                await RelayPaster.pasteFile(item.content, imageData: item.imageData, monitor: mon)
+                await RelayPaster.pasteFile(item.content, imageData: item.imageBytesForExport(), monitor: mon)
             case .text:
                 await RelayPaster.paste(item.content, monitor: mon)
             }

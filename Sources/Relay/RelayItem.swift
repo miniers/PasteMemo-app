@@ -28,6 +28,19 @@ struct RelayItem: Identifiable {
     var isImage: Bool { contentKind == .image }
     var isFile: Bool { contentKind == .file }
 
+    /// Image bytes intended for paste/embed. For file-backed clips re-reads the
+    /// original from disk so paste delivers full resolution rather than the
+    /// thumbnail captured into `imageData` at copy time.
+    func imageBytesForExport() -> Data? {
+        let firstPath = content.components(separatedBy: "\n").first(where: { !$0.isEmpty })
+        if let path = firstPath,
+           FileManager.default.fileExists(atPath: path),
+           let original = ClipboardManager.loadOriginalImageData(at: path) {
+            return original
+        }
+        return imageData
+    }
+
     /// For file items, show filename(s); for others, show content
     var displayName: String {
         guard isFile else { return content }

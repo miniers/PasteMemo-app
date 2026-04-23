@@ -29,7 +29,21 @@ actor ImageOCRService {
         else {
             throw ImageOCRError.invalidImage
         }
+        let handler = VNImageRequestHandler(cgImage: cgImage)
+        return try await runOCR(handler: handler)
+    }
 
+    /// File-URL OCR path. Used for file-backed image clips so OCR runs against
+    /// the original file's full resolution rather than the small thumbnail we
+    /// keep in `ClipItem.imageData`. `VNImageRequestHandler(url:)` lets Vision
+    /// stream the image, so this works for multi-GB originals without loading
+    /// them into memory.
+    func recognizeText(fileURL: URL) async throws -> OCRRecognitionResult {
+        let handler = VNImageRequestHandler(url: fileURL)
+        return try await runOCR(handler: handler)
+    }
+
+    private func runOCR(handler: VNImageRequestHandler) async throws -> OCRRecognitionResult {
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         let appLanguage = await MainActor.run { LanguageManager.shared.current }
@@ -37,7 +51,6 @@ actor ImageOCRService {
         request.automaticallyDetectsLanguage = true
         request.usesLanguageCorrection = !Self.prefersChinese(appLanguage: appLanguage)
 
-        let handler = VNImageRequestHandler(cgImage: cgImage)
         try handler.perform([request])
 
         let rawLines = request.results?.compactMap { observation in
