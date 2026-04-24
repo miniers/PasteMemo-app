@@ -80,6 +80,7 @@ struct ClipRow: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 36, height: 36)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay(alignment: .bottomTrailing) { imageFormatBadge }
         } else if item.contentType == .link, imageLinkPreviewEnabled,
                   LinkMetadataFetcher.isImageURL(item.content) {
             if let img = Self.decodeDataURIImage(item.content) {
@@ -88,6 +89,7 @@ struct ClipRow: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 36, height: 36)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay(alignment: .bottomTrailing) { imageFormatBadge }
             } else if let url = URL(string: item.content) {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -97,6 +99,7 @@ struct ClipRow: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 36, height: 36)
                             .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .overlay(alignment: .bottomTrailing) { imageFormatBadge }
                     default:
                         linkFaviconThumbnail
                     }
@@ -151,6 +154,7 @@ struct ClipRow: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 36, height: 36)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay(alignment: .bottomTrailing) { imageFormatBadge }
         } else if item.contentType == .code {
             LanguageIcon(language: item.resolvedCodeLanguage ?? .unknown, size: 36)
         } else if item.contentType == .text || item.contentType == .email {
@@ -163,7 +167,38 @@ struct ClipRow: View {
                         .fill(Color.primary.opacity(0.06))
                 )
         } else {
-            let icon = thumbnailIcon
+            fileIconThumb(thumbnailIcon)
+        }
+    }
+
+    @ViewBuilder
+    private var imageFormatBadge: some View {
+        if let label = resolvedImageFormatLabel {
+            Text(label)
+                .font(.system(size: 7, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 3)
+                .padding(.vertical, 0.5)
+                .background(.black.opacity(0.55), in: Capsule())
+        }
+    }
+
+    private var resolvedImageFormatLabel: String? {
+        // File-backed image: derive from path extension (cheap, no data read).
+        if item.content != "[Image]", !item.content.isEmpty {
+            let firstPath = item.content.components(separatedBy: "\n").first ?? ""
+            if let label = imageFormatLabel(forPath: firstPath) { return label }
+        }
+        // Raw pasteboard image: sniff magic bytes from stored thumbnail data.
+        if let data = item.imageData {
+            return imageFormatLabel(fromData: data)
+        }
+        return nil
+    }
+
+    @ViewBuilder
+    private func fileIconThumb(_ icon: FileIconInfo) -> some View {
+        ZStack(alignment: .bottom) {
             Image(systemName: icon.symbol)
                 .font(.system(size: 14))
                 .foregroundStyle(icon.color)
@@ -172,6 +207,15 @@ struct ClipRow: View {
                     RoundedRectangle(cornerRadius: 6)
                         .fill(Color.primary.opacity(0.05))
                 )
+            if let badge = icon.badge {
+                Text(badge)
+                    .font(.system(size: 7, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 3)
+                    .padding(.vertical, 1)
+                    .background(Color.gray.opacity(0.85), in: Capsule())
+                    .offset(y: -3)
+            }
         }
     }
 
@@ -221,12 +265,7 @@ struct ClipRow: View {
                     .foregroundStyle(.white)
                     .shadow(radius: 2)
             } else {
-                let icon = thumbnailIcon
-                Image(systemName: icon.symbol)
-                    .font(.system(size: 14))
-                    .foregroundStyle(icon.color)
-                    .frame(width: 36, height: 36)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.05)))
+                fileIconThumb(thumbnailIcon)
             }
         }
         .task(id: item.content) {

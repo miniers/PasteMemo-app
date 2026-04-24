@@ -376,21 +376,57 @@ final class ClipboardManager: ObservableObject {
     /// not fully decoded into memory — works fine for multi-GB RAW/TIFF originals.
     /// Returns nil if the file can't be read as an image.
     nonisolated static func generateImageFileThumbnail(at fileURL: URL) -> Data? {
-        guard let source = CGImageSourceCreateWithURL(fileURL as CFURL, [
+        if let source = CGImageSourceCreateWithURL(fileURL as CFURL, [
             kCGImageSourceShouldCache: false
-        ] as CFDictionary) else {
-            return nil
+        ] as CFDictionary) {
+            let options: [CFString: Any] = [
+                kCGImageSourceShouldCache: false,
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceCreateThumbnailWithTransform: true,
+                kCGImageSourceThumbnailMaxPixelSize: FILE_THUMBNAIL_MAX_PIXELS
+            ]
+            if let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) {
+                let bitmap = NSBitmapImageRep(cgImage: cgImage)
+                return bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.85])
+            }
         }
-        let options: [CFString: Any] = [
-            kCGImageSourceShouldCache: false,
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: FILE_THUMBNAIL_MAX_PIXELS
-        ]
-        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
-            return nil
-        }
-        let bitmap = NSBitmapImageRep(cgImage: cgImage)
+        // Vector formats (SVG) — CGImageSource can't decode them. Fall back to
+        // NSImage which handles SVG natively on macOS 14+, then rasterize to JPEG
+        // at FILE_THUMBNAIL_MAX_PIXELS so downstream preview code is unchanged.
+        return rasterizeVectorThumbnail(at: fileURL)
+    }
+
+    private nonisolated static func rasterizeVectorThumbnail(at fileURL: URL) -> Data? {
+        guard let image = NSImage(contentsOf: fileURL) else { return nil }
+        let original = image.size
+        guard original.width > 0, original.height > 0 else { return nil }
+        let maxPixel = CGFloat(FILE_THUMBNAIL_MAX_PIXELS)
+        let scale = min(maxPixel / original.width, maxPixel / original.height, 1)
+        let pixelWidth = Int((original.width * scale).rounded())
+        let pixelHeight = Int((original.height * scale).rounded())
+        guard let bitmap = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: pixelWidth,
+            pixelsHigh: pixelHeight,
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 32
+        ) else { return nil }
+        bitmap.size = NSSize(width: pixelWidth, height: pixelHeight)
+        NSGraphicsContext.saveGraphicsState()
+        defer { NSGraphicsContext.restoreGraphicsState() }
+        guard let ctx = NSGraphicsContext(bitmapImageRep: bitmap) else { return nil }
+        NSGraphicsContext.current = ctx
+        image.draw(
+            in: NSRect(x: 0, y: 0, width: pixelWidth, height: pixelHeight),
+            from: .zero,
+            operation: .copy,
+            fraction: 1.0
+        )
         return bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.85])
     }
 
